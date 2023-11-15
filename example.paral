@@ -1,0 +1,4 @@
+var message Hello1
+var message Hello2 --new sd
+
+exec echo message
