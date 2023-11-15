@@ -12,26 +12,37 @@ import (
 )
 
 type Paral struct {
-	Pos   lexer.Position
-	Lines []*Line `@@*`
+	Pos       lexer.Position
+	Lines     []*Line `@@*`
 }
 
 type Line struct {
-	Type  string `@Keyword`
-	Name  string `@Ident`
-	Value string `@Ident`
+	Variable *Variable `@@`
+	Execute  *Execute  `@@`
+}
+
+type Variable struct {
+	Type    *string   `@Var`
+	Name    *string   `@Ident`
+	Value   *string   `@Ident`
 	Options []*Option `@@*`
 }
 
 type Option struct {
-	Identify  string `@Ident`
-	Name  string `@Ident`
-	Value string `@Ident`
+	Name  *string `@Option`
+	Value *string `@Ident?`
+}
+
+type Execute struct {
+	Type  *string `@Exec`
+	Value *string `@Ident`
 }
 
 var (
 	paralLexer = lexer.MustSimple([]lexer.SimpleRule{
-		{`Keyword`, `(?i)\b(var|exec)\b`},
+		{`Option`, `--([a-zA-Z_][a-zA-Z_0-9]*)` },
+		{`Var`, `(?i)\b(var)\b`},
+		{`Exec`, `(?i)\b(exec)\b`},
 		{"Ident", `[a-zA-Z_][a-zA-Z_0-9]*`},
 		{"whitespace", `\s+`},
 	})
