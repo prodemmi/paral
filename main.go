@@ -13,43 +13,56 @@ import (
 
 type Paral struct {
 	Pos       lexer.Position
-	Lines     []*Line `@@*`
+	Entries   *Entry `@@`
 }
 
-type Line struct {
-	Variable *Variable `@@`
-	Execute  *Execute  `@@`
+type Entry struct {
+	Variables []*Variable `@@*`
+	Executes  []*Execute  `@@*`
 }
 
 type Variable struct {
-	Type    *string   `@Var`
-	Name    *string   `@Ident`
-	Value   *string   `@Ident`
-	Options []*Option `@@*`
-}
-
-type Option struct {
-	Name  *string `@Option`
-	Value *string `@Ident?`
+	Type    *string `"var" `
+	Name    *string `@Ident`
+	Value   *Value  `@@`
 }
 
 type Execute struct {
-	Type  *string `@Exec`
-	Value *string `@Ident`
+	Type    *string `"exec" `
+	Command *string  `@Command`
 }
+
+type Value interface{ value() }
+
+type String struct {
+	String *string `@String`
+}
+
+func (String) value() {}
+
+type Number struct {
+	Number *float64 `@Float`
+}
+
+func (Number) value() {}
 
 var (
 	paralLexer = lexer.MustSimple([]lexer.SimpleRule{
-		{`Option`, `--([a-zA-Z_][a-zA-Z_0-9]*)` },
-		{`Var`, `(?i)\b(var)\b`},
-		{`Exec`, `(?i)\b(exec)\b`},
+		{"DateTime", `\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(-\d\d:\d\d)?`},
+		{"Date", `\d\d\d\d-\d\d-\d\d`},
+		{"Time", `\d\d:\d\d:\d\d(\.\d+)?`},
 		{"Ident", `[a-zA-Z_][a-zA-Z_0-9]*`},
+		{"Command", `\s+(.*)`},
+		{"String", `"[^"]*"`},
+		{`Float`, `\d+(?:\.\d+)?`},
+		{"comment", `#[^\n]+`},
 		{"whitespace", `\s+`},
 	})
 
 	paralParser = participle.MustBuild[Paral](
 		participle.Lexer(paralLexer),
-		participle.CaseInsensitive("Keyword"),
+		participle.Unquote("String"),
+		participle.Union[Value](String{}, Number{}),
 	)
 
 	cli struct {
