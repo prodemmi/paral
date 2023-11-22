@@ -1,28 +1,39 @@
-// Code generated from ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
+// Code generated from /home/emad/Documents/paral/ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser // ParalExpr
-
 import "github.com/antlr4-go/antlr/v4"
 
 // ParalExprListener is a complete listener for a parse tree produced by ParalExprParser.
 type ParalExprListener interface {
 	antlr.ParseTreeListener
 
-	// EnterProg is called when entering the prog production.
-	EnterProg(c *ProgContext)
+	// EnterStart is called when entering the start production.
+	EnterStart(c *StartContext)
 
-	// EnterExpr is called when entering the expr production.
-	EnterExpr(c *ExprContext)
+	// EnterVariables is called when entering the variables production.
+	EnterVariables(c *VariablesContext)
+
+	// EnterExecuteables is called when entering the executeables production.
+	EnterExecuteables(c *ExecuteablesContext)
 
 	// EnterVariable is called when entering the variable production.
 	EnterVariable(c *VariableContext)
 
-	// ExitProg is called when exiting the prog production.
-	ExitProg(c *ProgContext)
+	// EnterExecute is called when entering the execute production.
+	EnterExecute(c *ExecuteContext)
 
-	// ExitExpr is called when exiting the expr production.
-	ExitExpr(c *ExprContext)
+	// ExitStart is called when exiting the start production.
+	ExitStart(c *StartContext)
+
+	// ExitVariables is called when exiting the variables production.
+	ExitVariables(c *VariablesContext)
+
+	// ExitExecuteables is called when exiting the executeables production.
+	ExitExecuteables(c *ExecuteablesContext)
 
 	// ExitVariable is called when exiting the variable production.
 	ExitVariable(c *VariableContext)
+
+	// ExitExecute is called when exiting the execute production.
+	ExitExecute(c *ExecuteContext)
 }

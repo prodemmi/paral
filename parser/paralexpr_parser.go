@@ -1,7 +1,6 @@
-// Code generated from ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
+// Code generated from /home/emad/Documents/paral/ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser // ParalExpr
-
 import (
 	"fmt"
 	"strconv"
@@ -33,22 +32,30 @@ var ParalExprParserStaticData struct {
 func paralexprParserInit() {
 	staticData := &ParalExprParserStaticData
 	staticData.SymbolicNames = []string{
-		"", "IDENT", "VALUE", "NEWLINE", "WS", "VARIABLE",
+		"", "IDENT", "VALUE", "NEWLINE", "WS", "VARIABLE", "EXECUTE",
 	}
 	staticData.RuleNames = []string{
-		"prog", "expr", "variable",
+		"start", "variables", "executeables", "variable", "execute",
 	}
 	staticData.PredictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 5, 22, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 1, 0, 1, 0, 1, 0, 5, 0,
-		10, 8, 0, 10, 0, 12, 0, 13, 9, 0, 1, 1, 3, 1, 16, 8, 1, 1, 2, 1, 2, 1,
-		2, 1, 2, 1, 2, 0, 0, 3, 0, 2, 4, 0, 0, 20, 0, 11, 1, 0, 0, 0, 2, 15, 1,
-		0, 0, 0, 4, 17, 1, 0, 0, 0, 6, 7, 3, 2, 1, 0, 7, 8, 5, 3, 0, 0, 8, 10,
-		1, 0, 0, 0, 9, 6, 1, 0, 0, 0, 10, 13, 1, 0, 0, 0, 11, 9, 1, 0, 0, 0, 11,
-		12, 1, 0, 0, 0, 12, 1, 1, 0, 0, 0, 13, 11, 1, 0, 0, 0, 14, 16, 3, 4, 2,
-		0, 15, 14, 1, 0, 0, 0, 15, 16, 1, 0, 0, 0, 16, 3, 1, 0, 0, 0, 17, 18, 5,
-		5, 0, 0, 18, 19, 5, 1, 0, 0, 19, 20, 5, 2, 0, 0, 20, 5, 1, 0, 0, 0, 2,
-		11, 15,
+		4, 1, 6, 43, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7, 4,
+		1, 0, 1, 0, 1, 0, 5, 0, 14, 8, 0, 10, 0, 12, 0, 17, 9, 0, 1, 0, 3, 0, 20,
+		8, 0, 1, 1, 4, 1, 23, 8, 1, 11, 1, 12, 1, 24, 1, 2, 5, 2, 28, 8, 2, 10,
+		2, 12, 2, 31, 9, 2, 1, 2, 3, 2, 34, 8, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 4,
+		1, 4, 1, 4, 1, 4, 0, 0, 5, 0, 2, 4, 6, 8, 0, 0, 42, 0, 19, 1, 0, 0, 0,
+		2, 22, 1, 0, 0, 0, 4, 33, 1, 0, 0, 0, 6, 35, 1, 0, 0, 0, 8, 39, 1, 0, 0,
+		0, 10, 11, 3, 2, 1, 0, 11, 12, 5, 3, 0, 0, 12, 14, 1, 0, 0, 0, 13, 10,
+		1, 0, 0, 0, 14, 17, 1, 0, 0, 0, 15, 13, 1, 0, 0, 0, 15, 16, 1, 0, 0, 0,
+		16, 20, 1, 0, 0, 0, 17, 15, 1, 0, 0, 0, 18, 20, 3, 4, 2, 0, 19, 15, 1,
+		0, 0, 0, 19, 18, 1, 0, 0, 0, 20, 1, 1, 0, 0, 0, 21, 23, 3, 6, 3, 0, 22,
+		21, 1, 0, 0, 0, 23, 24, 1, 0, 0, 0, 24, 22, 1, 0, 0, 0, 24, 25, 1, 0, 0,
+		0, 25, 3, 1, 0, 0, 0, 26, 28, 3, 8, 4, 0, 27, 26, 1, 0, 0, 0, 28, 31, 1,
+		0, 0, 0, 29, 27, 1, 0, 0, 0, 29, 30, 1, 0, 0, 0, 30, 34, 1, 0, 0, 0, 31,
+		29, 1, 0, 0, 0, 32, 34, 1, 0, 0, 0, 33, 29, 1, 0, 0, 0, 33, 32, 1, 0, 0,
+		0, 34, 5, 1, 0, 0, 0, 35, 36, 5, 5, 0, 0, 36, 37, 5, 1, 0, 0, 37, 38, 5,
+		2, 0, 0, 38, 7, 1, 0, 0, 0, 39, 40, 5, 6, 0, 0, 40, 41, 5, 2, 0, 0, 41,
+		9, 1, 0, 0, 0, 5, 15, 19, 24, 29, 33,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)
@@ -92,78 +99,82 @@ const (
 	ParalExprParserNEWLINE  = 3
 	ParalExprParserWS       = 4
 	ParalExprParserVARIABLE = 5
+	ParalExprParserEXECUTE  = 6
 )
 
 // ParalExprParser rules.
 const (
-	ParalExprParserRULE_prog     = 0
-	ParalExprParserRULE_expr     = 1
-	ParalExprParserRULE_variable = 2
+	ParalExprParserRULE_start        = 0
+	ParalExprParserRULE_variables    = 1
+	ParalExprParserRULE_executeables = 2
+	ParalExprParserRULE_variable     = 3
+	ParalExprParserRULE_execute      = 4
 )
 
-// IProgContext is an interface to support dynamic dispatch.
-type IProgContext interface {
+// IStartContext is an interface to support dynamic dispatch.
+type IStartContext interface {
 	antlr.ParserRuleContext
 
 	// GetParser returns the parser.
 	GetParser() antlr.Parser
 
 	// Getter signatures
-	AllExpr() []IExprContext
-	Expr(i int) IExprContext
+	AllVariables() []IVariablesContext
+	Variables(i int) IVariablesContext
 	AllNEWLINE() []antlr.TerminalNode
 	NEWLINE(i int) antlr.TerminalNode
+	Executeables() IExecuteablesContext
 
-	// IsProgContext differentiates from other interfaces.
-	IsProgContext()
+	// IsStartContext differentiates from other interfaces.
+	IsStartContext()
 }
 
-type ProgContext struct {
+type StartContext struct {
 	antlr.BaseParserRuleContext
 	parser antlr.Parser
 }
 
-func NewEmptyProgContext() *ProgContext {
-	var p = new(ProgContext)
+func NewEmptyStartContext() *StartContext {
+	var p = new(StartContext)
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalExprParserRULE_prog
+	p.RuleIndex = ParalExprParserRULE_start
 	return p
 }
 
-func InitEmptyProgContext(p *ProgContext) {
+func InitEmptyStartContext(p *StartContext) {
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalExprParserRULE_prog
+	p.RuleIndex = ParalExprParserRULE_start
 }
 
-func (*ProgContext) IsProgContext() {}
+func (*StartContext) IsStartContext() {}
 
-func NewProgContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ProgContext {
-	var p = new(ProgContext)
+func NewStartContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *StartContext {
+	var p = new(StartContext)
 
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
 
 	p.parser = parser
-	p.RuleIndex = ParalExprParserRULE_prog
+	p.RuleIndex = ParalExprParserRULE_start
 
 	return p
 }
 
-func (s *ProgContext) GetParser() antlr.Parser { return s.parser }
+func (s *StartContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *ProgContext) AllExpr() []IExprContext {
+func (s *StartContext) AllVariables() []IVariablesContext {
 	children := s.GetChildren()
 	len := 0
 	for _, ctx := range children {
-		if _, ok := ctx.(IExprContext); ok {
+		if _, ok := ctx.(IVariablesContext); ok {
 			len++
 		}
 	}
 
-	tst := make([]IExprContext, len)
+	tst := make([]IVariablesContext, len)
 	i := 0
 	for _, ctx := range children {
-		if t, ok := ctx.(IExprContext); ok {
-			tst[i] = t.(IExprContext)
+		if t, ok := ctx.(IVariablesContext); ok {
+			tst[i] = t.(IVariablesContext)
 			i++
 		}
 	}
@@ -171,11 +182,11 @@ func (s *ProgContext) AllExpr() []IExprContext {
 	return tst
 }
 
-func (s *ProgContext) Expr(i int) IExprContext {
+func (s *StartContext) Variables(i int) IVariablesContext {
 	var t antlr.RuleContext
 	j := 0
 	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IExprContext); ok {
+		if _, ok := ctx.(IVariablesContext); ok {
 			if j == i {
 				t = ctx.(antlr.RuleContext)
 				break
@@ -188,65 +199,248 @@ func (s *ProgContext) Expr(i int) IExprContext {
 		return nil
 	}
 
-	return t.(IExprContext)
+	return t.(IVariablesContext)
 }
 
-func (s *ProgContext) AllNEWLINE() []antlr.TerminalNode {
+func (s *StartContext) AllNEWLINE() []antlr.TerminalNode {
 	return s.GetTokens(ParalExprParserNEWLINE)
 }
 
-func (s *ProgContext) NEWLINE(i int) antlr.TerminalNode {
+func (s *StartContext) NEWLINE(i int) antlr.TerminalNode {
 	return s.GetToken(ParalExprParserNEWLINE, i)
 }
 
-func (s *ProgContext) GetRuleContext() antlr.RuleContext {
+func (s *StartContext) Executeables() IExecuteablesContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IExecuteablesContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExecuteablesContext)
+}
+
+func (s *StartContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *ProgContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+func (s *StartContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *ProgContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *StartContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(ParalExprListener); ok {
-		listenerT.EnterProg(s)
+		listenerT.EnterStart(s)
 	}
 }
 
-func (s *ProgContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *StartContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(ParalExprListener); ok {
-		listenerT.ExitProg(s)
+		listenerT.ExitStart(s)
 	}
 }
 
-func (p *ParalExprParser) Prog() (localctx IProgContext) {
-	localctx = NewProgContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 0, ParalExprParserRULE_prog)
+func (p *ParalExprParser) Start_() (localctx IStartContext) {
+	localctx = NewStartContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 0, ParalExprParserRULE_start)
+	var _la int
+
+	p.SetState(19)
+	p.GetErrorHandler().Sync(p)
+	if p.HasError() {
+		goto errorExit
+	}
+
+	switch p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 1, p.GetParserRuleContext()) {
+	case 1:
+		p.EnterOuterAlt(localctx, 1)
+		p.SetState(15)
+		p.GetErrorHandler().Sync(p)
+		if p.HasError() {
+			goto errorExit
+		}
+		_la = p.GetTokenStream().LA(1)
+
+		for _la == ParalExprParserVARIABLE {
+			{
+				p.SetState(10)
+				p.Variables()
+			}
+			{
+				p.SetState(11)
+				p.Match(ParalExprParserNEWLINE)
+				if p.HasError() {
+					// Recognition error - abort rule
+					goto errorExit
+				}
+			}
+
+			p.SetState(17)
+			p.GetErrorHandler().Sync(p)
+			if p.HasError() {
+				goto errorExit
+			}
+			_la = p.GetTokenStream().LA(1)
+		}
+
+	case 2:
+		p.EnterOuterAlt(localctx, 2)
+		{
+			p.SetState(18)
+			p.Executeables()
+		}
+
+	case antlr.ATNInvalidAltNumber:
+		goto errorExit
+	}
+
+errorExit:
+	if p.HasError() {
+		v := p.GetError()
+		localctx.SetException(v)
+		p.GetErrorHandler().ReportError(p, v)
+		p.GetErrorHandler().Recover(p, v)
+		p.SetError(nil)
+	}
+	p.ExitRule()
+	return localctx
+	goto errorExit // Trick to prevent compiler error if the label is not used
+}
+
+// IVariablesContext is an interface to support dynamic dispatch.
+type IVariablesContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// Getter signatures
+	AllVariable() []IVariableContext
+	Variable(i int) IVariableContext
+
+	// IsVariablesContext differentiates from other interfaces.
+	IsVariablesContext()
+}
+
+type VariablesContext struct {
+	antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptyVariablesContext() *VariablesContext {
+	var p = new(VariablesContext)
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = ParalExprParserRULE_variables
+	return p
+}
+
+func InitEmptyVariablesContext(p *VariablesContext) {
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = ParalExprParserRULE_variables
+}
+
+func (*VariablesContext) IsVariablesContext() {}
+
+func NewVariablesContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *VariablesContext {
+	var p = new(VariablesContext)
+
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = ParalExprParserRULE_variables
+
+	return p
+}
+
+func (s *VariablesContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *VariablesContext) AllVariable() []IVariableContext {
+	children := s.GetChildren()
+	len := 0
+	for _, ctx := range children {
+		if _, ok := ctx.(IVariableContext); ok {
+			len++
+		}
+	}
+
+	tst := make([]IVariableContext, len)
+	i := 0
+	for _, ctx := range children {
+		if t, ok := ctx.(IVariableContext); ok {
+			tst[i] = t.(IVariableContext)
+			i++
+		}
+	}
+
+	return tst
+}
+
+func (s *VariablesContext) Variable(i int) IVariableContext {
+	var t antlr.RuleContext
+	j := 0
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IVariableContext); ok {
+			if j == i {
+				t = ctx.(antlr.RuleContext)
+				break
+			}
+			j++
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IVariableContext)
+}
+
+func (s *VariablesContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *VariablesContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *VariablesContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(ParalExprListener); ok {
+		listenerT.EnterVariables(s)
+	}
+}
+
+func (s *VariablesContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(ParalExprListener); ok {
+		listenerT.ExitVariables(s)
+	}
+}
+
+func (p *ParalExprParser) Variables() (localctx IVariablesContext) {
+	localctx = NewVariablesContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 2, ParalExprParserRULE_variables)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(11)
+	p.SetState(22)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	for _la == ParalExprParserNEWLINE || _la == ParalExprParserVARIABLE {
+	for ok := true; ok; ok = _la == ParalExprParserVARIABLE {
 		{
-			p.SetState(6)
-			p.Expr()
-		}
-		{
-			p.SetState(7)
-			p.Match(ParalExprParserNEWLINE)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
+			p.SetState(21)
+			p.Variable()
 		}
 
-		p.SetState(13)
+		p.SetState(24)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -267,58 +461,84 @@ errorExit:
 	goto errorExit // Trick to prevent compiler error if the label is not used
 }
 
-// IExprContext is an interface to support dynamic dispatch.
-type IExprContext interface {
+// IExecuteablesContext is an interface to support dynamic dispatch.
+type IExecuteablesContext interface {
 	antlr.ParserRuleContext
 
 	// GetParser returns the parser.
 	GetParser() antlr.Parser
 
 	// Getter signatures
-	Variable() IVariableContext
+	AllExecute() []IExecuteContext
+	Execute(i int) IExecuteContext
 
-	// IsExprContext differentiates from other interfaces.
-	IsExprContext()
+	// IsExecuteablesContext differentiates from other interfaces.
+	IsExecuteablesContext()
 }
 
-type ExprContext struct {
+type ExecuteablesContext struct {
 	antlr.BaseParserRuleContext
 	parser antlr.Parser
 }
 
-func NewEmptyExprContext() *ExprContext {
-	var p = new(ExprContext)
+func NewEmptyExecuteablesContext() *ExecuteablesContext {
+	var p = new(ExecuteablesContext)
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalExprParserRULE_expr
+	p.RuleIndex = ParalExprParserRULE_executeables
 	return p
 }
 
-func InitEmptyExprContext(p *ExprContext) {
+func InitEmptyExecuteablesContext(p *ExecuteablesContext) {
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalExprParserRULE_expr
+	p.RuleIndex = ParalExprParserRULE_executeables
 }
 
-func (*ExprContext) IsExprContext() {}
+func (*ExecuteablesContext) IsExecuteablesContext() {}
 
-func NewExprContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ExprContext {
-	var p = new(ExprContext)
+func NewExecuteablesContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ExecuteablesContext {
+	var p = new(ExecuteablesContext)
 
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
 
 	p.parser = parser
-	p.RuleIndex = ParalExprParserRULE_expr
+	p.RuleIndex = ParalExprParserRULE_executeables
 
 	return p
 }
 
-func (s *ExprContext) GetParser() antlr.Parser { return s.parser }
+func (s *ExecuteablesContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *ExprContext) Variable() IVariableContext {
+func (s *ExecuteablesContext) AllExecute() []IExecuteContext {
+	children := s.GetChildren()
+	len := 0
+	for _, ctx := range children {
+		if _, ok := ctx.(IExecuteContext); ok {
+			len++
+		}
+	}
+
+	tst := make([]IExecuteContext, len)
+	i := 0
+	for _, ctx := range children {
+		if t, ok := ctx.(IExecuteContext); ok {
+			tst[i] = t.(IExecuteContext)
+			i++
+		}
+	}
+
+	return tst
+}
+
+func (s *ExecuteablesContext) Execute(i int) IExecuteContext {
 	var t antlr.RuleContext
+	j := 0
 	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IVariableContext); ok {
-			t = ctx.(antlr.RuleContext)
-			break
+		if _, ok := ctx.(IExecuteContext); ok {
+			if j == i {
+				t = ctx.(antlr.RuleContext)
+				break
+			}
+			j++
 		}
 	}
 
@@ -326,48 +546,69 @@ func (s *ExprContext) Variable() IVariableContext {
 		return nil
 	}
 
-	return t.(IVariableContext)
+	return t.(IExecuteContext)
 }
 
-func (s *ExprContext) GetRuleContext() antlr.RuleContext {
+func (s *ExecuteablesContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *ExprContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+func (s *ExecuteablesContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *ExprContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *ExecuteablesContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(ParalExprListener); ok {
-		listenerT.EnterExpr(s)
+		listenerT.EnterExecuteables(s)
 	}
 }
 
-func (s *ExprContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *ExecuteablesContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(ParalExprListener); ok {
-		listenerT.ExitExpr(s)
+		listenerT.ExitExecuteables(s)
 	}
 }
 
-func (p *ParalExprParser) Expr() (localctx IExprContext) {
-	localctx = NewExprContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 2, ParalExprParserRULE_expr)
+func (p *ParalExprParser) Executeables() (localctx IExecuteablesContext) {
+	localctx = NewExecuteablesContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 4, ParalExprParserRULE_executeables)
 	var _la int
 
-	p.EnterOuterAlt(localctx, 1)
-	p.SetState(15)
+	p.SetState(33)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
-	_la = p.GetTokenStream().LA(1)
 
-	if _la == ParalExprParserVARIABLE {
-		{
-			p.SetState(14)
-			p.Variable()
+	switch p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 4, p.GetParserRuleContext()) {
+	case 1:
+		p.EnterOuterAlt(localctx, 1)
+		p.SetState(29)
+		p.GetErrorHandler().Sync(p)
+		if p.HasError() {
+			goto errorExit
+		}
+		_la = p.GetTokenStream().LA(1)
+
+		for _la == ParalExprParserEXECUTE {
+			{
+				p.SetState(26)
+				p.Execute()
+			}
+
+			p.SetState(31)
+			p.GetErrorHandler().Sync(p)
+			if p.HasError() {
+				goto errorExit
+			}
+			_la = p.GetTokenStream().LA(1)
 		}
 
+	case 2:
+		p.EnterOuterAlt(localctx, 2)
+
+	case antlr.ATNInvalidAltNumber:
+		goto errorExit
 	}
 
 errorExit:
@@ -465,10 +706,10 @@ func (s *VariableContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ParalExprParser) Variable() (localctx IVariableContext) {
 	localctx = NewVariableContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 4, ParalExprParserRULE_variable)
+	p.EnterRule(localctx, 6, ParalExprParserRULE_variable)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(17)
+		p.SetState(35)
 		p.Match(ParalExprParserVARIABLE)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -476,7 +717,7 @@ func (p *ParalExprParser) Variable() (localctx IVariableContext) {
 		}
 	}
 	{
-		p.SetState(18)
+		p.SetState(36)
 		p.Match(ParalExprParserIDENT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -484,7 +725,116 @@ func (p *ParalExprParser) Variable() (localctx IVariableContext) {
 		}
 	}
 	{
-		p.SetState(19)
+		p.SetState(37)
+		p.Match(ParalExprParserVALUE)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+
+errorExit:
+	if p.HasError() {
+		v := p.GetError()
+		localctx.SetException(v)
+		p.GetErrorHandler().ReportError(p, v)
+		p.GetErrorHandler().Recover(p, v)
+		p.SetError(nil)
+	}
+	p.ExitRule()
+	return localctx
+	goto errorExit // Trick to prevent compiler error if the label is not used
+}
+
+// IExecuteContext is an interface to support dynamic dispatch.
+type IExecuteContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// Getter signatures
+	EXECUTE() antlr.TerminalNode
+	VALUE() antlr.TerminalNode
+
+	// IsExecuteContext differentiates from other interfaces.
+	IsExecuteContext()
+}
+
+type ExecuteContext struct {
+	antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptyExecuteContext() *ExecuteContext {
+	var p = new(ExecuteContext)
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = ParalExprParserRULE_execute
+	return p
+}
+
+func InitEmptyExecuteContext(p *ExecuteContext) {
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = ParalExprParserRULE_execute
+}
+
+func (*ExecuteContext) IsExecuteContext() {}
+
+func NewExecuteContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ExecuteContext {
+	var p = new(ExecuteContext)
+
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = ParalExprParserRULE_execute
+
+	return p
+}
+
+func (s *ExecuteContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *ExecuteContext) EXECUTE() antlr.TerminalNode {
+	return s.GetToken(ParalExprParserEXECUTE, 0)
+}
+
+func (s *ExecuteContext) VALUE() antlr.TerminalNode {
+	return s.GetToken(ParalExprParserVALUE, 0)
+}
+
+func (s *ExecuteContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *ExecuteContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *ExecuteContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(ParalExprListener); ok {
+		listenerT.EnterExecute(s)
+	}
+}
+
+func (s *ExecuteContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(ParalExprListener); ok {
+		listenerT.ExitExecute(s)
+	}
+}
+
+func (p *ParalExprParser) Execute() (localctx IExecuteContext) {
+	localctx = NewExecuteContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 8, ParalExprParserRULE_execute)
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(39)
+		p.Match(ParalExprParserEXECUTE)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+	{
+		p.SetState(40)
 		p.Match(ParalExprParserVALUE)
 		if p.HasError() {
 			// Recognition error - abort rule

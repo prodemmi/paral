@@ -2,11 +2,14 @@ grammar ParalExpr;
 
 fragment SPACE: '\t' | ' ' | '\r' | '\n' | '\u000C';
 fragment VAR: 'var' | 'VAR';
+fragment EXEC: 'exec' | 'EXEC';
 
-prog: (expr NEWLINE)*;
-expr: variable?;
+start: (variables NEWLINE)* | executeables;
+variables: variable+;
+executeables: execute* | ;
 
 variable: VARIABLE IDENT VALUE;
+execute: EXECUTE VALUE;
 
 IDENT: [a-zA-Z_]+;
 VALUE: ([A-Z] | [a-z] | [0-9])+;
@@ -15,3 +18,4 @@ WS: SPACE+;
 
 // keywords
 VARIABLE: VAR;
+EXECUTE: EXEC;

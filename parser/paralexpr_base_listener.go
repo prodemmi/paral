@@ -1,7 +1,6 @@
-// Code generated from ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
+// Code generated from /home/emad/Documents/paral/ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser // ParalExpr
-
 import "github.com/antlr4-go/antlr/v4"
 
 // BaseParalExprListener is a complete listener for a parse tree produced by ParalExprParser.
@@ -21,20 +20,32 @@ func (s *BaseParalExprListener) EnterEveryRule(ctx antlr.ParserRuleContext) {}
 // ExitEveryRule is called when any rule is exited.
 func (s *BaseParalExprListener) ExitEveryRule(ctx antlr.ParserRuleContext) {}
 
-// EnterProg is called when production prog is entered.
-func (s *BaseParalExprListener) EnterProg(ctx *ProgContext) {}
+// EnterStart is called when production start is entered.
+func (s *BaseParalExprListener) EnterStart(ctx *StartContext) {}
 
-// ExitProg is called when production prog is exited.
-func (s *BaseParalExprListener) ExitProg(ctx *ProgContext) {}
+// ExitStart is called when production start is exited.
+func (s *BaseParalExprListener) ExitStart(ctx *StartContext) {}
 
-// EnterExpr is called when production expr is entered.
-func (s *BaseParalExprListener) EnterExpr(ctx *ExprContext) {}
+// EnterVariables is called when production variables is entered.
+func (s *BaseParalExprListener) EnterVariables(ctx *VariablesContext) {}
 
-// ExitExpr is called when production expr is exited.
-func (s *BaseParalExprListener) ExitExpr(ctx *ExprContext) {}
+// ExitVariables is called when production variables is exited.
+func (s *BaseParalExprListener) ExitVariables(ctx *VariablesContext) {}
+
+// EnterExecuteables is called when production executeables is entered.
+func (s *BaseParalExprListener) EnterExecuteables(ctx *ExecuteablesContext) {}
+
+// ExitExecuteables is called when production executeables is exited.
+func (s *BaseParalExprListener) ExitExecuteables(ctx *ExecuteablesContext) {}
 
 // EnterVariable is called when production variable is entered.
 func (s *BaseParalExprListener) EnterVariable(ctx *VariableContext) {}
 
 // ExitVariable is called when production variable is exited.
 func (s *BaseParalExprListener) ExitVariable(ctx *VariableContext) {}
+
+// EnterExecute is called when production execute is entered.
+func (s *BaseParalExprListener) EnterExecute(ctx *ExecuteContext) {}
+
+// ExitExecute is called when production execute is exited.
+func (s *BaseParalExprListener) ExitExecute(ctx *ExecuteContext) {}
