@@ -1,6 +1,7 @@
-// Code generated from /home/emad/Documents/paral/ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
+// Code generated from ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser // ParalExpr
+
 import "github.com/antlr4-go/antlr/v4"
 
 // BaseParalExprListener is a complete listener for a parse tree produced by ParalExprParser.
@@ -26,17 +27,23 @@ func (s *BaseParalExprListener) EnterStart(ctx *StartContext) {}
 // ExitStart is called when production start is exited.
 func (s *BaseParalExprListener) ExitStart(ctx *StartContext) {}
 
+// EnterProg is called when production prog is entered.
+func (s *BaseParalExprListener) EnterProg(ctx *ProgContext) {}
+
+// ExitProg is called when production prog is exited.
+func (s *BaseParalExprListener) ExitProg(ctx *ProgContext) {}
+
 // EnterVariables is called when production variables is entered.
 func (s *BaseParalExprListener) EnterVariables(ctx *VariablesContext) {}
 
 // ExitVariables is called when production variables is exited.
 func (s *BaseParalExprListener) ExitVariables(ctx *VariablesContext) {}
 
-// EnterExecuteables is called when production executeables is entered.
-func (s *BaseParalExprListener) EnterExecuteables(ctx *ExecuteablesContext) {}
+// EnterExecutables is called when production executables is entered.
+func (s *BaseParalExprListener) EnterExecutables(ctx *ExecutablesContext) {}
 
-// ExitExecuteables is called when production executeables is exited.
-func (s *BaseParalExprListener) ExitExecuteables(ctx *ExecuteablesContext) {}
+// ExitExecutables is called when production executables is exited.
+func (s *BaseParalExprListener) ExitExecutables(ctx *ExecutablesContext) {}
 
 // EnterVariable is called when production variable is entered.
 func (s *BaseParalExprListener) EnterVariable(ctx *VariableContext) {}

@@ -1,4 +1,4 @@
-// Code generated from /home/emad/Documents/paral/ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
+// Code generated from ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser
 

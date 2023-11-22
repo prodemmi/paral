@@ -4,9 +4,10 @@ fragment SPACE: '\t' | ' ' | '\r' | '\n' | '\u000C';
 fragment VAR: 'var' | 'VAR';
 fragment EXEC: 'exec' | 'EXEC';
 
-start: (variables NEWLINE)* | executeables;
-variables: variable+;
-executeables: execute* | ;
+start: (prog NEWLINE)*  | ;
+prog: variables | executables;
+variables: variable;
+executables: execute |;
 
 variable: VARIABLE IDENT VALUE;
 execute: EXECUTE VALUE;
