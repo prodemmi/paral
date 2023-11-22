@@ -1,6 +1,7 @@
-// Code generated from /home/emad/Documents/paral/ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
+// Code generated from ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser // ParalExpr
+
 import (
 	"fmt"
 	"strconv"
@@ -31,33 +32,23 @@ var ParalExprParserStaticData struct {
 
 func paralexprParserInit() {
 	staticData := &ParalExprParserStaticData
-	staticData.LiteralNames = []string{
-		"", "'var'", "' '", "'exec'",
-	}
 	staticData.SymbolicNames = []string{
-		"", "", "", "", "IDENT", "VALUE", "NEWLINE",
+		"", "IDENT", "VALUE", "NEWLINE", "WS", "VARIABLE",
 	}
 	staticData.RuleNames = []string{
-		"prog", "expr", "variable", "execute",
+		"prog", "expr", "variable",
 	}
 	staticData.PredictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 6, 39, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 1, 0, 1, 0,
-		1, 0, 5, 0, 12, 8, 0, 10, 0, 12, 0, 15, 9, 0, 1, 1, 4, 1, 18, 8, 1, 11,
-		1, 12, 1, 19, 1, 1, 3, 1, 23, 8, 1, 3, 1, 25, 8, 1, 1, 2, 1, 2, 1, 2, 1,
-		2, 3, 2, 31, 8, 2, 1, 3, 1, 3, 1, 3, 1, 3, 3, 3, 37, 8, 3, 1, 3, 0, 0,
-		4, 0, 2, 4, 6, 0, 0, 40, 0, 13, 1, 0, 0, 0, 2, 24, 1, 0, 0, 0, 4, 30, 1,
-		0, 0, 0, 6, 36, 1, 0, 0, 0, 8, 9, 3, 2, 1, 0, 9, 10, 5, 6, 0, 0, 10, 12,
-		1, 0, 0, 0, 11, 8, 1, 0, 0, 0, 12, 15, 1, 0, 0, 0, 13, 11, 1, 0, 0, 0,
-		13, 14, 1, 0, 0, 0, 14, 1, 1, 0, 0, 0, 15, 13, 1, 0, 0, 0, 16, 18, 3, 4,
-		2, 0, 17, 16, 1, 0, 0, 0, 18, 19, 1, 0, 0, 0, 19, 17, 1, 0, 0, 0, 19, 20,
-		1, 0, 0, 0, 20, 25, 1, 0, 0, 0, 21, 23, 3, 6, 3, 0, 22, 21, 1, 0, 0, 0,
-		22, 23, 1, 0, 0, 0, 23, 25, 1, 0, 0, 0, 24, 17, 1, 0, 0, 0, 24, 22, 1,
-		0, 0, 0, 25, 3, 1, 0, 0, 0, 26, 27, 5, 1, 0, 0, 27, 28, 5, 4, 0, 0, 28,
-		31, 5, 5, 0, 0, 29, 31, 5, 2, 0, 0, 30, 26, 1, 0, 0, 0, 30, 29, 1, 0, 0,
-		0, 31, 5, 1, 0, 0, 0, 32, 33, 5, 3, 0, 0, 33, 34, 5, 4, 0, 0, 34, 37, 5,
-		5, 0, 0, 35, 37, 5, 2, 0, 0, 36, 32, 1, 0, 0, 0, 36, 35, 1, 0, 0, 0, 37,
-		7, 1, 0, 0, 0, 6, 13, 19, 22, 24, 30, 36,
+		4, 1, 5, 22, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 1, 0, 1, 0, 1, 0, 5, 0,
+		10, 8, 0, 10, 0, 12, 0, 13, 9, 0, 1, 1, 3, 1, 16, 8, 1, 1, 2, 1, 2, 1,
+		2, 1, 2, 1, 2, 0, 0, 3, 0, 2, 4, 0, 0, 20, 0, 11, 1, 0, 0, 0, 2, 15, 1,
+		0, 0, 0, 4, 17, 1, 0, 0, 0, 6, 7, 3, 2, 1, 0, 7, 8, 5, 3, 0, 0, 8, 10,
+		1, 0, 0, 0, 9, 6, 1, 0, 0, 0, 10, 13, 1, 0, 0, 0, 11, 9, 1, 0, 0, 0, 11,
+		12, 1, 0, 0, 0, 12, 1, 1, 0, 0, 0, 13, 11, 1, 0, 0, 0, 14, 16, 3, 4, 2,
+		0, 15, 14, 1, 0, 0, 0, 15, 16, 1, 0, 0, 0, 16, 3, 1, 0, 0, 0, 17, 18, 5,
+		5, 0, 0, 18, 19, 5, 1, 0, 0, 19, 20, 5, 2, 0, 0, 20, 5, 1, 0, 0, 0, 2,
+		11, 15,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)
@@ -95,13 +86,12 @@ func NewParalExprParser(input antlr.TokenStream) *ParalExprParser {
 
 // ParalExprParser tokens.
 const (
-	ParalExprParserEOF     = antlr.TokenEOF
-	ParalExprParserT__0    = 1
-	ParalExprParserT__1    = 2
-	ParalExprParserT__2    = 3
-	ParalExprParserIDENT   = 4
-	ParalExprParserVALUE   = 5
-	ParalExprParserNEWLINE = 6
+	ParalExprParserEOF      = antlr.TokenEOF
+	ParalExprParserIDENT    = 1
+	ParalExprParserVALUE    = 2
+	ParalExprParserNEWLINE  = 3
+	ParalExprParserWS       = 4
+	ParalExprParserVARIABLE = 5
 )
 
 // ParalExprParser rules.
@@ -109,7 +99,6 @@ const (
 	ParalExprParserRULE_prog     = 0
 	ParalExprParserRULE_expr     = 1
 	ParalExprParserRULE_variable = 2
-	ParalExprParserRULE_execute  = 3
 )
 
 // IProgContext is an interface to support dynamic dispatch.
@@ -236,20 +225,20 @@ func (p *ParalExprParser) Prog() (localctx IProgContext) {
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(13)
+	p.SetState(11)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&78) != 0 {
+	for _la == ParalExprParserNEWLINE || _la == ParalExprParserVARIABLE {
 		{
-			p.SetState(8)
+			p.SetState(6)
 			p.Expr()
 		}
 		{
-			p.SetState(9)
+			p.SetState(7)
 			p.Match(ParalExprParserNEWLINE)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -257,7 +246,7 @@ func (p *ParalExprParser) Prog() (localctx IProgContext) {
 			}
 		}
 
-		p.SetState(15)
+		p.SetState(13)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -286,9 +275,7 @@ type IExprContext interface {
 	GetParser() antlr.Parser
 
 	// Getter signatures
-	AllVariable() []IVariableContext
-	Variable(i int) IVariableContext
-	Execute() IExecuteContext
+	Variable() IVariableContext
 
 	// IsExprContext differentiates from other interfaces.
 	IsExprContext()
@@ -326,51 +313,10 @@ func NewExprContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokin
 
 func (s *ExprContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *ExprContext) AllVariable() []IVariableContext {
-	children := s.GetChildren()
-	len := 0
-	for _, ctx := range children {
-		if _, ok := ctx.(IVariableContext); ok {
-			len++
-		}
-	}
-
-	tst := make([]IVariableContext, len)
-	i := 0
-	for _, ctx := range children {
-		if t, ok := ctx.(IVariableContext); ok {
-			tst[i] = t.(IVariableContext)
-			i++
-		}
-	}
-
-	return tst
-}
-
-func (s *ExprContext) Variable(i int) IVariableContext {
-	var t antlr.RuleContext
-	j := 0
-	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IVariableContext); ok {
-			if j == i {
-				t = ctx.(antlr.RuleContext)
-				break
-			}
-			j++
-		}
-	}
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IVariableContext)
-}
-
-func (s *ExprContext) Execute() IExecuteContext {
+func (s *ExprContext) Variable() IVariableContext {
 	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IExecuteContext); ok {
+		if _, ok := ctx.(IVariableContext); ok {
 			t = ctx.(antlr.RuleContext)
 			break
 		}
@@ -380,7 +326,7 @@ func (s *ExprContext) Execute() IExecuteContext {
 		return nil
 	}
 
-	return t.(IExecuteContext)
+	return t.(IVariableContext)
 }
 
 func (s *ExprContext) GetRuleContext() antlr.RuleContext {
@@ -408,55 +354,20 @@ func (p *ParalExprParser) Expr() (localctx IExprContext) {
 	p.EnterRule(localctx, 2, ParalExprParserRULE_expr)
 	var _la int
 
-	p.SetState(24)
+	p.EnterOuterAlt(localctx, 1)
+	p.SetState(15)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
+	_la = p.GetTokenStream().LA(1)
 
-	switch p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 3, p.GetParserRuleContext()) {
-	case 1:
-		p.EnterOuterAlt(localctx, 1)
-		p.SetState(17)
-		p.GetErrorHandler().Sync(p)
-		if p.HasError() {
-			goto errorExit
-		}
-		_la = p.GetTokenStream().LA(1)
-
-		for ok := true; ok; ok = _la == ParalExprParserT__0 || _la == ParalExprParserT__1 {
-			{
-				p.SetState(16)
-				p.Variable()
-			}
-
-			p.SetState(19)
-			p.GetErrorHandler().Sync(p)
-			if p.HasError() {
-				goto errorExit
-			}
-			_la = p.GetTokenStream().LA(1)
+	if _la == ParalExprParserVARIABLE {
+		{
+			p.SetState(14)
+			p.Variable()
 		}
 
-	case 2:
-		p.EnterOuterAlt(localctx, 2)
-		p.SetState(22)
-		p.GetErrorHandler().Sync(p)
-		if p.HasError() {
-			goto errorExit
-		}
-		_la = p.GetTokenStream().LA(1)
-
-		if _la == ParalExprParserT__1 || _la == ParalExprParserT__2 {
-			{
-				p.SetState(21)
-				p.Execute()
-			}
-
-		}
-
-	case antlr.ATNInvalidAltNumber:
-		goto errorExit
 	}
 
 errorExit:
@@ -480,6 +391,7 @@ type IVariableContext interface {
 	GetParser() antlr.Parser
 
 	// Getter signatures
+	VARIABLE() antlr.TerminalNode
 	IDENT() antlr.TerminalNode
 	VALUE() antlr.TerminalNode
 
@@ -519,6 +431,10 @@ func NewVariableContext(parser antlr.Parser, parent antlr.ParserRuleContext, inv
 
 func (s *VariableContext) GetParser() antlr.Parser { return s.parser }
 
+func (s *VariableContext) VARIABLE() antlr.TerminalNode {
+	return s.GetToken(ParalExprParserVARIABLE, 0)
+}
+
 func (s *VariableContext) IDENT() antlr.TerminalNode {
 	return s.GetToken(ParalExprParserIDENT, 0)
 }
@@ -550,195 +466,30 @@ func (s *VariableContext) ExitRule(listener antlr.ParseTreeListener) {
 func (p *ParalExprParser) Variable() (localctx IVariableContext) {
 	localctx = NewVariableContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 4, ParalExprParserRULE_variable)
-	p.SetState(30)
-	p.GetErrorHandler().Sync(p)
-	if p.HasError() {
-		goto errorExit
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(17)
+		p.Match(ParalExprParserVARIABLE)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
 	}
-
-	switch p.GetTokenStream().LA(1) {
-	case ParalExprParserT__0:
-		p.EnterOuterAlt(localctx, 1)
-		{
-			p.SetState(26)
-			p.Match(ParalExprParserT__0)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
+	{
+		p.SetState(18)
+		p.Match(ParalExprParserIDENT)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
 		}
-		{
-			p.SetState(27)
-			p.Match(ParalExprParserIDENT)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-		{
-			p.SetState(28)
-			p.Match(ParalExprParserVALUE)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-	case ParalExprParserT__1:
-		p.EnterOuterAlt(localctx, 2)
-		{
-			p.SetState(29)
-			p.Match(ParalExprParserT__1)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-	default:
-		p.SetError(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
-		goto errorExit
 	}
-
-errorExit:
-	if p.HasError() {
-		v := p.GetError()
-		localctx.SetException(v)
-		p.GetErrorHandler().ReportError(p, v)
-		p.GetErrorHandler().Recover(p, v)
-		p.SetError(nil)
-	}
-	p.ExitRule()
-	return localctx
-	goto errorExit // Trick to prevent compiler error if the label is not used
-}
-
-// IExecuteContext is an interface to support dynamic dispatch.
-type IExecuteContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// Getter signatures
-	IDENT() antlr.TerminalNode
-	VALUE() antlr.TerminalNode
-
-	// IsExecuteContext differentiates from other interfaces.
-	IsExecuteContext()
-}
-
-type ExecuteContext struct {
-	antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyExecuteContext() *ExecuteContext {
-	var p = new(ExecuteContext)
-	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalExprParserRULE_execute
-	return p
-}
-
-func InitEmptyExecuteContext(p *ExecuteContext) {
-	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalExprParserRULE_execute
-}
-
-func (*ExecuteContext) IsExecuteContext() {}
-
-func NewExecuteContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ExecuteContext {
-	var p = new(ExecuteContext)
-
-	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = ParalExprParserRULE_execute
-
-	return p
-}
-
-func (s *ExecuteContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *ExecuteContext) IDENT() antlr.TerminalNode {
-	return s.GetToken(ParalExprParserIDENT, 0)
-}
-
-func (s *ExecuteContext) VALUE() antlr.TerminalNode {
-	return s.GetToken(ParalExprParserVALUE, 0)
-}
-
-func (s *ExecuteContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *ExecuteContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *ExecuteContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(ParalExprListener); ok {
-		listenerT.EnterExecute(s)
-	}
-}
-
-func (s *ExecuteContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(ParalExprListener); ok {
-		listenerT.ExitExecute(s)
-	}
-}
-
-func (p *ParalExprParser) Execute() (localctx IExecuteContext) {
-	localctx = NewExecuteContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 6, ParalExprParserRULE_execute)
-	p.SetState(36)
-	p.GetErrorHandler().Sync(p)
-	if p.HasError() {
-		goto errorExit
-	}
-
-	switch p.GetTokenStream().LA(1) {
-	case ParalExprParserT__2:
-		p.EnterOuterAlt(localctx, 1)
-		{
-			p.SetState(32)
-			p.Match(ParalExprParserT__2)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
+	{
+		p.SetState(19)
+		p.Match(ParalExprParserVALUE)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
 		}
-		{
-			p.SetState(33)
-			p.Match(ParalExprParserIDENT)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-		{
-			p.SetState(34)
-			p.Match(ParalExprParserVALUE)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-	case ParalExprParserT__1:
-		p.EnterOuterAlt(localctx, 2)
-		{
-			p.SetState(35)
-			p.Match(ParalExprParserT__1)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-	default:
-		p.SetError(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
-		goto errorExit
 	}
 
 errorExit:

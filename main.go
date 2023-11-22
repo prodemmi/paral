@@ -9,6 +9,10 @@ import (
 	"github.com/antlr4-go/antlr/v4"
 )
 
+type paralExpr struct {
+	*parser.BaseParalExprListener
+}
+
 func main() {
 	file, err := os.ReadFile("examples/example.paral")
 
@@ -17,8 +21,14 @@ func main() {
 	}
 
 	input := antlr.NewInputStream(string(file))
+	lexer := parser.NewParalExprLexer(input)
 
-	result := parser.NewParalExprLexer(input)
+	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
+	p := parser.NewParalExprParser(stream)
 
-	fmt.Println(result)
+	newparalExpr := paralExpr{}
+
+	antlr.ParseTreeWalkerDefault.Walk(&newparalExpr, p.Expr())
+
+	fmt.Println(newparalExpr)
 }

@@ -1,6 +1,7 @@
-// Code generated from /home/emad/Documents/paral/ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
+// Code generated from ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser // ParalExpr
+
 import "github.com/antlr4-go/antlr/v4"
 
 // BaseParalExprListener is a complete listener for a parse tree produced by ParalExprParser.
@@ -37,9 +38,3 @@ func (s *BaseParalExprListener) EnterVariable(ctx *VariableContext) {}
 
 // ExitVariable is called when production variable is exited.
 func (s *BaseParalExprListener) ExitVariable(ctx *VariableContext) {}
-
-// EnterExecute is called when production execute is entered.
-func (s *BaseParalExprListener) EnterExecute(ctx *ExecuteContext) {}
-
-// ExitExecute is called when production execute is exited.
-func (s *BaseParalExprListener) ExitExecute(ctx *ExecuteContext) {}

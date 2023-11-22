@@ -1,9 +1,5 @@
-T__0=1
-T__1=2
-T__2=3
-IDENT=4
-VALUE=5
-NEWLINE=6
-'var'=1
-' '=2
-'exec'=3
+IDENT=1
+VALUE=2
+NEWLINE=3
+WS=4
+VARIABLE=5

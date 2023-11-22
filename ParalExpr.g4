@@ -1,12 +1,17 @@
 grammar ParalExpr;
-prog:   (expr NEWLINE)* ;
-expr:   variable+
-    |   execute?
-    ;
 
-variable: 'var' IDENT VALUE | ' ';
-execute: 'exec' IDENT VALUE | ' ';
+fragment SPACE: '\t' | ' ' | '\r' | '\n' | '\u000C';
+fragment VAR: 'var' | 'VAR';
 
-IDENT : [a-zA-Z_]+ ;
-VALUE : [a-zA-Z0-9._]+ ;
-NEWLINE : [\r\n]+ ;
+prog: (expr NEWLINE)*;
+expr: variable?;
+
+variable: VARIABLE IDENT VALUE;
+
+IDENT: [a-zA-Z_]+;
+VALUE: ([A-Z] | [a-z] | [0-9])+;
+NEWLINE: [\r\n]+;
+WS: SPACE+;
+
+// keywords
+VARIABLE: VAR;
