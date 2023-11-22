@@ -1,4 +1,0 @@
-var message "Message 1"
-var message "Message 2"
-
-exec echo message

@@ -2,11 +2,6 @@ module paral
 
 go 1.21.4
 
-require (
-	github.com/alecthomas/assert/v2 v2.4.0
-	github.com/alecthomas/kong v0.8.1
-	github.com/alecthomas/participle/v2 v2.1.0
-	github.com/alecthomas/repr v0.3.0
-)
+require github.com/antlr4-go/antlr/v4 v4.13.0
 
-require github.com/hexops/gotextdiff v1.0.3 // indirect
+require golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
