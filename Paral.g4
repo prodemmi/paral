@@ -1,13 +1,11 @@
-grammar ParalExpr;
+grammar Paral;
 
 fragment SPACE: '\t' | ' ' | '\r' | '\n' | '\u000C';
 fragment VAR: 'var' | 'VAR';
 fragment EXEC: 'exec' | 'EXEC';
 
-start: (prog NEWLINE)*  | ;
-prog: variables | executables;
-variables: variable;
-executables: execute |;
+start: (prog NEWLINE)*;
+prog: variable | execute;
 
 variable: VARIABLE IDENT VALUE;
 execute: EXECUTE VALUE;

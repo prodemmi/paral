@@ -1,4 +1,4 @@
-// Code generated from ParalExpr.g4 by ANTLR 4.13.1. DO NOT EDIT.
+// Code generated from Paral.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser
 
@@ -14,14 +14,14 @@ var _ = fmt.Printf
 var _ = sync.Once{}
 var _ = unicode.IsLetter
 
-type ParalExprLexer struct {
+type ParalLexer struct {
 	*antlr.BaseLexer
 	channelNames []string
 	modeNames    []string
 	// TODO: EOF string
 }
 
-var ParalExprLexerLexerStaticData struct {
+var ParalLexerLexerStaticData struct {
 	once                   sync.Once
 	serializedATN          []int32
 	ChannelNames           []string
@@ -34,8 +34,8 @@ var ParalExprLexerLexerStaticData struct {
 	decisionToDFA          []*antlr.DFA
 }
 
-func paralexprlexerLexerInit() {
-	staticData := &ParalExprLexerLexerStaticData
+func parallexerLexerInit() {
+	staticData := &ParalLexerLexerStaticData
 	staticData.ChannelNames = []string{
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN",
 	}
@@ -90,39 +90,39 @@ func paralexprlexerLexerInit() {
 	}
 }
 
-// ParalExprLexerInit initializes any static state used to implement ParalExprLexer. By default the
+// ParalLexerInit initializes any static state used to implement ParalLexer. By default the
 // static state used to implement the lexer is lazily initialized during the first call to
-// NewParalExprLexer(). You can call this function if you wish to initialize the static state ahead
+// NewParalLexer(). You can call this function if you wish to initialize the static state ahead
 // of time.
-func ParalExprLexerInit() {
-	staticData := &ParalExprLexerLexerStaticData
-	staticData.once.Do(paralexprlexerLexerInit)
+func ParalLexerInit() {
+	staticData := &ParalLexerLexerStaticData
+	staticData.once.Do(parallexerLexerInit)
 }
 
-// NewParalExprLexer produces a new lexer instance for the optional input antlr.CharStream.
-func NewParalExprLexer(input antlr.CharStream) *ParalExprLexer {
-	ParalExprLexerInit()
-	l := new(ParalExprLexer)
+// NewParalLexer produces a new lexer instance for the optional input antlr.CharStream.
+func NewParalLexer(input antlr.CharStream) *ParalLexer {
+	ParalLexerInit()
+	l := new(ParalLexer)
 	l.BaseLexer = antlr.NewBaseLexer(input)
-	staticData := &ParalExprLexerLexerStaticData
+	staticData := &ParalLexerLexerStaticData
 	l.Interpreter = antlr.NewLexerATNSimulator(l, staticData.atn, staticData.decisionToDFA, staticData.PredictionContextCache)
 	l.channelNames = staticData.ChannelNames
 	l.modeNames = staticData.ModeNames
 	l.RuleNames = staticData.RuleNames
 	l.LiteralNames = staticData.LiteralNames
 	l.SymbolicNames = staticData.SymbolicNames
-	l.GrammarFileName = "ParalExpr.g4"
+	l.GrammarFileName = "Paral.g4"
 	// TODO: l.EOF = antlr.TokenEOF
 
 	return l
 }
 
-// ParalExprLexer tokens.
+// ParalLexer tokens.
 const (
-	ParalExprLexerIDENT    = 1
-	ParalExprLexerVALUE    = 2
-	ParalExprLexerNEWLINE  = 3
-	ParalExprLexerWS       = 4
-	ParalExprLexerVARIABLE = 5
-	ParalExprLexerEXECUTE  = 6
+	ParalLexerIDENT    = 1
+	ParalLexerVALUE    = 2
+	ParalLexerNEWLINE  = 3
+	ParalLexerWS       = 4
+	ParalLexerVARIABLE = 5
+	ParalLexerEXECUTE  = 6
 )

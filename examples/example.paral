@@ -1,3 +1,5 @@
 var firstName Emad
 var lastName Malekpour
 var age 25
+
+exec echo hello
