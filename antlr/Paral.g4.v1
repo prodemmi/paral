@@ -1,0 +1,68 @@
+grammar Paral;
+
+program
+    : line* EOF
+    ;
+
+// ------------------------ parser -------------------------
+
+line
+    : variable_def NEWLINE
+    | matrix_def NEWLINE
+    | comment_def NEWLINE
+    | job_def
+    | NEWLINE
+    ;
+
+variable_def
+    : IDENTIFIER value_expr
+    ;
+
+matrix_def
+    : IDENTIFIER list_expr (COLONCOLON list_expr)*
+    ;
+
+list_expr
+    : LBRACK (value_expr (COMMA value_expr)*)? RBRACK
+    ;
+
+comment_def
+    : COMMENT
+    ;
+
+job_def
+    : IDENTIFIER COLON cmd_expr+
+    ;
+
+cmd_expr
+    : NEWLINE? TAB? (IDENTIFIER | STRING | NUMBER)+
+    ;
+
+value_expr
+    : STRING         # string
+    | NUMBER         # number
+    | BOOLEAN        # bool
+    | DURATION       # duration
+    ;
+
+// ------------------------ lexer -------------------------
+
+IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* ;
+STRING: '"' (~["\r\n])* '"' ;
+NUMBER: [0-9]+ ;
+BOOLEAN: 'true' | 'false' ;
+DURATION: NUMBER ('s' | 'm' | 'h') ;
+
+COLON: ':' ;
+COLONCOLON: '::' ;
+LBRACK: '[' ;
+RBRACK: ']' ;
+COMMA: ',' ;
+
+TAB: '\t' ;
+
+CMD: [a-zA-Z][a-zA-Z0-9_]* ; // Restrict CMD to valid command names
+
+NEWLINE: '\r'? '\n' ;
+COMMENT: '#' ~[\r\n]* -> skip ;
+WS: [ \t]+ -> skip ;

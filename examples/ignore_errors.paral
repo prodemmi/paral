@@ -1,0 +1,7 @@
+WINDOWS_ARCH ["windows"] :: [7, 8, 10, 11]
+
+@name "Deploy"
+@timeout 60s
+@ignore_errors true
+DEPLOY:
+    @print("Deploying app on @1 @2")

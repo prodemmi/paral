@@ -2,81 +2,70 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"paral/parser"
+	parser "paral/antlr/antlr"
+	"paral/core"
 
 	"github.com/antlr4-go/antlr/v4"
 )
 
-type paralListener struct {
-	*parser.BaseParalListener
-	parser *parser.ParalParser
+type errorListener struct {
+	*antlr.DefaultErrorListener
+	Filename  string
+	hasErrors bool
 }
 
-func (s *paralListener) VisitTerminal(node antlr.TerminalNode) {
-	fmt.Println("VisitTerminal", node.GetText())
-}
-
-func (s *paralListener) VisitErrorNode(node antlr.ErrorNode) {
-	fmt.Println("VisitErrorNode", node.GetText())
-}
-
-func (s *paralListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
-	fmt.Println("EnterEveryRule", ctx.GetText())
-}
-
-func (s *paralListener) ExitEveryRule(ctx antlr.ParserRuleContext) {
-	fmt.Println("ExitEveryRule", ctx.GetText())
-}
-
-func (s *paralListener) EnterStart(ctx *parser.StartContext) {
-	fmt.Println("EnterStart", ctx.GetText())
-}
-
-func (s *paralListener) ExitStart(ctx *parser.StartContext) {
-	fmt.Println("ExitStart", ctx.GetText())
-}
-
-func (s *paralListener) EnterProg(ctx *parser.ProgContext) {
-	fmt.Println("EnterProg", ctx.GetText())
-}
-
-func (s *paralListener) ExitProg(ctx *parser.ProgContext) {
-	fmt.Println("ExitProg", ctx.GetText())
-}
-
-func (s *paralListener) EnterVariable(ctx *parser.VariableContext) {
-	fmt.Println("EnterVariable", ctx.GetText())
-}
-
-func (s *paralListener) ExitVariable(ctx *parser.VariableContext) {
-	fmt.Println("ExitVariable", ctx.GetText())
-}
-
-func (s *paralListener) EnterExecute(ctx *parser.ExecuteContext) {
-	fmt.Println("EnterExecute", ctx.GetText())
-}
-
-func (s *paralListener) ExitExecute(ctx *parser.ExecuteContext) {
-	fmt.Println("ExitExecute", ctx.GetText())
+func (l *errorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
+	l.hasErrors = true
+	fmt.Printf("Syntax error at line %s:%d:%d:\n\t%s (offending symbol: %v)\n", l.Filename, line, column, msg, offendingSymbol)
+	core.ThrowSyntaxError(msg, l.Filename, line, column)
 }
 
 func main() {
-	file, err := os.ReadFile("examples/example.paral")
-
-	if err != nil {
-		log.Fatalf("unable to read file: %v", err)
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: ./paral_interpreter file.paral")
+		return
 	}
 
-	input := antlr.NewInputStream(string(file))
-	lexer := parser.NewParalLexer(input)
+	inputFile := os.Args[1]
+	input, err := antlr.NewFileStream(inputFile)
+	if err != nil {
+		fmt.Printf("Failed to open file: %v\n", err)
+		return
+	}
 
+	// Enable debug output
+	lexer := parser.NewParalLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 
-	// Create the Parser
+	// Reset stream for parsing
+	stream.Seek(0)
+
 	p := parser.NewParalParser(stream)
 
-	// Finally parse the expression
-	antlr.ParseTreeWalkerDefault.Walk(&paralListener{}, p.Start_())
+	// Create and add error listener
+	errListener := &errorListener{Filename: inputFile}
+	p.AddErrorListener(errListener)
+
+	// Create listener with debug output
+	c := core.NewCore(inputFile)
+	listener := &core.CoreVisitor{Core: c}
+	p.AddParseListener(listener)
+
+	// Enable parse tree building
+	p.BuildParseTrees = true
+
+	// Parse and get the tree
+	p.Program()
+
+	// Print the parse tree
+	// Check for parsing errors
+	if errListener.hasErrors {
+		fmt.Println("Parsing failed with syntax errors")
+		return
+	}
+
+	c.PrintValues()
+
+	fmt.Println("Program executed successfully")
 }
