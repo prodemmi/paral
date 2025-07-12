@@ -13,9 +13,10 @@ type Job struct {
 	Name       string
 	Directives []JobDirective
 	Commands   []Command
+	Filename   string
 }
 
-func NewJob(name string) *Job {
+func NewJob(name string, filename string) *Job {
 	directives := new([]JobDirective)
 	commands := new([]Command)
 
@@ -23,6 +24,7 @@ func NewJob(name string) *Job {
 		Name:       name,
 		Directives: *directives,
 		Commands:   *commands,
+		Filename:   filename,
 	}
 }
 
@@ -37,43 +39,54 @@ type Command struct {
 }
 
 type CMDDirective struct {
-	Type  string
-	Value interface{}
+	Type   string
+	Params []interface{}
+}
+
+func NewCMDDirective() *CMDDirective {
+	values := new([]interface{})
+	return &CMDDirective{
+		Params: *values,
+	}
 }
 
 // AddCMDDirective creates a CMDDirective based on the directive name and arguments
 func (j *Job) AddCMDDirective(name string, args []interface{}) (*CMDDirective, error) {
-	var dirValue interface{}
+	var dirValue []interface{}
 
 	switch name {
 	case "once":
-		dirValue = true
+		dirValue = []interface{}{true}
+
 	case "try":
 		if len(args) > 0 {
-			if num, ok := args[0].(string); ok && strings.Trim(num, "0123456789") == "" {
-				dirValue = num
+			if str, ok := args[0].(string); ok && strings.Trim(str, "0123456789") == "" {
+				dirValue = []interface{}{str}
 			} else {
 				return nil, fmt.Errorf("@try requires a NUMBER argument, got %v", args[0])
 			}
 		} else {
-			dirValue = "1"
+			dirValue = []interface{}{"1"} // default: try(1)
 		}
+
 	case "stash", "buf", "output", "trigger":
 		if len(args) > 0 {
-			dirValue = args[0]
+			dirValue = []interface{}{args[0]}
 		} else {
 			return nil, fmt.Errorf("@%s requires an IDENTIFIER or REF argument", name)
 		}
+
 	case "concat", "print":
-		dirValue = args
+		dirValue = args // may be empty
+
 	default:
+		Warn(fmt.Sprintf("Unknown command directive @%s", name), j.Filename, 0, 0)
 		dirValue = args
-		return nil, fmt.Errorf("Unknown command directive @%s", name)
 	}
 
 	return &CMDDirective{
-		Type:  name,
-		Value: dirValue,
+		Type:   name,
+		Params: dirValue,
 	}, nil
 }
 
@@ -82,32 +95,24 @@ func (j *Job) AddJobDirective(name string, args ...interface{}) error {
 	var dirValue interface{}
 
 	switch name {
-	case "id", "name", "description", "working_dir", "timeout", "depend", "repeat":
+	case "id", "name", "description", "working_dir", "timeout", "depend", "repeat", "for":
 		if len(args) == 0 {
 			return require_error(name)
 		}
-		dirValue = args // Store all values for multi-value directives like @depend
-	case "for":
-		if len(args) == 0 {
-			return require_error(name)
-		}
-		dirValue = args[0] // @for expects a single value
+		dirValue = args // Store all values for multi-value directives like @depend, @for
 	case "manual":
 		if len(args) > 0 {
-			if arg, ok := args[0].([]interface{}); ok {
-				arg := arg[0]
-				if boolVal, ok := arg.(string); ok && (boolVal == "true" || boolVal == "false") {
-					dirValue = boolVal == "true"
-				} else {
-					return fmt.Errorf("@manual expects a boolean value, got %v", arg)
-				}
+			if boolVal, ok := args[0].(string); ok && (boolVal == "true" || boolVal == "false") {
+				dirValue = boolVal == "true"
+			} else {
+				return fmt.Errorf("@manual expects a boolean value, got %v", args[0])
 			}
 		} else {
 			dirValue = true
 		}
 	default:
+		Warn(fmt.Sprintf("Unknown job directive @%s", name), j.Filename, 0, 0)
 		dirValue = args
-		return fmt.Errorf("Unknown job directive @%s", name)
 	}
 
 	j.Directives = append(j.Directives, JobDirective{
@@ -116,4 +121,12 @@ func (j *Job) AddJobDirective(name string, args ...interface{}) error {
 	})
 
 	return nil
+}
+
+// AddJobCommand creates a Command
+func (j *Job) AddJobCommand(cmd string, directives []CMDDirective) {
+	j.Commands = append(j.Commands, Command{
+		CMD:       cmd,
+		Directive: directives,
+	})
 }

@@ -1,0 +1,27 @@
+build_timeout 20s
+build_outputs []
+
+build_matrix ["linux"] :: ["amd64", "arm64"]
+
+@id("notification")
+@description("Send start build notification")
+@manual
+notification:
+    curl -H 'Content-Type: application/json' https://some.notification.com/webhook/v2/xyz
+
+@id("build_apps")
+@name("Build App")
+@description("Build app with bun")
+@timeout(build_timeout)
+@working_dir("/app/bun")
+@for(build_matrix)
+build:
+    @trigger(notification)
+    @once bun install
+    @buf(&build_outputs) bun run build --target="@value(1)-@value(2)"
+
+@depend(build_apps, notification)
+@for(build_outputs)
+results:
+    @print("Build app results:")
+    @print(@value)

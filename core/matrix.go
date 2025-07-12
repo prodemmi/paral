@@ -1,41 +1,32 @@
 package core
 
-import "fmt"
-
 type Matrix struct {
 	Name   string
 	Values [][]interface{}
 }
 
-func (m Matrix) GetMatrixCombinations() []map[string]interface{} {
-	var result []map[string]interface{}
+func (m *Matrix) GetMatrixCombinations() [][]interface{} {
+	var result [][]interface{}
 	if len(m.Values) == 0 {
 		return result
 	}
-
-	// کلیدهای پیش‌فرض: key1, key2, ...
-	keys := make([]string, len(m.Values))
-	for i := range m.Values {
-		keys[i] = fmt.Sprint(i + 1)
+	if len(m.Values) == 1 {
+		for _, v := range m.Values[0] {
+			result = append(result, []interface{}{v})
+		}
+		return result
 	}
-
-	var build func(index int, current map[string]interface{})
-	build = func(index int, current map[string]interface{}) {
-		if index == len(m.Values) {
-			combination := make(map[string]interface{})
-			for k, v := range current {
-				combination[k] = v
+	result = append(result, []interface{}{})
+	for _, list := range m.Values {
+		var newResult [][]interface{}
+		for _, combo := range result {
+			for _, val := range list {
+				newCombo := append([]interface{}{}, combo...)
+				newCombo = append(newCombo, val)
+				newResult = append(newResult, newCombo)
 			}
-			result = append(result, combination)
-			return
 		}
-
-		for _, val := range m.Values[index] {
-			current[keys[index]] = val
-			build(index+1, current)
-		}
+		result = newResult
 	}
-
-	build(0, make(map[string]interface{}))
 	return result
 }

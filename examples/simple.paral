@@ -1,27 +1,13 @@
-build_timeout 20s
-build_outputs []
+version   = "1.23.0"
+platforms = ["linux"]::["amd64", "arm64"]
 
-build_matrix ["linux"] :: ["amd64", "arm64"]
-
-@id "notificaion"
-@description "Send start build notification"
-@manual true # some bool directives like @manual could be have value or not, we consider default value in code if value not mentioned 
 notification:
-    curl -H 'Content-Type: application/json' https://some.notification.com/webhook/v2/xyz
+    > curl -H 'Content-Type: application/json' "https://some.notification.com/webhook/v2/xyz"
 
-@id "build_apps"
-@name "Build App"
-@description "Build app with bun"
-@timeout build_timeout
-@working_dir "/app/bun"
-@for build_matrix
+install:
+    > bun run install
+
 build:
-    @trigger(notificaion)
-    @once bun install
-    @buf(&build_outputs) bun run build --target="@value(1)-@value(2)" # value can be used with () to get @for matrix combinations
-
-@depend build_apps, notification # some directives like @for and @depend could have multi values separated by ","
-@for build_outputs
-results:
-    @print("Build app results:")
-    @print(@value) # value can be used without () to get @for value
+    > @once @print("Building App")
+    > bun run build
+    > @tigger(notification)

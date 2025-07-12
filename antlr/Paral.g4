@@ -4,108 +4,128 @@ program
     : line* EOF
     ;
 
-// ------------------------ parser -------------------------
-
 line
-    : variable_def NEWLINE
-    | matrix_def NEWLINE
-    | comment_def NEWLINE
+    : variable_def 
+    | matrix_def 
     | job_def
     | NEWLINE
     ;
 
 variable_def
-    : IDENTIFIER (value_expr | list_expr)
+    : IDENTIFIER '=' (value_expr | list_expr) NEWLINE
     ;
 
 matrix_def
-    : IDENTIFIER list_expr (COLONCOLON list_expr)*
+    : IDENTIFIER '=' list_expr (COLONCOLON list_expr)* NEWLINE
+    ;
+
+job_def
+    : IDENTIFIER ':' NEWLINE cmd_expr+
+    ;
+
+cmd_expr
+    : ARROW cmd_value+ NEWLINE
+    ;
+
+cmd_value
+    : value_expr                       
+    | directive_expr
+    | cmd_value '[' cmd_value ']'               
+    | '(' cmd_value ')'                    
+    | flag_expr
+    ;
+
+directive_expr
+    : DIRECTIVE directive_args_expr*
+    ;
+
+directive_args_expr
+    :  LRBRACK value_expr? (COMMA value_expr)* RRBRACK  
+    ;
+
+flag_expr
+    : FLAG_NAME '=' value_expr  # flagWithValue
+    | FLAG_NAME                 # flagAlone
+    ;
+
+value_expr
+    : IDENTIFIER          # identifier         
+    | STRING              # string
+    | SINGLE_QUOTE_STRING # singleQuoteString
+    | NUMBER              # number
+    | BOOLEAN             # bool
+    | DURATION            # duration
     ;
 
 list_expr
     : LBRACK (value_expr (COMMA value_expr)*)? RBRACK
     ;
 
-comment_def
-    : COMMENT
+// === Lexer rules ===
+
+ARROW: '>' ;
+
+STRING
+    : '"' ( '\\' . | ~["\\\r\n] )* '"'
     ;
 
-job_def
-    : job_directive_def* IDENTIFIER COLON cmd_expr+
+SINGLE_QUOTE_STRING
+    : '\'' ( '\\' . | ~['\\\r\n] )* '\''
     ;
 
-job_directive_def
-    : AT IDENTIFIER (job_directive_value (COMMA job_directive_value)*)? NEWLINE
+NUMBER
+    : [0-9]+
     ;
 
-job_directive_value
-    : value_expr
-    | IDENTIFIER
-    | MATRIX_REF
-    | REF
-    | VALUE
+BOOLEAN
+    : 'true'
+    | 'false'
     ;
 
-cmd_expr
-    : NEWLINE (TAB | WS)? cmd_directive? (IDENTIFIER | STRING | SINGLE_QUOTE_STRING | NUMBER | MATRIX_REF | ARG | SINGLE_DASH_ARG | EQUALS | REF | URL | VALUE | BSL_NEWLINE)*
+DURATION
+    : NUMBER [smh]
     ;
 
-cmd_directive
-    : cmd_directive_iden (LPAREN cmd_directive_value? RPAREN)*
+IDENTIFIER
+    : [a-zA-Z_][a-zA-Z0-9_]*
     ;
 
-cmd_directive_iden
-    : AT IDENTIFIER
+FLAG_NAME
+    : '-' '-'? [a-zA-Z_][a-zA-Z0-9_-]*
     ;
 
-cmd_directive_value
-    : directive_arg (COMMA directive_arg)*
+DIRECTIVE
+    : '@' [a-zA-Z_][a-zA-Z0-9_-]*
     ;
 
-directive_arg
-    : value_expr
-    | IDENTIFIER
-    | MATRIX_REF
-    | REF
-    | VALUE
+LRBRACK
+    : '('
     ;
 
-value_expr
-    : STRING         # string
-    | SINGLE_QUOTE_STRING # singleQuoteString
-    | NUMBER         # number
-    | BOOLEAN        # bool
-    | DURATION       # duration
+RRBRACK
+    : ')'
     ;
 
-// ------------------------ lexer -------------------------
+LBRACK
+    : '['
+    ;
 
-IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* ;
-STRING: '"' (~["\r\n])* '"' ;
-SINGLE_QUOTE_STRING: '\'' (~['\r\n])* '\'' ; // For single-quoted strings like 'Content-Type: application/json'
-NUMBER: [0-9]+ ;
-BOOLEAN: 'true' | 'false' ;
-DURATION: NUMBER ('s' | 'm' | 'h') ;
-AT: '@' ;
-MATRIX_REF: '@' [1-9][0-9]* ;
-REF: '&' IDENTIFIER ; // For &variable references
-ARG: '--' [a-zA-Z][a-zA-Z0-9_-]* ; // For command-line flags like --target
-SINGLE_DASH_ARG: '-' [a-zA-Z] ; // For single-dash flags like -H
-EQUALS: '=' ;
-LPAREN: '(' ;
-RPAREN: ')' ;
-URL: ('http' | 'https') '://' [a-zA-Z0-9_./-]+ ; // For URLs like https://some.notification.com/webhook/v2/xyz
-VALUE: '@value' ('(' [1-9][0-9]* ')')? ; // For @value or @value(1)
-BSL_NEWLINE: '\\' '\r'? '\n' ; // For backslash-newline continuation
+RBRACK
+    : ']'
+    ;
 
-COLON: ':' ;
-COLONCOLON: '::' ;
-LBRACK: '[' ;
-RBRACK: ']' ;
-COMMA: ',' ;
+COMMA
+    : ','
+    ;
 
-TAB: '\t' ;
+COLONCOLON
+    : '::'
+    ;
 
-NEWLINE: '\r'? '\n' ;
-COMMENT: '#' ~[\r\n]* -> skip ;
-WS: [ \t]+ -> skip ;
+NEWLINE
+    : ('\r'? '\n')
+    ;
+
+WS
+    : [ \t]+ -> skip
+    ;

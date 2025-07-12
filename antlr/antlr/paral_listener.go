@@ -20,35 +20,29 @@ type ParalListener interface {
 	// EnterMatrix_def is called when entering the matrix_def production.
 	EnterMatrix_def(c *Matrix_defContext)
 
-	// EnterList_expr is called when entering the list_expr production.
-	EnterList_expr(c *List_exprContext)
-
-	// EnterComment_def is called when entering the comment_def production.
-	EnterComment_def(c *Comment_defContext)
-
 	// EnterJob_def is called when entering the job_def production.
 	EnterJob_def(c *Job_defContext)
-
-	// EnterJob_directive_def is called when entering the job_directive_def production.
-	EnterJob_directive_def(c *Job_directive_defContext)
-
-	// EnterJob_directive_value is called when entering the job_directive_value production.
-	EnterJob_directive_value(c *Job_directive_valueContext)
 
 	// EnterCmd_expr is called when entering the cmd_expr production.
 	EnterCmd_expr(c *Cmd_exprContext)
 
-	// EnterCmd_directive is called when entering the cmd_directive production.
-	EnterCmd_directive(c *Cmd_directiveContext)
+	// EnterCmd_value is called when entering the cmd_value production.
+	EnterCmd_value(c *Cmd_valueContext)
 
-	// EnterCmd_directive_iden is called when entering the cmd_directive_iden production.
-	EnterCmd_directive_iden(c *Cmd_directive_idenContext)
+	// EnterDirective_expr is called when entering the directive_expr production.
+	EnterDirective_expr(c *Directive_exprContext)
 
-	// EnterCmd_directive_value is called when entering the cmd_directive_value production.
-	EnterCmd_directive_value(c *Cmd_directive_valueContext)
+	// EnterDirective_args_expr is called when entering the directive_args_expr production.
+	EnterDirective_args_expr(c *Directive_args_exprContext)
 
-	// EnterDirective_arg is called when entering the directive_arg production.
-	EnterDirective_arg(c *Directive_argContext)
+	// EnterFlagWithValue is called when entering the flagWithValue production.
+	EnterFlagWithValue(c *FlagWithValueContext)
+
+	// EnterFlagAlone is called when entering the flagAlone production.
+	EnterFlagAlone(c *FlagAloneContext)
+
+	// EnterIdentifier is called when entering the identifier production.
+	EnterIdentifier(c *IdentifierContext)
 
 	// EnterString is called when entering the string production.
 	EnterString(c *StringContext)
@@ -65,6 +59,9 @@ type ParalListener interface {
 	// EnterDuration is called when entering the duration production.
 	EnterDuration(c *DurationContext)
 
+	// EnterList_expr is called when entering the list_expr production.
+	EnterList_expr(c *List_exprContext)
+
 	// ExitProgram is called when exiting the program production.
 	ExitProgram(c *ProgramContext)
 
@@ -77,35 +74,29 @@ type ParalListener interface {
 	// ExitMatrix_def is called when exiting the matrix_def production.
 	ExitMatrix_def(c *Matrix_defContext)
 
-	// ExitList_expr is called when exiting the list_expr production.
-	ExitList_expr(c *List_exprContext)
-
-	// ExitComment_def is called when exiting the comment_def production.
-	ExitComment_def(c *Comment_defContext)
-
 	// ExitJob_def is called when exiting the job_def production.
 	ExitJob_def(c *Job_defContext)
-
-	// ExitJob_directive_def is called when exiting the job_directive_def production.
-	ExitJob_directive_def(c *Job_directive_defContext)
-
-	// ExitJob_directive_value is called when exiting the job_directive_value production.
-	ExitJob_directive_value(c *Job_directive_valueContext)
 
 	// ExitCmd_expr is called when exiting the cmd_expr production.
 	ExitCmd_expr(c *Cmd_exprContext)
 
-	// ExitCmd_directive is called when exiting the cmd_directive production.
-	ExitCmd_directive(c *Cmd_directiveContext)
+	// ExitCmd_value is called when exiting the cmd_value production.
+	ExitCmd_value(c *Cmd_valueContext)
 
-	// ExitCmd_directive_iden is called when exiting the cmd_directive_iden production.
-	ExitCmd_directive_iden(c *Cmd_directive_idenContext)
+	// ExitDirective_expr is called when exiting the directive_expr production.
+	ExitDirective_expr(c *Directive_exprContext)
 
-	// ExitCmd_directive_value is called when exiting the cmd_directive_value production.
-	ExitCmd_directive_value(c *Cmd_directive_valueContext)
+	// ExitDirective_args_expr is called when exiting the directive_args_expr production.
+	ExitDirective_args_expr(c *Directive_args_exprContext)
 
-	// ExitDirective_arg is called when exiting the directive_arg production.
-	ExitDirective_arg(c *Directive_argContext)
+	// ExitFlagWithValue is called when exiting the flagWithValue production.
+	ExitFlagWithValue(c *FlagWithValueContext)
+
+	// ExitFlagAlone is called when exiting the flagAlone production.
+	ExitFlagAlone(c *FlagAloneContext)
+
+	// ExitIdentifier is called when exiting the identifier production.
+	ExitIdentifier(c *IdentifierContext)
 
 	// ExitString is called when exiting the string production.
 	ExitString(c *StringContext)
@@ -121,4 +112,7 @@ type ParalListener interface {
 
 	// ExitDuration is called when exiting the duration production.
 	ExitDuration(c *DurationContext)
+
+	// ExitList_expr is called when exiting the list_expr production.
+	ExitList_expr(c *List_exprContext)
 }

@@ -7,82 +7,60 @@ import (
 )
 
 type Core struct {
-	mu       sync.Mutex
 	Vars     []Var
 	Matrixes []Matrix
 	Jobs     []Job
-
-	Filename string
+	mu       sync.Mutex
 }
 
-// NewCore creates and returns a new Core instance
-func NewCore(filename string) *Core {
+func NewCore() *Core {
 	return &Core{
-		Vars:     []Var{},
-		Matrixes: []Matrix{},
-		Jobs:     []Job{},
-
-		Filename: filename,
+		Vars:     make([]Var, 0),
+		Matrixes: make([]Matrix, 0),
+		Jobs:     make([]Job, 0),
 	}
 }
 
-// AddVar safely adds a variable
 func (c *Core) AddVar(v Var) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if _, ok := v.Value.([]interface{}); ok {
-		v.Type = "list"
-	}
 	c.Vars = append(c.Vars, v)
 }
 
-// AddMatrix safely adds a matrix
 func (c *Core) AddMatrix(m Matrix) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.Matrixes = append(c.Matrixes, m)
 }
 
-// AddJob safely adds a job
 func (c *Core) AddJob(j Job) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.Jobs = append(c.Jobs, j)
 }
 
-// ResolveMatrix returns matrix values for a given matrix name
-func (c *Core) ResolveMatrix(name string) ([][]string, bool) {
+func (c *Core) ResolveMatrix(name string) ([][]interface{}, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
-	for _, matrix := range c.Matrixes {
-		if matrix.Name == name {
-			// Convert [][]interface{} to [][]string
-			result := make([][]string, len(matrix.Values))
-			for i, row := range matrix.Values {
-				result[i] = make([]string, len(row))
-				for j, val := range row {
-					switch v := val.(type) {
-					case string:
-						result[i][j] = v
-					case int:
-						result[i][j] = fmt.Sprintf("%d", v)
-					case bool:
-						result[i][j] = fmt.Sprintf("%t", v)
-					case float64:
-						result[i][j] = fmt.Sprintf("%f", v)
-					default:
-						return nil, false // Unsupported type
-					}
-				}
-			}
-			return result, true
+	for _, m := range c.Matrixes {
+		if m.Name == name {
+			return m.GetMatrixCombinations(), true
 		}
 	}
 	return nil, false
 }
 
-// GetValues prints all variables
+func (c *Core) ResolveVariable(name string) (Var, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for _, v := range c.Vars {
+		if v.Name == name {
+			return v, true
+		}
+	}
+	return Var{}, false
+}
+
 func (c *Core) PrintValues() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -108,8 +86,31 @@ func (c *Core) PrintValues() {
 	b.WriteString("\n🔸 Jobs:\n")
 	for _, j := range c.Jobs {
 		b.WriteString(fmt.Sprintf("  %s:\n", j.Name))
-		for _, command := range j.Commands {
-			b.WriteString(fmt.Sprintf("    → %s\n", command.CMD))
+		// Print Directives
+		b.WriteString("    ~Job Directives:\n")
+		for _, dir := range j.Directives {
+			b.WriteString(fmt.Sprintf("      @%s = %v\n", dir.Type, dir.Value))
+		}
+		// Print Commands
+		b.WriteString("    ~Commands:\n")
+		for i, command := range j.Commands {
+			if command.CMD != "" {
+				b.WriteString(fmt.Sprintf("      CMD: %s\n", command.CMD))
+				if len(command.Directive) > 0 {
+					for _, d := range command.Directive {
+						if len(d.Params) > 0 {
+							args := make([]string, len(d.Params))
+							for i, v := range d.Params {
+								args[i] = fmt.Sprintf("%v", v)
+							}
+							b.WriteString(fmt.Sprintf("      CMD Directives: %s\n", fmt.Sprintf("@%s(%s)", d.Type, strings.Join(args, ", "))))
+						}
+					}
+				}
+			}
+			if i < len(j.Commands)-1 {
+				b.WriteString("    --------------\n")
+			}
 		}
 	}
 
