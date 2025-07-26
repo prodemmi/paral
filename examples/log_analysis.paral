@@ -1,0 +1,19 @@
+log_files = ["/var/log/app1.log", "/var/log/app2.log"]
+
+@id "send_report"
+@manual
+@args report_data
+send_report:
+    > @print("📧 Sending report...")
+    > @try curl -H "Content-Type: application/json" -d @arg("report_data") "https://hooks.example.com/report"
+
+@id "analyze_logs"
+@schedule "0 0 * * *"
+@for log_files
+analyze_logs:
+    > @stash("file_path", @value)
+    > @print("🔎 Analyzing:", @stash["file_path"])
+    > @stash("file_content", @file_read(@stash["file_path"], "utf-8"))
+    > @stash("matches", @regexmatch("ERROR.*", @stash["file_content"]))
+    > @ifempty(@stash["matches"])
+        @trigger(send_report, @stash["matches"])

@@ -1,9 +1,0 @@
-LINUX_ARCH ["linux"] :: ["amd64", "arm64"]
-WINDOWS_ARCH ["windows"] :: [10, 11]
-
-@name "Build App"
-@timeout 30s
-@for LINUX_ARCH WINDOWS_ARCH
-@parallel true
-BUILD_APP:
-    @print("Building app for @1 @2")

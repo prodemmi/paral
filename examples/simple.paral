@@ -1,13 +1,28 @@
-version   = "1.23.0"
-platforms = ["linux"]::["amd64", "arm64"]
+text     = "apple"
+mylist   = [1, 2, 3, 4]
+matrix   = [1, 2] :: [3, 4]
+numbers  = [5, 2, 8, 1, 9]
+filename = "output.txt"
 
-notification:
-    > curl -H 'Content-Type: application/json' "https://some.notification.com/webhook/v2/xyz"
-
-install:
-    > bun run install
-
-build:
-    > @once @print("Building App")
-    > bun run build
-    > @tigger(notification)
+@id "test"
+test:
+    -> @print(@first(text))
+    -> @print(@first(mylist))
+    -> @print(@first(matrix))
+    -> @print(@last(text))
+    -> @print(@last(mylist))
+    -> @print(@last(matrix))
+    -> @print(@middle(text))
+    -> @print(@middle(mylist))
+    -> @print(@middle(matrix))
+    -> @print(@min(mylist))
+    -> @print(@min(matrix))
+    -> @print(@min(5, 2, 8, 1, 9))
+    -> @print(@max(mylist))
+    -> @print(@max(matrix))
+    -> @print(@max(5, 2, 8, 1, 9))
+    -> @print(@transpose(matrix))
+    -> @print(@det(matrix))
+    -> @print(@sum(mylist))
+    -> @print(@sum(matrix))
+    -> @writefile(filename, @sprintf("%d", @sum(mylist)))
