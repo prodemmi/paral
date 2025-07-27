@@ -8,19 +8,19 @@ program
 
 statement
     : variable_assignment
-    | job_definition
+    | task_definition
     | NEWLINE
     ;
 
 variable_assignment
-    : IDENTIFIER ASSIGN variable_value NEWLINE
+    : IDENTIFIER ASSIGN expression NEWLINE
     ;
 
-job_definition
-    : (job_directive NEWLINE)* IDENTIFIER COLON NEWLINE command_block+
+task_definition
+    : (task_directive NEWLINE)* IDENTIFIER COLON NEWLINE command_block+
     ;
 
-job_directive
+task_directive
     : directive
     ;
 
@@ -39,7 +39,7 @@ command_item
     | COMMAND_RAW_TEXT
     ;
 
-// ----------------- job directive -------------
+// ----------------- task directive -------------
 
 directive
     : AT IDENTIFIER expression*
@@ -53,12 +53,12 @@ condition
 
 function
     : FUNCTION_CALL_START argument_list? FUNCTION_END
+    | FUNCTION_START argument_list? FUNCTION_END  // Add this for default mode functions
     ;
 
 nested_function
     : NESTED_FUNCTION_START argument_list? FUNCTION_END
     ;
-
 
 if_condition
     : AT IF LRBRACK expression RRBRACK NEWLINE* command_content NEWLINE* AT ENDIF
@@ -66,18 +66,15 @@ if_condition
 
 // Argument list for functions
 argument_list
-    : expression (COMMA expression)*
+    : expression (NEWLINE* COMMA NEWLINE* expression)*
     ;
 
 // Expression can be a value or a nested function
 expression
-    : nested_function
-    | variable_value
-    | loop_variable
-    ;
-
-variable_value
-    : URL
+    : loop_variable
+    | function  // Add this line to allow functions in expressions
+    | nested_function
+    | URL
     | number_expr
     | string_expr
     | boolean_expr
@@ -112,7 +109,7 @@ matrix_expr
     ;
 
 list_expr
-    : LBRACK (variable_value (COMMA variable_value)*)? RBRACK
+    : LBRACK (expression (NEWLINE* COMMA NEWLINE* expression)*)? RBRACK
     ;
 
 loop_variable

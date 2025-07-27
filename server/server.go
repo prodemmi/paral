@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	d "paral/core/dag"
+	core "paral/core/runtime"
 	"path"
 	"syscall"
 	"time"
-
-	core "paral/core"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/gin-contrib/cors"
@@ -57,15 +57,15 @@ func watchAndRestartIfChanged(filename string) {
 	}
 }
 
-func NewGraphServer(c *core.Core) {
-	dag := c.GenerateDAG()
+func NewGraphServer(runtime *core.Runtime) {
+	dag := d.NewDAG(runtime)
 	graph, err := dag.ToJSON()
 	if err != nil {
-		core.ThrowRuntimeError(fmt.Sprintf("failed to generate DAG: %s", err), c.Filename, 0, 0)
+		runtime.Reporter.ThrowRuntimeError(fmt.Sprintf("failed to generate DAG: %s", err), nil)
 		return
 	}
 
-	go watchAndRestartIfChanged(c.Filename)
+	go watchAndRestartIfChanged(runtime.Metadata.Filename)
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
@@ -82,9 +82,9 @@ func NewGraphServer(c *core.Core) {
 	r.GET("/graph", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "graph.tmpl", gin.H{
 			"title":    "Paral Graph Viewer",
-			"filename": path.Base(c.Filename),
+			"filename": path.Base(runtime.Metadata.Filename),
 			"graph":    graph,
-			"content":  c.Content,
+			"content":  runtime.Metadata.Content,
 		})
 	})
 

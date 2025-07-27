@@ -33,112 +33,126 @@ var ParalParserParserStaticData struct {
 func paralparserParserInit() {
 	staticData := &ParalParserParserStaticData
 	staticData.LiteralNames = []string{
-		"", "'->'", "'@'", "'if'", "'endif'", "'='", "", "", "", "", "", "",
-		"", "", "':'", "'::'", "", "", "", "'('", "", "", "", "", "", "", "",
-		"'@key'", "'@value'", "", "", "", "", "", "", "'@endif'",
+		"", "'->'", "'@'", "", "'if'", "'endif'", "'='", "", "", "", "", "",
+		"", "", "", "':'", "'::'", "", "", "", "'('", "", "", "", "", "", "",
+		"", "", "", "", "", "", "", "", "", "'@endif'",
 	}
 	staticData.SymbolicNames = []string{
-		"", "CMD_ARROW", "AT", "IF", "ENDIF", "ASSIGN", "STRING", "SINGLE_QUOTE_STRING",
-		"FLOAT", "NUMBER", "BOOLEAN", "ZERO_ONE", "DURATION", "URL", "COLON",
-		"COLONCOLON", "COMMA", "LBRACK", "RBRACK", "LRBRACK", "RRBRACK", "IDENTIFIER",
-		"NEWLINE", "WS", "COMMAND_NEWLINE", "FUNCTION_CALL_START", "COMMAND_IF",
-		"COMMAND_LOOP_KEY", "COMMAND_LOOP_VALUE", "COMMAND_WS", "COMMAND_RAW_TEXT",
-		"NESTED_FUNCTION_START", "FUNCTION_END", "FUNCTION_WS", "NESTED_IF",
-		"IF_END", "IF_WS",
+		"", "CMD_ARROW", "AT", "FUNCTION_START", "IF", "ENDIF", "ASSIGN", "STRING",
+		"SINGLE_QUOTE_STRING", "FLOAT", "NUMBER", "BOOLEAN", "ZERO_ONE", "DURATION",
+		"URL", "COLON", "COLONCOLON", "COMMA", "LBRACK", "RBRACK", "LRBRACK",
+		"RRBRACK", "IDENTIFIER", "NEWLINE", "WS", "COMMAND_NEWLINE", "FUNCTION_CALL_START",
+		"COMMAND_IF", "COMMAND_LOOP_KEY", "COMMAND_LOOP_VALUE", "COMMAND_WS",
+		"COMMAND_RAW_TEXT", "NESTED_FUNCTION_START", "FUNCTION_END", "FUNCTION_WS",
+		"NESTED_IF", "IF_END", "IF_WS",
 	}
 	staticData.RuleNames = []string{
-		"program", "statement", "variable_assignment", "job_definition", "job_directive",
+		"program", "statement", "variable_assignment", "task_definition", "task_directive",
 		"command_block", "command_content", "command_item", "directive", "condition",
 		"function", "nested_function", "if_condition", "argument_list", "expression",
-		"variable_value", "number_expr", "string_expr", "boolean_expr", "duration_expr",
-		"matrix_expr", "list_expr", "loop_variable",
+		"number_expr", "string_expr", "boolean_expr", "duration_expr", "matrix_expr",
+		"list_expr", "loop_variable",
 	}
 	staticData.PredictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 36, 197, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
+		4, 1, 37, 223, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
 		4, 2, 5, 7, 5, 2, 6, 7, 6, 2, 7, 7, 7, 2, 8, 7, 8, 2, 9, 7, 9, 2, 10, 7,
 		10, 2, 11, 7, 11, 2, 12, 7, 12, 2, 13, 7, 13, 2, 14, 7, 14, 2, 15, 7, 15,
 		2, 16, 7, 16, 2, 17, 7, 17, 2, 18, 7, 18, 2, 19, 7, 19, 2, 20, 7, 20, 2,
-		21, 7, 21, 2, 22, 7, 22, 1, 0, 5, 0, 48, 8, 0, 10, 0, 12, 0, 51, 9, 0,
-		1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 3, 1, 58, 8, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1,
-		2, 1, 3, 1, 3, 1, 3, 5, 3, 68, 8, 3, 10, 3, 12, 3, 71, 9, 3, 1, 3, 1, 3,
-		1, 3, 1, 3, 4, 3, 77, 8, 3, 11, 3, 12, 3, 78, 1, 4, 1, 4, 1, 5, 1, 5, 1,
-		5, 1, 5, 1, 6, 5, 6, 88, 8, 6, 10, 6, 12, 6, 91, 9, 6, 1, 7, 1, 7, 1, 7,
-		1, 7, 3, 7, 97, 8, 7, 1, 8, 1, 8, 1, 8, 5, 8, 102, 8, 8, 10, 8, 12, 8,
-		105, 9, 8, 1, 9, 1, 9, 1, 10, 1, 10, 3, 10, 111, 8, 10, 1, 10, 1, 10, 1,
-		11, 1, 11, 3, 11, 117, 8, 11, 1, 11, 1, 11, 1, 12, 1, 12, 1, 12, 1, 12,
-		1, 12, 1, 12, 5, 12, 127, 8, 12, 10, 12, 12, 12, 130, 9, 12, 1, 12, 1,
-		12, 5, 12, 134, 8, 12, 10, 12, 12, 12, 137, 9, 12, 1, 12, 1, 12, 1, 12,
-		1, 13, 1, 13, 1, 13, 5, 13, 145, 8, 13, 10, 13, 12, 13, 148, 9, 13, 1,
-		14, 1, 14, 1, 14, 3, 14, 153, 8, 14, 1, 15, 1, 15, 1, 15, 1, 15, 1, 15,
-		1, 15, 1, 15, 1, 15, 3, 15, 163, 8, 15, 1, 16, 1, 16, 1, 17, 1, 17, 1,
-		18, 1, 18, 1, 19, 1, 19, 3, 19, 173, 8, 19, 1, 20, 1, 20, 1, 20, 4, 20,
-		178, 8, 20, 11, 20, 12, 20, 179, 1, 21, 1, 21, 1, 21, 1, 21, 5, 21, 186,
-		8, 21, 10, 21, 12, 21, 189, 9, 21, 3, 21, 191, 8, 21, 1, 21, 1, 21, 1,
-		22, 1, 22, 1, 22, 0, 0, 23, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22,
-		24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 0, 4, 1, 0, 8, 9, 1, 0, 6,
-		7, 1, 0, 10, 11, 1, 0, 27, 28, 201, 0, 49, 1, 0, 0, 0, 2, 57, 1, 0, 0,
-		0, 4, 59, 1, 0, 0, 0, 6, 69, 1, 0, 0, 0, 8, 80, 1, 0, 0, 0, 10, 82, 1,
-		0, 0, 0, 12, 89, 1, 0, 0, 0, 14, 96, 1, 0, 0, 0, 16, 98, 1, 0, 0, 0, 18,
-		106, 1, 0, 0, 0, 20, 108, 1, 0, 0, 0, 22, 114, 1, 0, 0, 0, 24, 120, 1,
-		0, 0, 0, 26, 141, 1, 0, 0, 0, 28, 152, 1, 0, 0, 0, 30, 162, 1, 0, 0, 0,
-		32, 164, 1, 0, 0, 0, 34, 166, 1, 0, 0, 0, 36, 168, 1, 0, 0, 0, 38, 172,
-		1, 0, 0, 0, 40, 174, 1, 0, 0, 0, 42, 181, 1, 0, 0, 0, 44, 194, 1, 0, 0,
-		0, 46, 48, 3, 2, 1, 0, 47, 46, 1, 0, 0, 0, 48, 51, 1, 0, 0, 0, 49, 47,
-		1, 0, 0, 0, 49, 50, 1, 0, 0, 0, 50, 52, 1, 0, 0, 0, 51, 49, 1, 0, 0, 0,
-		52, 53, 5, 0, 0, 1, 53, 1, 1, 0, 0, 0, 54, 58, 3, 4, 2, 0, 55, 58, 3, 6,
-		3, 0, 56, 58, 5, 22, 0, 0, 57, 54, 1, 0, 0, 0, 57, 55, 1, 0, 0, 0, 57,
-		56, 1, 0, 0, 0, 58, 3, 1, 0, 0, 0, 59, 60, 5, 21, 0, 0, 60, 61, 5, 5, 0,
-		0, 61, 62, 3, 30, 15, 0, 62, 63, 5, 22, 0, 0, 63, 5, 1, 0, 0, 0, 64, 65,
-		3, 8, 4, 0, 65, 66, 5, 22, 0, 0, 66, 68, 1, 0, 0, 0, 67, 64, 1, 0, 0, 0,
-		68, 71, 1, 0, 0, 0, 69, 67, 1, 0, 0, 0, 69, 70, 1, 0, 0, 0, 70, 72, 1,
-		0, 0, 0, 71, 69, 1, 0, 0, 0, 72, 73, 5, 21, 0, 0, 73, 74, 5, 14, 0, 0,
-		74, 76, 5, 22, 0, 0, 75, 77, 3, 10, 5, 0, 76, 75, 1, 0, 0, 0, 77, 78, 1,
-		0, 0, 0, 78, 76, 1, 0, 0, 0, 78, 79, 1, 0, 0, 0, 79, 7, 1, 0, 0, 0, 80,
-		81, 3, 16, 8, 0, 81, 9, 1, 0, 0, 0, 82, 83, 5, 1, 0, 0, 83, 84, 3, 12,
-		6, 0, 84, 85, 5, 24, 0, 0, 85, 11, 1, 0, 0, 0, 86, 88, 3, 14, 7, 0, 87,
-		86, 1, 0, 0, 0, 88, 91, 1, 0, 0, 0, 89, 87, 1, 0, 0, 0, 89, 90, 1, 0, 0,
-		0, 90, 13, 1, 0, 0, 0, 91, 89, 1, 0, 0, 0, 92, 97, 3, 20, 10, 0, 93, 97,
-		3, 18, 9, 0, 94, 97, 3, 44, 22, 0, 95, 97, 5, 30, 0, 0, 96, 92, 1, 0, 0,
-		0, 96, 93, 1, 0, 0, 0, 96, 94, 1, 0, 0, 0, 96, 95, 1, 0, 0, 0, 97, 15,
-		1, 0, 0, 0, 98, 99, 5, 2, 0, 0, 99, 103, 5, 21, 0, 0, 100, 102, 3, 28,
-		14, 0, 101, 100, 1, 0, 0, 0, 102, 105, 1, 0, 0, 0, 103, 101, 1, 0, 0, 0,
-		103, 104, 1, 0, 0, 0, 104, 17, 1, 0, 0, 0, 105, 103, 1, 0, 0, 0, 106, 107,
-		3, 24, 12, 0, 107, 19, 1, 0, 0, 0, 108, 110, 5, 25, 0, 0, 109, 111, 3,
-		26, 13, 0, 110, 109, 1, 0, 0, 0, 110, 111, 1, 0, 0, 0, 111, 112, 1, 0,
-		0, 0, 112, 113, 5, 32, 0, 0, 113, 21, 1, 0, 0, 0, 114, 116, 5, 31, 0, 0,
-		115, 117, 3, 26, 13, 0, 116, 115, 1, 0, 0, 0, 116, 117, 1, 0, 0, 0, 117,
-		118, 1, 0, 0, 0, 118, 119, 5, 32, 0, 0, 119, 23, 1, 0, 0, 0, 120, 121,
-		5, 2, 0, 0, 121, 122, 5, 3, 0, 0, 122, 123, 5, 19, 0, 0, 123, 124, 3, 28,
-		14, 0, 124, 128, 5, 20, 0, 0, 125, 127, 5, 22, 0, 0, 126, 125, 1, 0, 0,
-		0, 127, 130, 1, 0, 0, 0, 128, 126, 1, 0, 0, 0, 128, 129, 1, 0, 0, 0, 129,
-		131, 1, 0, 0, 0, 130, 128, 1, 0, 0, 0, 131, 135, 3, 12, 6, 0, 132, 134,
-		5, 22, 0, 0, 133, 132, 1, 0, 0, 0, 134, 137, 1, 0, 0, 0, 135, 133, 1, 0,
-		0, 0, 135, 136, 1, 0, 0, 0, 136, 138, 1, 0, 0, 0, 137, 135, 1, 0, 0, 0,
-		138, 139, 5, 2, 0, 0, 139, 140, 5, 4, 0, 0, 140, 25, 1, 0, 0, 0, 141, 146,
-		3, 28, 14, 0, 142, 143, 5, 16, 0, 0, 143, 145, 3, 28, 14, 0, 144, 142,
-		1, 0, 0, 0, 145, 148, 1, 0, 0, 0, 146, 144, 1, 0, 0, 0, 146, 147, 1, 0,
-		0, 0, 147, 27, 1, 0, 0, 0, 148, 146, 1, 0, 0, 0, 149, 153, 3, 22, 11, 0,
-		150, 153, 3, 30, 15, 0, 151, 153, 3, 44, 22, 0, 152, 149, 1, 0, 0, 0, 152,
-		150, 1, 0, 0, 0, 152, 151, 1, 0, 0, 0, 153, 29, 1, 0, 0, 0, 154, 163, 5,
-		13, 0, 0, 155, 163, 3, 32, 16, 0, 156, 163, 3, 34, 17, 0, 157, 163, 3,
-		36, 18, 0, 158, 163, 3, 38, 19, 0, 159, 163, 3, 40, 20, 0, 160, 163, 3,
-		42, 21, 0, 161, 163, 5, 21, 0, 0, 162, 154, 1, 0, 0, 0, 162, 155, 1, 0,
-		0, 0, 162, 156, 1, 0, 0, 0, 162, 157, 1, 0, 0, 0, 162, 158, 1, 0, 0, 0,
-		162, 159, 1, 0, 0, 0, 162, 160, 1, 0, 0, 0, 162, 161, 1, 0, 0, 0, 163,
-		31, 1, 0, 0, 0, 164, 165, 7, 0, 0, 0, 165, 33, 1, 0, 0, 0, 166, 167, 7,
-		1, 0, 0, 167, 35, 1, 0, 0, 0, 168, 169, 7, 2, 0, 0, 169, 37, 1, 0, 0, 0,
-		170, 173, 5, 12, 0, 0, 171, 173, 3, 32, 16, 0, 172, 170, 1, 0, 0, 0, 172,
-		171, 1, 0, 0, 0, 173, 39, 1, 0, 0, 0, 174, 177, 3, 42, 21, 0, 175, 176,
-		5, 15, 0, 0, 176, 178, 3, 42, 21, 0, 177, 175, 1, 0, 0, 0, 178, 179, 1,
-		0, 0, 0, 179, 177, 1, 0, 0, 0, 179, 180, 1, 0, 0, 0, 180, 41, 1, 0, 0,
-		0, 181, 190, 5, 17, 0, 0, 182, 187, 3, 30, 15, 0, 183, 184, 5, 16, 0, 0,
-		184, 186, 3, 30, 15, 0, 185, 183, 1, 0, 0, 0, 186, 189, 1, 0, 0, 0, 187,
-		185, 1, 0, 0, 0, 187, 188, 1, 0, 0, 0, 188, 191, 1, 0, 0, 0, 189, 187,
-		1, 0, 0, 0, 190, 182, 1, 0, 0, 0, 190, 191, 1, 0, 0, 0, 191, 192, 1, 0,
-		0, 0, 192, 193, 5, 18, 0, 0, 193, 43, 1, 0, 0, 0, 194, 195, 7, 3, 0, 0,
-		195, 45, 1, 0, 0, 0, 18, 49, 57, 69, 78, 89, 96, 103, 110, 116, 128, 135,
-		146, 152, 162, 172, 179, 187, 190,
+		21, 7, 21, 1, 0, 5, 0, 46, 8, 0, 10, 0, 12, 0, 49, 9, 0, 1, 0, 1, 0, 1,
+		1, 1, 1, 1, 1, 3, 1, 56, 8, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3, 1, 3,
+		1, 3, 5, 3, 66, 8, 3, 10, 3, 12, 3, 69, 9, 3, 1, 3, 1, 3, 1, 3, 1, 3, 4,
+		3, 75, 8, 3, 11, 3, 12, 3, 76, 1, 4, 1, 4, 1, 5, 1, 5, 1, 5, 1, 5, 1, 6,
+		5, 6, 86, 8, 6, 10, 6, 12, 6, 89, 9, 6, 1, 7, 1, 7, 1, 7, 1, 7, 3, 7, 95,
+		8, 7, 1, 8, 1, 8, 1, 8, 5, 8, 100, 8, 8, 10, 8, 12, 8, 103, 9, 8, 1, 9,
+		1, 9, 1, 10, 1, 10, 3, 10, 109, 8, 10, 1, 10, 1, 10, 1, 10, 3, 10, 114,
+		8, 10, 1, 10, 3, 10, 117, 8, 10, 1, 11, 1, 11, 3, 11, 121, 8, 11, 1, 11,
+		1, 11, 1, 12, 1, 12, 1, 12, 1, 12, 1, 12, 1, 12, 5, 12, 131, 8, 12, 10,
+		12, 12, 12, 134, 9, 12, 1, 12, 1, 12, 5, 12, 138, 8, 12, 10, 12, 12, 12,
+		141, 9, 12, 1, 12, 1, 12, 1, 12, 1, 13, 1, 13, 5, 13, 148, 8, 13, 10, 13,
+		12, 13, 151, 9, 13, 1, 13, 1, 13, 5, 13, 155, 8, 13, 10, 13, 12, 13, 158,
+		9, 13, 1, 13, 5, 13, 161, 8, 13, 10, 13, 12, 13, 164, 9, 13, 1, 14, 1,
+		14, 1, 14, 1, 14, 1, 14, 1, 14, 1, 14, 1, 14, 1, 14, 1, 14, 1, 14, 3, 14,
+		177, 8, 14, 1, 15, 1, 15, 1, 16, 1, 16, 1, 17, 1, 17, 1, 18, 1, 18, 3,
+		18, 187, 8, 18, 1, 19, 1, 19, 1, 19, 4, 19, 192, 8, 19, 11, 19, 12, 19,
+		193, 1, 20, 1, 20, 1, 20, 5, 20, 199, 8, 20, 10, 20, 12, 20, 202, 9, 20,
+		1, 20, 1, 20, 5, 20, 206, 8, 20, 10, 20, 12, 20, 209, 9, 20, 1, 20, 5,
+		20, 212, 8, 20, 10, 20, 12, 20, 215, 9, 20, 3, 20, 217, 8, 20, 1, 20, 1,
+		20, 1, 21, 1, 21, 1, 21, 0, 0, 22, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20,
+		22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 0, 4, 1, 0, 9, 10, 1, 0, 7,
+		8, 1, 0, 11, 12, 1, 0, 28, 29, 235, 0, 47, 1, 0, 0, 0, 2, 55, 1, 0, 0,
+		0, 4, 57, 1, 0, 0, 0, 6, 67, 1, 0, 0, 0, 8, 78, 1, 0, 0, 0, 10, 80, 1,
+		0, 0, 0, 12, 87, 1, 0, 0, 0, 14, 94, 1, 0, 0, 0, 16, 96, 1, 0, 0, 0, 18,
+		104, 1, 0, 0, 0, 20, 116, 1, 0, 0, 0, 22, 118, 1, 0, 0, 0, 24, 124, 1,
+		0, 0, 0, 26, 145, 1, 0, 0, 0, 28, 176, 1, 0, 0, 0, 30, 178, 1, 0, 0, 0,
+		32, 180, 1, 0, 0, 0, 34, 182, 1, 0, 0, 0, 36, 186, 1, 0, 0, 0, 38, 188,
+		1, 0, 0, 0, 40, 195, 1, 0, 0, 0, 42, 220, 1, 0, 0, 0, 44, 46, 3, 2, 1,
+		0, 45, 44, 1, 0, 0, 0, 46, 49, 1, 0, 0, 0, 47, 45, 1, 0, 0, 0, 47, 48,
+		1, 0, 0, 0, 48, 50, 1, 0, 0, 0, 49, 47, 1, 0, 0, 0, 50, 51, 5, 0, 0, 1,
+		51, 1, 1, 0, 0, 0, 52, 56, 3, 4, 2, 0, 53, 56, 3, 6, 3, 0, 54, 56, 5, 23,
+		0, 0, 55, 52, 1, 0, 0, 0, 55, 53, 1, 0, 0, 0, 55, 54, 1, 0, 0, 0, 56, 3,
+		1, 0, 0, 0, 57, 58, 5, 22, 0, 0, 58, 59, 5, 6, 0, 0, 59, 60, 3, 28, 14,
+		0, 60, 61, 5, 23, 0, 0, 61, 5, 1, 0, 0, 0, 62, 63, 3, 8, 4, 0, 63, 64,
+		5, 23, 0, 0, 64, 66, 1, 0, 0, 0, 65, 62, 1, 0, 0, 0, 66, 69, 1, 0, 0, 0,
+		67, 65, 1, 0, 0, 0, 67, 68, 1, 0, 0, 0, 68, 70, 1, 0, 0, 0, 69, 67, 1,
+		0, 0, 0, 70, 71, 5, 22, 0, 0, 71, 72, 5, 15, 0, 0, 72, 74, 5, 23, 0, 0,
+		73, 75, 3, 10, 5, 0, 74, 73, 1, 0, 0, 0, 75, 76, 1, 0, 0, 0, 76, 74, 1,
+		0, 0, 0, 76, 77, 1, 0, 0, 0, 77, 7, 1, 0, 0, 0, 78, 79, 3, 16, 8, 0, 79,
+		9, 1, 0, 0, 0, 80, 81, 5, 1, 0, 0, 81, 82, 3, 12, 6, 0, 82, 83, 5, 25,
+		0, 0, 83, 11, 1, 0, 0, 0, 84, 86, 3, 14, 7, 0, 85, 84, 1, 0, 0, 0, 86,
+		89, 1, 0, 0, 0, 87, 85, 1, 0, 0, 0, 87, 88, 1, 0, 0, 0, 88, 13, 1, 0, 0,
+		0, 89, 87, 1, 0, 0, 0, 90, 95, 3, 20, 10, 0, 91, 95, 3, 18, 9, 0, 92, 95,
+		3, 42, 21, 0, 93, 95, 5, 31, 0, 0, 94, 90, 1, 0, 0, 0, 94, 91, 1, 0, 0,
+		0, 94, 92, 1, 0, 0, 0, 94, 93, 1, 0, 0, 0, 95, 15, 1, 0, 0, 0, 96, 97,
+		5, 2, 0, 0, 97, 101, 5, 22, 0, 0, 98, 100, 3, 28, 14, 0, 99, 98, 1, 0,
+		0, 0, 100, 103, 1, 0, 0, 0, 101, 99, 1, 0, 0, 0, 101, 102, 1, 0, 0, 0,
+		102, 17, 1, 0, 0, 0, 103, 101, 1, 0, 0, 0, 104, 105, 3, 24, 12, 0, 105,
+		19, 1, 0, 0, 0, 106, 108, 5, 26, 0, 0, 107, 109, 3, 26, 13, 0, 108, 107,
+		1, 0, 0, 0, 108, 109, 1, 0, 0, 0, 109, 110, 1, 0, 0, 0, 110, 117, 5, 33,
+		0, 0, 111, 113, 5, 3, 0, 0, 112, 114, 3, 26, 13, 0, 113, 112, 1, 0, 0,
+		0, 113, 114, 1, 0, 0, 0, 114, 115, 1, 0, 0, 0, 115, 117, 5, 33, 0, 0, 116,
+		106, 1, 0, 0, 0, 116, 111, 1, 0, 0, 0, 117, 21, 1, 0, 0, 0, 118, 120, 5,
+		32, 0, 0, 119, 121, 3, 26, 13, 0, 120, 119, 1, 0, 0, 0, 120, 121, 1, 0,
+		0, 0, 121, 122, 1, 0, 0, 0, 122, 123, 5, 33, 0, 0, 123, 23, 1, 0, 0, 0,
+		124, 125, 5, 2, 0, 0, 125, 126, 5, 4, 0, 0, 126, 127, 5, 20, 0, 0, 127,
+		128, 3, 28, 14, 0, 128, 132, 5, 21, 0, 0, 129, 131, 5, 23, 0, 0, 130, 129,
+		1, 0, 0, 0, 131, 134, 1, 0, 0, 0, 132, 130, 1, 0, 0, 0, 132, 133, 1, 0,
+		0, 0, 133, 135, 1, 0, 0, 0, 134, 132, 1, 0, 0, 0, 135, 139, 3, 12, 6, 0,
+		136, 138, 5, 23, 0, 0, 137, 136, 1, 0, 0, 0, 138, 141, 1, 0, 0, 0, 139,
+		137, 1, 0, 0, 0, 139, 140, 1, 0, 0, 0, 140, 142, 1, 0, 0, 0, 141, 139,
+		1, 0, 0, 0, 142, 143, 5, 2, 0, 0, 143, 144, 5, 5, 0, 0, 144, 25, 1, 0,
+		0, 0, 145, 162, 3, 28, 14, 0, 146, 148, 5, 23, 0, 0, 147, 146, 1, 0, 0,
+		0, 148, 151, 1, 0, 0, 0, 149, 147, 1, 0, 0, 0, 149, 150, 1, 0, 0, 0, 150,
+		152, 1, 0, 0, 0, 151, 149, 1, 0, 0, 0, 152, 156, 5, 17, 0, 0, 153, 155,
+		5, 23, 0, 0, 154, 153, 1, 0, 0, 0, 155, 158, 1, 0, 0, 0, 156, 154, 1, 0,
+		0, 0, 156, 157, 1, 0, 0, 0, 157, 159, 1, 0, 0, 0, 158, 156, 1, 0, 0, 0,
+		159, 161, 3, 28, 14, 0, 160, 149, 1, 0, 0, 0, 161, 164, 1, 0, 0, 0, 162,
+		160, 1, 0, 0, 0, 162, 163, 1, 0, 0, 0, 163, 27, 1, 0, 0, 0, 164, 162, 1,
+		0, 0, 0, 165, 177, 3, 42, 21, 0, 166, 177, 3, 20, 10, 0, 167, 177, 3, 22,
+		11, 0, 168, 177, 5, 14, 0, 0, 169, 177, 3, 30, 15, 0, 170, 177, 3, 32,
+		16, 0, 171, 177, 3, 34, 17, 0, 172, 177, 3, 36, 18, 0, 173, 177, 3, 38,
+		19, 0, 174, 177, 3, 40, 20, 0, 175, 177, 5, 22, 0, 0, 176, 165, 1, 0, 0,
+		0, 176, 166, 1, 0, 0, 0, 176, 167, 1, 0, 0, 0, 176, 168, 1, 0, 0, 0, 176,
+		169, 1, 0, 0, 0, 176, 170, 1, 0, 0, 0, 176, 171, 1, 0, 0, 0, 176, 172,
+		1, 0, 0, 0, 176, 173, 1, 0, 0, 0, 176, 174, 1, 0, 0, 0, 176, 175, 1, 0,
+		0, 0, 177, 29, 1, 0, 0, 0, 178, 179, 7, 0, 0, 0, 179, 31, 1, 0, 0, 0, 180,
+		181, 7, 1, 0, 0, 181, 33, 1, 0, 0, 0, 182, 183, 7, 2, 0, 0, 183, 35, 1,
+		0, 0, 0, 184, 187, 5, 13, 0, 0, 185, 187, 3, 30, 15, 0, 186, 184, 1, 0,
+		0, 0, 186, 185, 1, 0, 0, 0, 187, 37, 1, 0, 0, 0, 188, 191, 3, 40, 20, 0,
+		189, 190, 5, 16, 0, 0, 190, 192, 3, 40, 20, 0, 191, 189, 1, 0, 0, 0, 192,
+		193, 1, 0, 0, 0, 193, 191, 1, 0, 0, 0, 193, 194, 1, 0, 0, 0, 194, 39, 1,
+		0, 0, 0, 195, 216, 5, 18, 0, 0, 196, 213, 3, 28, 14, 0, 197, 199, 5, 23,
+		0, 0, 198, 197, 1, 0, 0, 0, 199, 202, 1, 0, 0, 0, 200, 198, 1, 0, 0, 0,
+		200, 201, 1, 0, 0, 0, 201, 203, 1, 0, 0, 0, 202, 200, 1, 0, 0, 0, 203,
+		207, 5, 17, 0, 0, 204, 206, 5, 23, 0, 0, 205, 204, 1, 0, 0, 0, 206, 209,
+		1, 0, 0, 0, 207, 205, 1, 0, 0, 0, 207, 208, 1, 0, 0, 0, 208, 210, 1, 0,
+		0, 0, 209, 207, 1, 0, 0, 0, 210, 212, 3, 28, 14, 0, 211, 200, 1, 0, 0,
+		0, 212, 215, 1, 0, 0, 0, 213, 211, 1, 0, 0, 0, 213, 214, 1, 0, 0, 0, 214,
+		217, 1, 0, 0, 0, 215, 213, 1, 0, 0, 0, 216, 196, 1, 0, 0, 0, 216, 217,
+		1, 0, 0, 0, 217, 218, 1, 0, 0, 0, 218, 219, 5, 19, 0, 0, 219, 41, 1, 0,
+		0, 0, 220, 221, 7, 3, 0, 0, 221, 43, 1, 0, 0, 0, 23, 47, 55, 67, 76, 87,
+		94, 101, 108, 113, 116, 120, 132, 139, 149, 156, 162, 176, 186, 193, 200,
+		207, 213, 216,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)
@@ -179,40 +193,41 @@ const (
 	ParalParserEOF                   = antlr.TokenEOF
 	ParalParserCMD_ARROW             = 1
 	ParalParserAT                    = 2
-	ParalParserIF                    = 3
-	ParalParserENDIF                 = 4
-	ParalParserASSIGN                = 5
-	ParalParserSTRING                = 6
-	ParalParserSINGLE_QUOTE_STRING   = 7
-	ParalParserFLOAT                 = 8
-	ParalParserNUMBER                = 9
-	ParalParserBOOLEAN               = 10
-	ParalParserZERO_ONE              = 11
-	ParalParserDURATION              = 12
-	ParalParserURL                   = 13
-	ParalParserCOLON                 = 14
-	ParalParserCOLONCOLON            = 15
-	ParalParserCOMMA                 = 16
-	ParalParserLBRACK                = 17
-	ParalParserRBRACK                = 18
-	ParalParserLRBRACK               = 19
-	ParalParserRRBRACK               = 20
-	ParalParserIDENTIFIER            = 21
-	ParalParserNEWLINE               = 22
-	ParalParserWS                    = 23
-	ParalParserCOMMAND_NEWLINE       = 24
-	ParalParserFUNCTION_CALL_START   = 25
-	ParalParserCOMMAND_IF            = 26
-	ParalParserCOMMAND_LOOP_KEY      = 27
-	ParalParserCOMMAND_LOOP_VALUE    = 28
-	ParalParserCOMMAND_WS            = 29
-	ParalParserCOMMAND_RAW_TEXT      = 30
-	ParalParserNESTED_FUNCTION_START = 31
-	ParalParserFUNCTION_END          = 32
-	ParalParserFUNCTION_WS           = 33
-	ParalParserNESTED_IF             = 34
-	ParalParserIF_END                = 35
-	ParalParserIF_WS                 = 36
+	ParalParserFUNCTION_START        = 3
+	ParalParserIF                    = 4
+	ParalParserENDIF                 = 5
+	ParalParserASSIGN                = 6
+	ParalParserSTRING                = 7
+	ParalParserSINGLE_QUOTE_STRING   = 8
+	ParalParserFLOAT                 = 9
+	ParalParserNUMBER                = 10
+	ParalParserBOOLEAN               = 11
+	ParalParserZERO_ONE              = 12
+	ParalParserDURATION              = 13
+	ParalParserURL                   = 14
+	ParalParserCOLON                 = 15
+	ParalParserCOLONCOLON            = 16
+	ParalParserCOMMA                 = 17
+	ParalParserLBRACK                = 18
+	ParalParserRBRACK                = 19
+	ParalParserLRBRACK               = 20
+	ParalParserRRBRACK               = 21
+	ParalParserIDENTIFIER            = 22
+	ParalParserNEWLINE               = 23
+	ParalParserWS                    = 24
+	ParalParserCOMMAND_NEWLINE       = 25
+	ParalParserFUNCTION_CALL_START   = 26
+	ParalParserCOMMAND_IF            = 27
+	ParalParserCOMMAND_LOOP_KEY      = 28
+	ParalParserCOMMAND_LOOP_VALUE    = 29
+	ParalParserCOMMAND_WS            = 30
+	ParalParserCOMMAND_RAW_TEXT      = 31
+	ParalParserNESTED_FUNCTION_START = 32
+	ParalParserFUNCTION_END          = 33
+	ParalParserFUNCTION_WS           = 34
+	ParalParserNESTED_IF             = 35
+	ParalParserIF_END                = 36
+	ParalParserIF_WS                 = 37
 )
 
 // ParalParser rules.
@@ -220,8 +235,8 @@ const (
 	ParalParserRULE_program             = 0
 	ParalParserRULE_statement           = 1
 	ParalParserRULE_variable_assignment = 2
-	ParalParserRULE_job_definition      = 3
-	ParalParserRULE_job_directive       = 4
+	ParalParserRULE_task_definition     = 3
+	ParalParserRULE_task_directive      = 4
 	ParalParserRULE_command_block       = 5
 	ParalParserRULE_command_content     = 6
 	ParalParserRULE_command_item        = 7
@@ -232,14 +247,13 @@ const (
 	ParalParserRULE_if_condition        = 12
 	ParalParserRULE_argument_list       = 13
 	ParalParserRULE_expression          = 14
-	ParalParserRULE_variable_value      = 15
-	ParalParserRULE_number_expr         = 16
-	ParalParserRULE_string_expr         = 17
-	ParalParserRULE_boolean_expr        = 18
-	ParalParserRULE_duration_expr       = 19
-	ParalParserRULE_matrix_expr         = 20
-	ParalParserRULE_list_expr           = 21
-	ParalParserRULE_loop_variable       = 22
+	ParalParserRULE_number_expr         = 15
+	ParalParserRULE_string_expr         = 16
+	ParalParserRULE_boolean_expr        = 17
+	ParalParserRULE_duration_expr       = 18
+	ParalParserRULE_matrix_expr         = 19
+	ParalParserRULE_list_expr           = 20
+	ParalParserRULE_loop_variable       = 21
 )
 
 // IProgramContext is an interface to support dynamic dispatch.
@@ -361,20 +375,20 @@ func (p *ParalParser) Program() (localctx IProgramContext) {
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(49)
+	p.SetState(47)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&6291460) != 0 {
+	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&12582916) != 0 {
 		{
-			p.SetState(46)
+			p.SetState(44)
 			p.Statement()
 		}
 
-		p.SetState(51)
+		p.SetState(49)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -382,7 +396,7 @@ func (p *ParalParser) Program() (localctx IProgramContext) {
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(52)
+		p.SetState(50)
 		p.Match(ParalParserEOF)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -412,7 +426,7 @@ type IStatementContext interface {
 
 	// Getter signatures
 	Variable_assignment() IVariable_assignmentContext
-	Job_definition() IJob_definitionContext
+	Task_definition() ITask_definitionContext
 	NEWLINE() antlr.TerminalNode
 
 	// IsStatementContext differentiates from other interfaces.
@@ -467,10 +481,10 @@ func (s *StatementContext) Variable_assignment() IVariable_assignmentContext {
 	return t.(IVariable_assignmentContext)
 }
 
-func (s *StatementContext) Job_definition() IJob_definitionContext {
+func (s *StatementContext) Task_definition() ITask_definitionContext {
 	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IJob_definitionContext); ok {
+		if _, ok := ctx.(ITask_definitionContext); ok {
 			t = ctx.(antlr.RuleContext)
 			break
 		}
@@ -480,7 +494,7 @@ func (s *StatementContext) Job_definition() IJob_definitionContext {
 		return nil
 	}
 
-	return t.(IJob_definitionContext)
+	return t.(ITask_definitionContext)
 }
 
 func (s *StatementContext) NEWLINE() antlr.TerminalNode {
@@ -510,7 +524,7 @@ func (s *StatementContext) ExitRule(listener antlr.ParseTreeListener) {
 func (p *ParalParser) Statement() (localctx IStatementContext) {
 	localctx = NewStatementContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 2, ParalParserRULE_statement)
-	p.SetState(57)
+	p.SetState(55)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -520,21 +534,21 @@ func (p *ParalParser) Statement() (localctx IStatementContext) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(54)
+			p.SetState(52)
 			p.Variable_assignment()
 		}
 
 	case 2:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(55)
-			p.Job_definition()
+			p.SetState(53)
+			p.Task_definition()
 		}
 
 	case 3:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(56)
+			p.SetState(54)
 			p.Match(ParalParserNEWLINE)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -569,7 +583,7 @@ type IVariable_assignmentContext interface {
 	// Getter signatures
 	IDENTIFIER() antlr.TerminalNode
 	ASSIGN() antlr.TerminalNode
-	Variable_value() IVariable_valueContext
+	Expression() IExpressionContext
 	NEWLINE() antlr.TerminalNode
 
 	// IsVariable_assignmentContext differentiates from other interfaces.
@@ -616,10 +630,10 @@ func (s *Variable_assignmentContext) ASSIGN() antlr.TerminalNode {
 	return s.GetToken(ParalParserASSIGN, 0)
 }
 
-func (s *Variable_assignmentContext) Variable_value() IVariable_valueContext {
+func (s *Variable_assignmentContext) Expression() IExpressionContext {
 	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IVariable_valueContext); ok {
+		if _, ok := ctx.(IExpressionContext); ok {
 			t = ctx.(antlr.RuleContext)
 			break
 		}
@@ -629,7 +643,7 @@ func (s *Variable_assignmentContext) Variable_value() IVariable_valueContext {
 		return nil
 	}
 
-	return t.(IVariable_valueContext)
+	return t.(IExpressionContext)
 }
 
 func (s *Variable_assignmentContext) NEWLINE() antlr.TerminalNode {
@@ -661,7 +675,7 @@ func (p *ParalParser) Variable_assignment() (localctx IVariable_assignmentContex
 	p.EnterRule(localctx, 4, ParalParserRULE_variable_assignment)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(59)
+		p.SetState(57)
 		p.Match(ParalParserIDENTIFIER)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -669,7 +683,7 @@ func (p *ParalParser) Variable_assignment() (localctx IVariable_assignmentContex
 		}
 	}
 	{
-		p.SetState(60)
+		p.SetState(58)
 		p.Match(ParalParserASSIGN)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -677,11 +691,11 @@ func (p *ParalParser) Variable_assignment() (localctx IVariable_assignmentContex
 		}
 	}
 	{
-		p.SetState(61)
-		p.Variable_value()
+		p.SetState(59)
+		p.Expression()
 	}
 	{
-		p.SetState(62)
+		p.SetState(60)
 		p.Match(ParalParserNEWLINE)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -702,8 +716,8 @@ errorExit:
 	goto errorExit // Trick to prevent compiler error if the label is not used
 }
 
-// IJob_definitionContext is an interface to support dynamic dispatch.
-type IJob_definitionContext interface {
+// ITask_definitionContext is an interface to support dynamic dispatch.
+type ITask_definitionContext interface {
 	antlr.ParserRuleContext
 
 	// GetParser returns the parser.
@@ -714,77 +728,77 @@ type IJob_definitionContext interface {
 	COLON() antlr.TerminalNode
 	AllNEWLINE() []antlr.TerminalNode
 	NEWLINE(i int) antlr.TerminalNode
-	AllJob_directive() []IJob_directiveContext
-	Job_directive(i int) IJob_directiveContext
+	AllTask_directive() []ITask_directiveContext
+	Task_directive(i int) ITask_directiveContext
 	AllCommand_block() []ICommand_blockContext
 	Command_block(i int) ICommand_blockContext
 
-	// IsJob_definitionContext differentiates from other interfaces.
-	IsJob_definitionContext()
+	// IsTask_definitionContext differentiates from other interfaces.
+	IsTask_definitionContext()
 }
 
-type Job_definitionContext struct {
+type Task_definitionContext struct {
 	antlr.BaseParserRuleContext
 	parser antlr.Parser
 }
 
-func NewEmptyJob_definitionContext() *Job_definitionContext {
-	var p = new(Job_definitionContext)
+func NewEmptyTask_definitionContext() *Task_definitionContext {
+	var p = new(Task_definitionContext)
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalParserRULE_job_definition
+	p.RuleIndex = ParalParserRULE_task_definition
 	return p
 }
 
-func InitEmptyJob_definitionContext(p *Job_definitionContext) {
+func InitEmptyTask_definitionContext(p *Task_definitionContext) {
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalParserRULE_job_definition
+	p.RuleIndex = ParalParserRULE_task_definition
 }
 
-func (*Job_definitionContext) IsJob_definitionContext() {}
+func (*Task_definitionContext) IsTask_definitionContext() {}
 
-func NewJob_definitionContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *Job_definitionContext {
-	var p = new(Job_definitionContext)
+func NewTask_definitionContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *Task_definitionContext {
+	var p = new(Task_definitionContext)
 
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
 
 	p.parser = parser
-	p.RuleIndex = ParalParserRULE_job_definition
+	p.RuleIndex = ParalParserRULE_task_definition
 
 	return p
 }
 
-func (s *Job_definitionContext) GetParser() antlr.Parser { return s.parser }
+func (s *Task_definitionContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *Job_definitionContext) IDENTIFIER() antlr.TerminalNode {
+func (s *Task_definitionContext) IDENTIFIER() antlr.TerminalNode {
 	return s.GetToken(ParalParserIDENTIFIER, 0)
 }
 
-func (s *Job_definitionContext) COLON() antlr.TerminalNode {
+func (s *Task_definitionContext) COLON() antlr.TerminalNode {
 	return s.GetToken(ParalParserCOLON, 0)
 }
 
-func (s *Job_definitionContext) AllNEWLINE() []antlr.TerminalNode {
+func (s *Task_definitionContext) AllNEWLINE() []antlr.TerminalNode {
 	return s.GetTokens(ParalParserNEWLINE)
 }
 
-func (s *Job_definitionContext) NEWLINE(i int) antlr.TerminalNode {
+func (s *Task_definitionContext) NEWLINE(i int) antlr.TerminalNode {
 	return s.GetToken(ParalParserNEWLINE, i)
 }
 
-func (s *Job_definitionContext) AllJob_directive() []IJob_directiveContext {
+func (s *Task_definitionContext) AllTask_directive() []ITask_directiveContext {
 	children := s.GetChildren()
 	len := 0
 	for _, ctx := range children {
-		if _, ok := ctx.(IJob_directiveContext); ok {
+		if _, ok := ctx.(ITask_directiveContext); ok {
 			len++
 		}
 	}
 
-	tst := make([]IJob_directiveContext, len)
+	tst := make([]ITask_directiveContext, len)
 	i := 0
 	for _, ctx := range children {
-		if t, ok := ctx.(IJob_directiveContext); ok {
-			tst[i] = t.(IJob_directiveContext)
+		if t, ok := ctx.(ITask_directiveContext); ok {
+			tst[i] = t.(ITask_directiveContext)
 			i++
 		}
 	}
@@ -792,11 +806,11 @@ func (s *Job_definitionContext) AllJob_directive() []IJob_directiveContext {
 	return tst
 }
 
-func (s *Job_definitionContext) Job_directive(i int) IJob_directiveContext {
+func (s *Task_definitionContext) Task_directive(i int) ITask_directiveContext {
 	var t antlr.RuleContext
 	j := 0
 	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IJob_directiveContext); ok {
+		if _, ok := ctx.(ITask_directiveContext); ok {
 			if j == i {
 				t = ctx.(antlr.RuleContext)
 				break
@@ -809,10 +823,10 @@ func (s *Job_definitionContext) Job_directive(i int) IJob_directiveContext {
 		return nil
 	}
 
-	return t.(IJob_directiveContext)
+	return t.(ITask_directiveContext)
 }
 
-func (s *Job_definitionContext) AllCommand_block() []ICommand_blockContext {
+func (s *Task_definitionContext) AllCommand_block() []ICommand_blockContext {
 	children := s.GetChildren()
 	len := 0
 	for _, ctx := range children {
@@ -833,7 +847,7 @@ func (s *Job_definitionContext) AllCommand_block() []ICommand_blockContext {
 	return tst
 }
 
-func (s *Job_definitionContext) Command_block(i int) ICommand_blockContext {
+func (s *Task_definitionContext) Command_block(i int) ICommand_blockContext {
 	var t antlr.RuleContext
 	j := 0
 	for _, ctx := range s.GetChildren() {
@@ -853,33 +867,33 @@ func (s *Job_definitionContext) Command_block(i int) ICommand_blockContext {
 	return t.(ICommand_blockContext)
 }
 
-func (s *Job_definitionContext) GetRuleContext() antlr.RuleContext {
+func (s *Task_definitionContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *Job_definitionContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+func (s *Task_definitionContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *Job_definitionContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *Task_definitionContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(ParalParserListener); ok {
-		listenerT.EnterJob_definition(s)
+		listenerT.EnterTask_definition(s)
 	}
 }
 
-func (s *Job_definitionContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *Task_definitionContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(ParalParserListener); ok {
-		listenerT.ExitJob_definition(s)
+		listenerT.ExitTask_definition(s)
 	}
 }
 
-func (p *ParalParser) Job_definition() (localctx IJob_definitionContext) {
-	localctx = NewJob_definitionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 6, ParalParserRULE_job_definition)
+func (p *ParalParser) Task_definition() (localctx ITask_definitionContext) {
+	localctx = NewTask_definitionContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 6, ParalParserRULE_task_definition)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(69)
+	p.SetState(67)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -888,11 +902,11 @@ func (p *ParalParser) Job_definition() (localctx IJob_definitionContext) {
 
 	for _la == ParalParserAT {
 		{
-			p.SetState(64)
-			p.Job_directive()
+			p.SetState(62)
+			p.Task_directive()
 		}
 		{
-			p.SetState(65)
+			p.SetState(63)
 			p.Match(ParalParserNEWLINE)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -900,7 +914,7 @@ func (p *ParalParser) Job_definition() (localctx IJob_definitionContext) {
 			}
 		}
 
-		p.SetState(71)
+		p.SetState(69)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -908,7 +922,7 @@ func (p *ParalParser) Job_definition() (localctx IJob_definitionContext) {
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(72)
+		p.SetState(70)
 		p.Match(ParalParserIDENTIFIER)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -916,7 +930,7 @@ func (p *ParalParser) Job_definition() (localctx IJob_definitionContext) {
 		}
 	}
 	{
-		p.SetState(73)
+		p.SetState(71)
 		p.Match(ParalParserCOLON)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -924,14 +938,14 @@ func (p *ParalParser) Job_definition() (localctx IJob_definitionContext) {
 		}
 	}
 	{
-		p.SetState(74)
+		p.SetState(72)
 		p.Match(ParalParserNEWLINE)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(76)
+	p.SetState(74)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -940,11 +954,11 @@ func (p *ParalParser) Job_definition() (localctx IJob_definitionContext) {
 
 	for ok := true; ok; ok = _la == ParalParserCMD_ARROW {
 		{
-			p.SetState(75)
+			p.SetState(73)
 			p.Command_block()
 		}
 
-		p.SetState(78)
+		p.SetState(76)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -965,8 +979,8 @@ errorExit:
 	goto errorExit // Trick to prevent compiler error if the label is not used
 }
 
-// IJob_directiveContext is an interface to support dynamic dispatch.
-type IJob_directiveContext interface {
+// ITask_directiveContext is an interface to support dynamic dispatch.
+type ITask_directiveContext interface {
 	antlr.ParserRuleContext
 
 	// GetParser returns the parser.
@@ -975,43 +989,43 @@ type IJob_directiveContext interface {
 	// Getter signatures
 	Directive() IDirectiveContext
 
-	// IsJob_directiveContext differentiates from other interfaces.
-	IsJob_directiveContext()
+	// IsTask_directiveContext differentiates from other interfaces.
+	IsTask_directiveContext()
 }
 
-type Job_directiveContext struct {
+type Task_directiveContext struct {
 	antlr.BaseParserRuleContext
 	parser antlr.Parser
 }
 
-func NewEmptyJob_directiveContext() *Job_directiveContext {
-	var p = new(Job_directiveContext)
+func NewEmptyTask_directiveContext() *Task_directiveContext {
+	var p = new(Task_directiveContext)
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalParserRULE_job_directive
+	p.RuleIndex = ParalParserRULE_task_directive
 	return p
 }
 
-func InitEmptyJob_directiveContext(p *Job_directiveContext) {
+func InitEmptyTask_directiveContext(p *Task_directiveContext) {
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalParserRULE_job_directive
+	p.RuleIndex = ParalParserRULE_task_directive
 }
 
-func (*Job_directiveContext) IsJob_directiveContext() {}
+func (*Task_directiveContext) IsTask_directiveContext() {}
 
-func NewJob_directiveContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *Job_directiveContext {
-	var p = new(Job_directiveContext)
+func NewTask_directiveContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *Task_directiveContext {
+	var p = new(Task_directiveContext)
 
 	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
 
 	p.parser = parser
-	p.RuleIndex = ParalParserRULE_job_directive
+	p.RuleIndex = ParalParserRULE_task_directive
 
 	return p
 }
 
-func (s *Job_directiveContext) GetParser() antlr.Parser { return s.parser }
+func (s *Task_directiveContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *Job_directiveContext) Directive() IDirectiveContext {
+func (s *Task_directiveContext) Directive() IDirectiveContext {
 	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
 		if _, ok := ctx.(IDirectiveContext); ok {
@@ -1027,32 +1041,32 @@ func (s *Job_directiveContext) Directive() IDirectiveContext {
 	return t.(IDirectiveContext)
 }
 
-func (s *Job_directiveContext) GetRuleContext() antlr.RuleContext {
+func (s *Task_directiveContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *Job_directiveContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+func (s *Task_directiveContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *Job_directiveContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *Task_directiveContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(ParalParserListener); ok {
-		listenerT.EnterJob_directive(s)
+		listenerT.EnterTask_directive(s)
 	}
 }
 
-func (s *Job_directiveContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *Task_directiveContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(ParalParserListener); ok {
-		listenerT.ExitJob_directive(s)
+		listenerT.ExitTask_directive(s)
 	}
 }
 
-func (p *ParalParser) Job_directive() (localctx IJob_directiveContext) {
-	localctx = NewJob_directiveContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 8, ParalParserRULE_job_directive)
+func (p *ParalParser) Task_directive() (localctx ITask_directiveContext) {
+	localctx = NewTask_directiveContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 8, ParalParserRULE_task_directive)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(80)
+		p.SetState(78)
 		p.Directive()
 	}
 
@@ -1166,7 +1180,7 @@ func (p *ParalParser) Command_block() (localctx ICommand_blockContext) {
 	p.EnterRule(localctx, 10, ParalParserRULE_command_block)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(82)
+		p.SetState(80)
 		p.Match(ParalParserCMD_ARROW)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1174,11 +1188,11 @@ func (p *ParalParser) Command_block() (localctx ICommand_blockContext) {
 		}
 	}
 	{
-		p.SetState(83)
+		p.SetState(81)
 		p.Command_content()
 	}
 	{
-		p.SetState(84)
+		p.SetState(82)
 		p.Match(ParalParserCOMMAND_NEWLINE)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1313,7 +1327,7 @@ func (p *ParalParser) Command_content() (localctx ICommand_contentContext) {
 	var _alt int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(89)
+	p.SetState(87)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -1325,12 +1339,12 @@ func (p *ParalParser) Command_content() (localctx ICommand_contentContext) {
 	for _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
 		if _alt == 1 {
 			{
-				p.SetState(86)
+				p.SetState(84)
 				p.Command_item()
 			}
 
 		}
-		p.SetState(91)
+		p.SetState(89)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -1478,38 +1492,38 @@ func (s *Command_itemContext) ExitRule(listener antlr.ParseTreeListener) {
 func (p *ParalParser) Command_item() (localctx ICommand_itemContext) {
 	localctx = NewCommand_itemContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 14, ParalParserRULE_command_item)
-	p.SetState(96)
+	p.SetState(94)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 
 	switch p.GetTokenStream().LA(1) {
-	case ParalParserFUNCTION_CALL_START:
+	case ParalParserFUNCTION_START, ParalParserFUNCTION_CALL_START:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(92)
+			p.SetState(90)
 			p.Function()
 		}
 
 	case ParalParserAT:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(93)
+			p.SetState(91)
 			p.Condition()
 		}
 
 	case ParalParserCOMMAND_LOOP_KEY, ParalParserCOMMAND_LOOP_VALUE:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(94)
+			p.SetState(92)
 			p.Loop_variable()
 		}
 
 	case ParalParserCOMMAND_RAW_TEXT:
 		p.EnterOuterAlt(localctx, 4)
 		{
-			p.SetState(95)
+			p.SetState(93)
 			p.Match(ParalParserCOMMAND_RAW_TEXT)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -1660,7 +1674,7 @@ func (p *ParalParser) Directive() (localctx IDirectiveContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(98)
+		p.SetState(96)
 		p.Match(ParalParserAT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -1668,27 +1682,27 @@ func (p *ParalParser) Directive() (localctx IDirectiveContext) {
 		}
 	}
 	{
-		p.SetState(99)
+		p.SetState(97)
 		p.Match(ParalParserIDENTIFIER)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(103)
+	p.SetState(101)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&2552381376) != 0 {
+	for (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&5171871624) != 0 {
 		{
-			p.SetState(100)
+			p.SetState(98)
 			p.Expression()
 		}
 
-		p.SetState(105)
+		p.SetState(103)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -1796,7 +1810,7 @@ func (p *ParalParser) Condition() (localctx IConditionContext) {
 	p.EnterRule(localctx, 18, ParalParserRULE_condition)
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(106)
+		p.SetState(104)
 		p.If_condition()
 	}
 
@@ -1824,6 +1838,7 @@ type IFunctionContext interface {
 	FUNCTION_CALL_START() antlr.TerminalNode
 	FUNCTION_END() antlr.TerminalNode
 	Argument_list() IArgument_listContext
+	FUNCTION_START() antlr.TerminalNode
 
 	// IsFunctionContext differentiates from other interfaces.
 	IsFunctionContext()
@@ -1885,6 +1900,10 @@ func (s *FunctionContext) Argument_list() IArgument_listContext {
 	return t.(IArgument_listContext)
 }
 
+func (s *FunctionContext) FUNCTION_START() antlr.TerminalNode {
+	return s.GetToken(ParalParserFUNCTION_START, 0)
+}
+
 func (s *FunctionContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -1910,36 +1929,82 @@ func (p *ParalParser) Function() (localctx IFunctionContext) {
 	p.EnterRule(localctx, 20, ParalParserRULE_function)
 	var _la int
 
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(108)
-		p.Match(ParalParserFUNCTION_CALL_START)
-		if p.HasError() {
-			// Recognition error - abort rule
-			goto errorExit
-		}
-	}
-	p.SetState(110)
+	p.SetState(116)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
-	_la = p.GetTokenStream().LA(1)
 
-	if (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&2552381376) != 0 {
+	switch p.GetTokenStream().LA(1) {
+	case ParalParserFUNCTION_CALL_START:
+		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(109)
-			p.Argument_list()
+			p.SetState(106)
+			p.Match(ParalParserFUNCTION_CALL_START)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
 		}
-
-	}
-	{
-		p.SetState(112)
-		p.Match(ParalParserFUNCTION_END)
+		p.SetState(108)
+		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
-			// Recognition error - abort rule
 			goto errorExit
 		}
+		_la = p.GetTokenStream().LA(1)
+
+		if (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&5171871624) != 0 {
+			{
+				p.SetState(107)
+				p.Argument_list()
+			}
+
+		}
+		{
+			p.SetState(110)
+			p.Match(ParalParserFUNCTION_END)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
+		}
+
+	case ParalParserFUNCTION_START:
+		p.EnterOuterAlt(localctx, 2)
+		{
+			p.SetState(111)
+			p.Match(ParalParserFUNCTION_START)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
+		}
+		p.SetState(113)
+		p.GetErrorHandler().Sync(p)
+		if p.HasError() {
+			goto errorExit
+		}
+		_la = p.GetTokenStream().LA(1)
+
+		if (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&5171871624) != 0 {
+			{
+				p.SetState(112)
+				p.Argument_list()
+			}
+
+		}
+		{
+			p.SetState(115)
+			p.Match(ParalParserFUNCTION_END)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
+		}
+
+	default:
+		p.SetError(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
+		goto errorExit
 	}
 
 errorExit:
@@ -2054,29 +2119,29 @@ func (p *ParalParser) Nested_function() (localctx INested_functionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(114)
+		p.SetState(118)
 		p.Match(ParalParserNESTED_FUNCTION_START)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(116)
+	p.SetState(120)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	if (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&2552381376) != 0 {
+	if (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&5171871624) != 0 {
 		{
-			p.SetState(115)
+			p.SetState(119)
 			p.Argument_list()
 		}
 
 	}
 	{
-		p.SetState(118)
+		p.SetState(122)
 		p.Match(ParalParserFUNCTION_END)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2245,7 +2310,7 @@ func (p *ParalParser) If_condition() (localctx IIf_conditionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(120)
+		p.SetState(124)
 		p.Match(ParalParserAT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2253,7 +2318,7 @@ func (p *ParalParser) If_condition() (localctx IIf_conditionContext) {
 		}
 	}
 	{
-		p.SetState(121)
+		p.SetState(125)
 		p.Match(ParalParserIF)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2261,7 +2326,7 @@ func (p *ParalParser) If_condition() (localctx IIf_conditionContext) {
 		}
 	}
 	{
-		p.SetState(122)
+		p.SetState(126)
 		p.Match(ParalParserLRBRACK)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2269,30 +2334,30 @@ func (p *ParalParser) If_condition() (localctx IIf_conditionContext) {
 		}
 	}
 	{
-		p.SetState(123)
+		p.SetState(127)
 		p.Expression()
 	}
 	{
-		p.SetState(124)
+		p.SetState(128)
 		p.Match(ParalParserRRBRACK)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(128)
+	p.SetState(132)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
-	_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 9, p.GetParserRuleContext())
+	_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 11, p.GetParserRuleContext())
 	if p.HasError() {
 		goto errorExit
 	}
 	for _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
 		if _alt == 1 {
 			{
-				p.SetState(125)
+				p.SetState(129)
 				p.Match(ParalParserNEWLINE)
 				if p.HasError() {
 					// Recognition error - abort rule
@@ -2301,21 +2366,21 @@ func (p *ParalParser) If_condition() (localctx IIf_conditionContext) {
 			}
 
 		}
-		p.SetState(130)
+		p.SetState(134)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
 		}
-		_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 9, p.GetParserRuleContext())
+		_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 11, p.GetParserRuleContext())
 		if p.HasError() {
 			goto errorExit
 		}
 	}
 	{
-		p.SetState(131)
+		p.SetState(135)
 		p.Command_content()
 	}
-	p.SetState(135)
+	p.SetState(139)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -2324,7 +2389,7 @@ func (p *ParalParser) If_condition() (localctx IIf_conditionContext) {
 
 	for _la == ParalParserNEWLINE {
 		{
-			p.SetState(132)
+			p.SetState(136)
 			p.Match(ParalParserNEWLINE)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2332,7 +2397,7 @@ func (p *ParalParser) If_condition() (localctx IIf_conditionContext) {
 			}
 		}
 
-		p.SetState(137)
+		p.SetState(141)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -2340,7 +2405,7 @@ func (p *ParalParser) If_condition() (localctx IIf_conditionContext) {
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(138)
+		p.SetState(142)
 		p.Match(ParalParserAT)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2348,7 +2413,7 @@ func (p *ParalParser) If_condition() (localctx IIf_conditionContext) {
 		}
 	}
 	{
-		p.SetState(139)
+		p.SetState(143)
 		p.Match(ParalParserENDIF)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -2381,6 +2446,8 @@ type IArgument_listContext interface {
 	Expression(i int) IExpressionContext
 	AllCOMMA() []antlr.TerminalNode
 	COMMA(i int) antlr.TerminalNode
+	AllNEWLINE() []antlr.TerminalNode
+	NEWLINE(i int) antlr.TerminalNode
 
 	// IsArgument_listContext differentiates from other interfaces.
 	IsArgument_listContext()
@@ -2467,6 +2534,14 @@ func (s *Argument_listContext) COMMA(i int) antlr.TerminalNode {
 	return s.GetToken(ParalParserCOMMA, i)
 }
 
+func (s *Argument_listContext) AllNEWLINE() []antlr.TerminalNode {
+	return s.GetTokens(ParalParserNEWLINE)
+}
+
+func (s *Argument_listContext) NEWLINE(i int) antlr.TerminalNode {
+	return s.GetToken(ParalParserNEWLINE, i)
+}
+
 func (s *Argument_listContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -2494,31 +2569,79 @@ func (p *ParalParser) Argument_list() (localctx IArgument_listContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(141)
+		p.SetState(145)
 		p.Expression()
 	}
-	p.SetState(146)
+	p.SetState(162)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	for _la == ParalParserCOMMA {
+	for _la == ParalParserCOMMA || _la == ParalParserNEWLINE {
+		p.SetState(149)
+		p.GetErrorHandler().Sync(p)
+		if p.HasError() {
+			goto errorExit
+		}
+		_la = p.GetTokenStream().LA(1)
+
+		for _la == ParalParserNEWLINE {
+			{
+				p.SetState(146)
+				p.Match(ParalParserNEWLINE)
+				if p.HasError() {
+					// Recognition error - abort rule
+					goto errorExit
+				}
+			}
+
+			p.SetState(151)
+			p.GetErrorHandler().Sync(p)
+			if p.HasError() {
+				goto errorExit
+			}
+			_la = p.GetTokenStream().LA(1)
+		}
 		{
-			p.SetState(142)
+			p.SetState(152)
 			p.Match(ParalParserCOMMA)
 			if p.HasError() {
 				// Recognition error - abort rule
 				goto errorExit
 			}
 		}
+		p.SetState(156)
+		p.GetErrorHandler().Sync(p)
+		if p.HasError() {
+			goto errorExit
+		}
+		_la = p.GetTokenStream().LA(1)
+
+		for _la == ParalParserNEWLINE {
+			{
+				p.SetState(153)
+				p.Match(ParalParserNEWLINE)
+				if p.HasError() {
+					// Recognition error - abort rule
+					goto errorExit
+				}
+			}
+
+			p.SetState(158)
+			p.GetErrorHandler().Sync(p)
+			if p.HasError() {
+				goto errorExit
+			}
+			_la = p.GetTokenStream().LA(1)
+		}
 		{
-			p.SetState(143)
+			p.SetState(159)
 			p.Expression()
 		}
 
-		p.SetState(148)
+		p.SetState(164)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -2547,9 +2670,17 @@ type IExpressionContext interface {
 	GetParser() antlr.Parser
 
 	// Getter signatures
-	Nested_function() INested_functionContext
-	Variable_value() IVariable_valueContext
 	Loop_variable() ILoop_variableContext
+	Function() IFunctionContext
+	Nested_function() INested_functionContext
+	URL() antlr.TerminalNode
+	Number_expr() INumber_exprContext
+	String_expr() IString_exprContext
+	Boolean_expr() IBoolean_exprContext
+	Duration_expr() IDuration_exprContext
+	Matrix_expr() IMatrix_exprContext
+	List_expr() IList_exprContext
+	IDENTIFIER() antlr.TerminalNode
 
 	// IsExpressionContext differentiates from other interfaces.
 	IsExpressionContext()
@@ -2587,6 +2718,38 @@ func NewExpressionContext(parser antlr.Parser, parent antlr.ParserRuleContext, i
 
 func (s *ExpressionContext) GetParser() antlr.Parser { return s.parser }
 
+func (s *ExpressionContext) Loop_variable() ILoop_variableContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(ILoop_variableContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ILoop_variableContext)
+}
+
+func (s *ExpressionContext) Function() IFunctionContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IFunctionContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IFunctionContext)
+}
+
 func (s *ExpressionContext) Nested_function() INested_functionContext {
 	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
@@ -2603,26 +2766,14 @@ func (s *ExpressionContext) Nested_function() INested_functionContext {
 	return t.(INested_functionContext)
 }
 
-func (s *ExpressionContext) Variable_value() IVariable_valueContext {
-	var t antlr.RuleContext
-	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IVariable_valueContext); ok {
-			t = ctx.(antlr.RuleContext)
-			break
-		}
-	}
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IVariable_valueContext)
+func (s *ExpressionContext) URL() antlr.TerminalNode {
+	return s.GetToken(ParalParserURL, 0)
 }
 
-func (s *ExpressionContext) Loop_variable() ILoop_variableContext {
+func (s *ExpressionContext) Number_expr() INumber_exprContext {
 	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(ILoop_variableContext); ok {
+		if _, ok := ctx.(INumber_exprContext); ok {
 			t = ctx.(antlr.RuleContext)
 			break
 		}
@@ -2632,7 +2783,91 @@ func (s *ExpressionContext) Loop_variable() ILoop_variableContext {
 		return nil
 	}
 
-	return t.(ILoop_variableContext)
+	return t.(INumber_exprContext)
+}
+
+func (s *ExpressionContext) String_expr() IString_exprContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IString_exprContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IString_exprContext)
+}
+
+func (s *ExpressionContext) Boolean_expr() IBoolean_exprContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IBoolean_exprContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IBoolean_exprContext)
+}
+
+func (s *ExpressionContext) Duration_expr() IDuration_exprContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IDuration_exprContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IDuration_exprContext)
+}
+
+func (s *ExpressionContext) Matrix_expr() IMatrix_exprContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IMatrix_exprContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IMatrix_exprContext)
+}
+
+func (s *ExpressionContext) List_expr() IList_exprContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IList_exprContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IList_exprContext)
+}
+
+func (s *ExpressionContext) IDENTIFIER() antlr.TerminalNode {
+	return s.GetToken(ParalParserIDENTIFIER, 0)
 }
 
 func (s *ExpressionContext) GetRuleContext() antlr.RuleContext {
@@ -2658,243 +2893,38 @@ func (s *ExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
 func (p *ParalParser) Expression() (localctx IExpressionContext) {
 	localctx = NewExpressionContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 28, ParalParserRULE_expression)
-	p.SetState(152)
+	p.SetState(176)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 
-	switch p.GetTokenStream().LA(1) {
-	case ParalParserNESTED_FUNCTION_START:
-		p.EnterOuterAlt(localctx, 1)
-		{
-			p.SetState(149)
-			p.Nested_function()
-		}
-
-	case ParalParserSTRING, ParalParserSINGLE_QUOTE_STRING, ParalParserFLOAT, ParalParserNUMBER, ParalParserBOOLEAN, ParalParserZERO_ONE, ParalParserDURATION, ParalParserURL, ParalParserLBRACK, ParalParserIDENTIFIER:
-		p.EnterOuterAlt(localctx, 2)
-		{
-			p.SetState(150)
-			p.Variable_value()
-		}
-
-	case ParalParserCOMMAND_LOOP_KEY, ParalParserCOMMAND_LOOP_VALUE:
-		p.EnterOuterAlt(localctx, 3)
-		{
-			p.SetState(151)
-			p.Loop_variable()
-		}
-
-	default:
-		p.SetError(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
-		goto errorExit
-	}
-
-errorExit:
-	if p.HasError() {
-		v := p.GetError()
-		localctx.SetException(v)
-		p.GetErrorHandler().ReportError(p, v)
-		p.GetErrorHandler().Recover(p, v)
-		p.SetError(nil)
-	}
-	p.ExitRule()
-	return localctx
-	goto errorExit // Trick to prevent compiler error if the label is not used
-}
-
-// IVariable_valueContext is an interface to support dynamic dispatch.
-type IVariable_valueContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// Getter signatures
-	URL() antlr.TerminalNode
-	Number_expr() INumber_exprContext
-	String_expr() IString_exprContext
-	Boolean_expr() IBoolean_exprContext
-	Duration_expr() IDuration_exprContext
-	Matrix_expr() IMatrix_exprContext
-	List_expr() IList_exprContext
-	IDENTIFIER() antlr.TerminalNode
-
-	// IsVariable_valueContext differentiates from other interfaces.
-	IsVariable_valueContext()
-}
-
-type Variable_valueContext struct {
-	antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyVariable_valueContext() *Variable_valueContext {
-	var p = new(Variable_valueContext)
-	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalParserRULE_variable_value
-	return p
-}
-
-func InitEmptyVariable_valueContext(p *Variable_valueContext) {
-	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
-	p.RuleIndex = ParalParserRULE_variable_value
-}
-
-func (*Variable_valueContext) IsVariable_valueContext() {}
-
-func NewVariable_valueContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *Variable_valueContext {
-	var p = new(Variable_valueContext)
-
-	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = ParalParserRULE_variable_value
-
-	return p
-}
-
-func (s *Variable_valueContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *Variable_valueContext) URL() antlr.TerminalNode {
-	return s.GetToken(ParalParserURL, 0)
-}
-
-func (s *Variable_valueContext) Number_expr() INumber_exprContext {
-	var t antlr.RuleContext
-	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(INumber_exprContext); ok {
-			t = ctx.(antlr.RuleContext)
-			break
-		}
-	}
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(INumber_exprContext)
-}
-
-func (s *Variable_valueContext) String_expr() IString_exprContext {
-	var t antlr.RuleContext
-	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IString_exprContext); ok {
-			t = ctx.(antlr.RuleContext)
-			break
-		}
-	}
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IString_exprContext)
-}
-
-func (s *Variable_valueContext) Boolean_expr() IBoolean_exprContext {
-	var t antlr.RuleContext
-	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IBoolean_exprContext); ok {
-			t = ctx.(antlr.RuleContext)
-			break
-		}
-	}
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IBoolean_exprContext)
-}
-
-func (s *Variable_valueContext) Duration_expr() IDuration_exprContext {
-	var t antlr.RuleContext
-	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IDuration_exprContext); ok {
-			t = ctx.(antlr.RuleContext)
-			break
-		}
-	}
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IDuration_exprContext)
-}
-
-func (s *Variable_valueContext) Matrix_expr() IMatrix_exprContext {
-	var t antlr.RuleContext
-	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IMatrix_exprContext); ok {
-			t = ctx.(antlr.RuleContext)
-			break
-		}
-	}
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IMatrix_exprContext)
-}
-
-func (s *Variable_valueContext) List_expr() IList_exprContext {
-	var t antlr.RuleContext
-	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IList_exprContext); ok {
-			t = ctx.(antlr.RuleContext)
-			break
-		}
-	}
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IList_exprContext)
-}
-
-func (s *Variable_valueContext) IDENTIFIER() antlr.TerminalNode {
-	return s.GetToken(ParalParserIDENTIFIER, 0)
-}
-
-func (s *Variable_valueContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *Variable_valueContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *Variable_valueContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(ParalParserListener); ok {
-		listenerT.EnterVariable_value(s)
-	}
-}
-
-func (s *Variable_valueContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(ParalParserListener); ok {
-		listenerT.ExitVariable_value(s)
-	}
-}
-
-func (p *ParalParser) Variable_value() (localctx IVariable_valueContext) {
-	localctx = NewVariable_valueContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 30, ParalParserRULE_variable_value)
-	p.SetState(162)
-	p.GetErrorHandler().Sync(p)
-	if p.HasError() {
-		goto errorExit
-	}
-
-	switch p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 13, p.GetParserRuleContext()) {
+	switch p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 16, p.GetParserRuleContext()) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(154)
+			p.SetState(165)
+			p.Loop_variable()
+		}
+
+	case 2:
+		p.EnterOuterAlt(localctx, 2)
+		{
+			p.SetState(166)
+			p.Function()
+		}
+
+	case 3:
+		p.EnterOuterAlt(localctx, 3)
+		{
+			p.SetState(167)
+			p.Nested_function()
+		}
+
+	case 4:
+		p.EnterOuterAlt(localctx, 4)
+		{
+			p.SetState(168)
 			p.Match(ParalParserURL)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -2902,52 +2932,52 @@ func (p *ParalParser) Variable_value() (localctx IVariable_valueContext) {
 			}
 		}
 
-	case 2:
-		p.EnterOuterAlt(localctx, 2)
-		{
-			p.SetState(155)
-			p.Number_expr()
-		}
-
-	case 3:
-		p.EnterOuterAlt(localctx, 3)
-		{
-			p.SetState(156)
-			p.String_expr()
-		}
-
-	case 4:
-		p.EnterOuterAlt(localctx, 4)
-		{
-			p.SetState(157)
-			p.Boolean_expr()
-		}
-
 	case 5:
 		p.EnterOuterAlt(localctx, 5)
 		{
-			p.SetState(158)
-			p.Duration_expr()
+			p.SetState(169)
+			p.Number_expr()
 		}
 
 	case 6:
 		p.EnterOuterAlt(localctx, 6)
 		{
-			p.SetState(159)
-			p.Matrix_expr()
+			p.SetState(170)
+			p.String_expr()
 		}
 
 	case 7:
 		p.EnterOuterAlt(localctx, 7)
 		{
-			p.SetState(160)
-			p.List_expr()
+			p.SetState(171)
+			p.Boolean_expr()
 		}
 
 	case 8:
 		p.EnterOuterAlt(localctx, 8)
 		{
-			p.SetState(161)
+			p.SetState(172)
+			p.Duration_expr()
+		}
+
+	case 9:
+		p.EnterOuterAlt(localctx, 9)
+		{
+			p.SetState(173)
+			p.Matrix_expr()
+		}
+
+	case 10:
+		p.EnterOuterAlt(localctx, 10)
+		{
+			p.SetState(174)
+			p.List_expr()
+		}
+
+	case 11:
+		p.EnterOuterAlt(localctx, 11)
+		{
+			p.SetState(175)
 			p.Match(ParalParserIDENTIFIER)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -3049,12 +3079,12 @@ func (s *Number_exprContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ParalParser) Number_expr() (localctx INumber_exprContext) {
 	localctx = NewNumber_exprContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 32, ParalParserRULE_number_expr)
+	p.EnterRule(localctx, 30, ParalParserRULE_number_expr)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(164)
+		p.SetState(178)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(_la == ParalParserFLOAT || _la == ParalParserNUMBER) {
@@ -3155,12 +3185,12 @@ func (s *String_exprContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ParalParser) String_expr() (localctx IString_exprContext) {
 	localctx = NewString_exprContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 34, ParalParserRULE_string_expr)
+	p.EnterRule(localctx, 32, ParalParserRULE_string_expr)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(166)
+		p.SetState(180)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(_la == ParalParserSTRING || _la == ParalParserSINGLE_QUOTE_STRING) {
@@ -3261,12 +3291,12 @@ func (s *Boolean_exprContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ParalParser) Boolean_expr() (localctx IBoolean_exprContext) {
 	localctx = NewBoolean_exprContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 36, ParalParserRULE_boolean_expr)
+	p.EnterRule(localctx, 34, ParalParserRULE_boolean_expr)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(168)
+		p.SetState(182)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(_la == ParalParserBOOLEAN || _la == ParalParserZERO_ONE) {
@@ -3379,8 +3409,8 @@ func (s *Duration_exprContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ParalParser) Duration_expr() (localctx IDuration_exprContext) {
 	localctx = NewDuration_exprContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 38, ParalParserRULE_duration_expr)
-	p.SetState(172)
+	p.EnterRule(localctx, 36, ParalParserRULE_duration_expr)
+	p.SetState(186)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -3390,7 +3420,7 @@ func (p *ParalParser) Duration_expr() (localctx IDuration_exprContext) {
 	case ParalParserDURATION:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(170)
+			p.SetState(184)
 			p.Match(ParalParserDURATION)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -3401,7 +3431,7 @@ func (p *ParalParser) Duration_expr() (localctx IDuration_exprContext) {
 	case ParalParserFLOAT, ParalParserNUMBER:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(171)
+			p.SetState(185)
 			p.Number_expr()
 		}
 
@@ -3543,15 +3573,15 @@ func (s *Matrix_exprContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ParalParser) Matrix_expr() (localctx IMatrix_exprContext) {
 	localctx = NewMatrix_exprContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 40, ParalParserRULE_matrix_expr)
+	p.EnterRule(localctx, 38, ParalParserRULE_matrix_expr)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(174)
+		p.SetState(188)
 		p.List_expr()
 	}
-	p.SetState(177)
+	p.SetState(191)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -3560,7 +3590,7 @@ func (p *ParalParser) Matrix_expr() (localctx IMatrix_exprContext) {
 
 	for ok := true; ok; ok = _la == ParalParserCOLONCOLON {
 		{
-			p.SetState(175)
+			p.SetState(189)
 			p.Match(ParalParserCOLONCOLON)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -3568,11 +3598,11 @@ func (p *ParalParser) Matrix_expr() (localctx IMatrix_exprContext) {
 			}
 		}
 		{
-			p.SetState(176)
+			p.SetState(190)
 			p.List_expr()
 		}
 
-		p.SetState(179)
+		p.SetState(193)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -3603,10 +3633,12 @@ type IList_exprContext interface {
 	// Getter signatures
 	LBRACK() antlr.TerminalNode
 	RBRACK() antlr.TerminalNode
-	AllVariable_value() []IVariable_valueContext
-	Variable_value(i int) IVariable_valueContext
+	AllExpression() []IExpressionContext
+	Expression(i int) IExpressionContext
 	AllCOMMA() []antlr.TerminalNode
 	COMMA(i int) antlr.TerminalNode
+	AllNEWLINE() []antlr.TerminalNode
+	NEWLINE(i int) antlr.TerminalNode
 
 	// IsList_exprContext differentiates from other interfaces.
 	IsList_exprContext()
@@ -3652,20 +3684,20 @@ func (s *List_exprContext) RBRACK() antlr.TerminalNode {
 	return s.GetToken(ParalParserRBRACK, 0)
 }
 
-func (s *List_exprContext) AllVariable_value() []IVariable_valueContext {
+func (s *List_exprContext) AllExpression() []IExpressionContext {
 	children := s.GetChildren()
 	len := 0
 	for _, ctx := range children {
-		if _, ok := ctx.(IVariable_valueContext); ok {
+		if _, ok := ctx.(IExpressionContext); ok {
 			len++
 		}
 	}
 
-	tst := make([]IVariable_valueContext, len)
+	tst := make([]IExpressionContext, len)
 	i := 0
 	for _, ctx := range children {
-		if t, ok := ctx.(IVariable_valueContext); ok {
-			tst[i] = t.(IVariable_valueContext)
+		if t, ok := ctx.(IExpressionContext); ok {
+			tst[i] = t.(IExpressionContext)
 			i++
 		}
 	}
@@ -3673,11 +3705,11 @@ func (s *List_exprContext) AllVariable_value() []IVariable_valueContext {
 	return tst
 }
 
-func (s *List_exprContext) Variable_value(i int) IVariable_valueContext {
+func (s *List_exprContext) Expression(i int) IExpressionContext {
 	var t antlr.RuleContext
 	j := 0
 	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IVariable_valueContext); ok {
+		if _, ok := ctx.(IExpressionContext); ok {
 			if j == i {
 				t = ctx.(antlr.RuleContext)
 				break
@@ -3690,7 +3722,7 @@ func (s *List_exprContext) Variable_value(i int) IVariable_valueContext {
 		return nil
 	}
 
-	return t.(IVariable_valueContext)
+	return t.(IExpressionContext)
 }
 
 func (s *List_exprContext) AllCOMMA() []antlr.TerminalNode {
@@ -3699,6 +3731,14 @@ func (s *List_exprContext) AllCOMMA() []antlr.TerminalNode {
 
 func (s *List_exprContext) COMMA(i int) antlr.TerminalNode {
 	return s.GetToken(ParalParserCOMMA, i)
+}
+
+func (s *List_exprContext) AllNEWLINE() []antlr.TerminalNode {
+	return s.GetTokens(ParalParserNEWLINE)
+}
+
+func (s *List_exprContext) NEWLINE(i int) antlr.TerminalNode {
+	return s.GetToken(ParalParserNEWLINE, i)
 }
 
 func (s *List_exprContext) GetRuleContext() antlr.RuleContext {
@@ -3723,52 +3763,100 @@ func (s *List_exprContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ParalParser) List_expr() (localctx IList_exprContext) {
 	localctx = NewList_exprContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 42, ParalParserRULE_list_expr)
+	p.EnterRule(localctx, 40, ParalParserRULE_list_expr)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(181)
+		p.SetState(195)
 		p.Match(ParalParserLBRACK)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(190)
+	p.SetState(216)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	if (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&2244544) != 0 {
+	if (int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&5171871624) != 0 {
 		{
-			p.SetState(182)
-			p.Variable_value()
+			p.SetState(196)
+			p.Expression()
 		}
-		p.SetState(187)
+		p.SetState(213)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
 		}
 		_la = p.GetTokenStream().LA(1)
 
-		for _la == ParalParserCOMMA {
+		for _la == ParalParserCOMMA || _la == ParalParserNEWLINE {
+			p.SetState(200)
+			p.GetErrorHandler().Sync(p)
+			if p.HasError() {
+				goto errorExit
+			}
+			_la = p.GetTokenStream().LA(1)
+
+			for _la == ParalParserNEWLINE {
+				{
+					p.SetState(197)
+					p.Match(ParalParserNEWLINE)
+					if p.HasError() {
+						// Recognition error - abort rule
+						goto errorExit
+					}
+				}
+
+				p.SetState(202)
+				p.GetErrorHandler().Sync(p)
+				if p.HasError() {
+					goto errorExit
+				}
+				_la = p.GetTokenStream().LA(1)
+			}
 			{
-				p.SetState(183)
+				p.SetState(203)
 				p.Match(ParalParserCOMMA)
 				if p.HasError() {
 					// Recognition error - abort rule
 					goto errorExit
 				}
 			}
+			p.SetState(207)
+			p.GetErrorHandler().Sync(p)
+			if p.HasError() {
+				goto errorExit
+			}
+			_la = p.GetTokenStream().LA(1)
+
+			for _la == ParalParserNEWLINE {
+				{
+					p.SetState(204)
+					p.Match(ParalParserNEWLINE)
+					if p.HasError() {
+						// Recognition error - abort rule
+						goto errorExit
+					}
+				}
+
+				p.SetState(209)
+				p.GetErrorHandler().Sync(p)
+				if p.HasError() {
+					goto errorExit
+				}
+				_la = p.GetTokenStream().LA(1)
+			}
 			{
-				p.SetState(184)
-				p.Variable_value()
+				p.SetState(210)
+				p.Expression()
 			}
 
-			p.SetState(189)
+			p.SetState(215)
 			p.GetErrorHandler().Sync(p)
 			if p.HasError() {
 				goto errorExit
@@ -3778,7 +3866,7 @@ func (p *ParalParser) List_expr() (localctx IList_exprContext) {
 
 	}
 	{
-		p.SetState(192)
+		p.SetState(218)
 		p.Match(ParalParserRBRACK)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -3876,12 +3964,12 @@ func (s *Loop_variableContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *ParalParser) Loop_variable() (localctx ILoop_variableContext) {
 	localctx = NewLoop_variableContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 44, ParalParserRULE_loop_variable)
+	p.EnterRule(localctx, 42, ParalParserRULE_loop_variable)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(194)
+		p.SetState(220)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(_la == ParalParserCOMMAND_LOOP_KEY || _la == ParalParserCOMMAND_LOOP_VALUE) {

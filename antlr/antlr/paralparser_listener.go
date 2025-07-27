@@ -17,11 +17,11 @@ type ParalParserListener interface {
 	// EnterVariable_assignment is called when entering the variable_assignment production.
 	EnterVariable_assignment(c *Variable_assignmentContext)
 
-	// EnterJob_definition is called when entering the job_definition production.
-	EnterJob_definition(c *Job_definitionContext)
+	// EnterTask_definition is called when entering the task_definition production.
+	EnterTask_definition(c *Task_definitionContext)
 
-	// EnterJob_directive is called when entering the job_directive production.
-	EnterJob_directive(c *Job_directiveContext)
+	// EnterTask_directive is called when entering the task_directive production.
+	EnterTask_directive(c *Task_directiveContext)
 
 	// EnterCommand_block is called when entering the command_block production.
 	EnterCommand_block(c *Command_blockContext)
@@ -53,9 +53,6 @@ type ParalParserListener interface {
 	// EnterExpression is called when entering the expression production.
 	EnterExpression(c *ExpressionContext)
 
-	// EnterVariable_value is called when entering the variable_value production.
-	EnterVariable_value(c *Variable_valueContext)
-
 	// EnterNumber_expr is called when entering the number_expr production.
 	EnterNumber_expr(c *Number_exprContext)
 
@@ -86,11 +83,11 @@ type ParalParserListener interface {
 	// ExitVariable_assignment is called when exiting the variable_assignment production.
 	ExitVariable_assignment(c *Variable_assignmentContext)
 
-	// ExitJob_definition is called when exiting the job_definition production.
-	ExitJob_definition(c *Job_definitionContext)
+	// ExitTask_definition is called when exiting the task_definition production.
+	ExitTask_definition(c *Task_definitionContext)
 
-	// ExitJob_directive is called when exiting the job_directive production.
-	ExitJob_directive(c *Job_directiveContext)
+	// ExitTask_directive is called when exiting the task_directive production.
+	ExitTask_directive(c *Task_directiveContext)
 
 	// ExitCommand_block is called when exiting the command_block production.
 	ExitCommand_block(c *Command_blockContext)
@@ -121,9 +118,6 @@ type ParalParserListener interface {
 
 	// ExitExpression is called when exiting the expression production.
 	ExitExpression(c *ExpressionContext)
-
-	// ExitVariable_value is called when exiting the variable_value production.
-	ExitVariable_value(c *Variable_valueContext)
 
 	// ExitNumber_expr is called when exiting the number_expr production.
 	ExitNumber_expr(c *Number_exprContext)

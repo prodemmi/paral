@@ -1,0 +1,13 @@
+urls = ["https://api.github.com/users/octocat", "https://api.github.com/users/defunkt"]
+output_dir = "github_data"
+timestamp = @time("2006-01-02_15-04-05")
+
+@for urls
+fetch_github_users:
+    -> curl -s @value > @sprintf("%s/user_%d_%s.json", output_dir, @key, timestamp)
+    -> @printf("Downloaded user data from: %s\n", @value)
+
+@depend fetch_github_users
+process_data:
+    -> @printf("Processing %d user files...\n", @len(urls))
+    -> find @getvar(output_dir) -name "*.json" | head -5

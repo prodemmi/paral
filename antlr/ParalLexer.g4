@@ -5,6 +5,7 @@ lexer grammar ParalLexer;
 CMD_ARROW: '->' -> pushMode(COMMAND);
 
 AT : '@';
+FUNCTION_START: '@' IDENTIFIER '(' -> pushMode(FUNCTION);
 IF : 'if';
 ENDIF : 'endif';
 
@@ -62,6 +63,10 @@ mode FUNCTION;
 NESTED_FUNCTION_START: '@' IDENTIFIER '(' -> pushMode(FUNCTION);
 FUNCTION_END: ')' -> popMode;
 
+// Add loop variable to FUNCTION mode
+FUNCTION_LOOP_KEY: '@key' -> type(COMMAND_LOOP_KEY);
+FUNCTION_LOOP_VALUE: '@value' -> type(COMMAND_LOOP_VALUE);
+
 FUNCTION_LBRACK : '[' -> type(LBRACK);
 FUNCTION_RBRACK : ']' -> type(RBRACK);
 
@@ -77,6 +82,8 @@ FUNCTION_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* -> type(IDENTIFIER);
 FUNCTION_COMMA: ',' -> type(COMMA);
 
 FUNCTION_WS: [ \t]+ -> skip;
+
+FUNCTION_NEWLINE: ('\r'? '\n') -> type(NEWLINE);
 
 // ---------------------- IF Mode ----------------------
 

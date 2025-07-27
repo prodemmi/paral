@@ -39,17 +39,17 @@ func (s *BaseParalParserListener) EnterVariable_assignment(ctx *Variable_assignm
 // ExitVariable_assignment is called when production variable_assignment is exited.
 func (s *BaseParalParserListener) ExitVariable_assignment(ctx *Variable_assignmentContext) {}
 
-// EnterJob_definition is called when production job_definition is entered.
-func (s *BaseParalParserListener) EnterJob_definition(ctx *Job_definitionContext) {}
+// EnterTask_definition is called when production task_definition is entered.
+func (s *BaseParalParserListener) EnterTask_definition(ctx *Task_definitionContext) {}
 
-// ExitJob_definition is called when production job_definition is exited.
-func (s *BaseParalParserListener) ExitJob_definition(ctx *Job_definitionContext) {}
+// ExitTask_definition is called when production task_definition is exited.
+func (s *BaseParalParserListener) ExitTask_definition(ctx *Task_definitionContext) {}
 
-// EnterJob_directive is called when production job_directive is entered.
-func (s *BaseParalParserListener) EnterJob_directive(ctx *Job_directiveContext) {}
+// EnterTask_directive is called when production task_directive is entered.
+func (s *BaseParalParserListener) EnterTask_directive(ctx *Task_directiveContext) {}
 
-// ExitJob_directive is called when production job_directive is exited.
-func (s *BaseParalParserListener) ExitJob_directive(ctx *Job_directiveContext) {}
+// ExitTask_directive is called when production task_directive is exited.
+func (s *BaseParalParserListener) ExitTask_directive(ctx *Task_directiveContext) {}
 
 // EnterCommand_block is called when production command_block is entered.
 func (s *BaseParalParserListener) EnterCommand_block(ctx *Command_blockContext) {}
@@ -110,12 +110,6 @@ func (s *BaseParalParserListener) EnterExpression(ctx *ExpressionContext) {}
 
 // ExitExpression is called when production expression is exited.
 func (s *BaseParalParserListener) ExitExpression(ctx *ExpressionContext) {}
-
-// EnterVariable_value is called when production variable_value is entered.
-func (s *BaseParalParserListener) EnterVariable_value(ctx *Variable_valueContext) {}
-
-// ExitVariable_value is called when production variable_value is exited.
-func (s *BaseParalParserListener) ExitVariable_value(ctx *Variable_valueContext) {}
 
 // EnterNumber_expr is called when production number_expr is entered.
 func (s *BaseParalParserListener) EnterNumber_expr(ctx *Number_exprContext) {}
