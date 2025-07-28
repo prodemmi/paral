@@ -17,10 +17,10 @@ type Task struct {
 	Commands    []*Command
 	IsManual    bool
 	Metadata    metadata.Metadata
-	Reporter    *Reporter
+	Runtime     *Runtime
 }
 
-func NewTask(name, description string, filename string, metadata metadata.Metadata) *Task {
+func NewTask(runtime *Runtime, name, description string, filename string, metadata metadata.Metadata) *Task {
 	directives := make([]*Directive, 0)
 	commands := make([]*Command, 0)
 	return &Task{
@@ -30,7 +30,7 @@ func NewTask(name, description string, filename string, metadata metadata.Metada
 		Commands:    commands,
 		Filename:    filename,
 		Metadata:    metadata,
-		Reporter:    NewReporter(&metadata),
+		Runtime:     runtime,
 	}
 }
 
@@ -91,7 +91,7 @@ func (j *Task) AddTaskDirective(directive *Directive) error {
 		}
 		j.IsManual = dirValue[0].(bool)
 	default:
-		j.Reporter.Warn(fmt.Sprintf("Unknown task directive @%s", name), &j.Metadata)
+		j.Runtime.Reporter.Warn(fmt.Sprintf("Unknown task directive @%s", name), &j.Metadata)
 		dirValue = args
 	}
 

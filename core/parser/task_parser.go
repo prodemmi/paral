@@ -55,7 +55,7 @@ func (p *Parser) parseJob(ctx parser.ITask_definitionContext) *runtime.Task {
 	}
 
 	// Create new task
-	task := runtime.NewTask(name, description, filename, *mt)
+	task := runtime.NewTask(p.Runtime, name, description, filename, *mt)
 
 	// Process directives
 	for _, directiveExpr := range ctx.AllTask_directive() {

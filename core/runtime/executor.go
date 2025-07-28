@@ -242,7 +242,7 @@ func (c *Executor) executeDryRun(ctx *ExecutionContext) {
 		if forEnabled {
 			_, _ = ctx.Colors.Cyan.Fprintf(ctx.Writer, "   🔄 Would loop over: %v\n", forValues)
 			for _, val := range forValues {
-				_, _ = ctx.Colors.Magenta.Fprintf(ctx.Writer, "   → Item: %v\n", val)
+				_, _ = ctx.Colors.Magenta.Fprintf(ctx.Writer, "     → Item: %v\n", val)
 				c.printJobCommandsDryRun(task, val, ctx)
 			}
 		} else {
@@ -350,7 +350,7 @@ func (c *Executor) executeJob(task *Task, ctx *ExecutionContext) JobStats {
 
 		for _, val := range forValues {
 			if !ctx.Config.Silent && ctx.Config.Verbose {
-				_, _ = ctx.Colors.Magenta.Fprintf(ctx.Writer, "   → Item: %v\n", val)
+				_, _ = ctx.Colors.Magenta.Fprintf(ctx.Writer, "     → Item: %v\n", val)
 			}
 			jobStats := c.RunJobCommands(task, val, ctx)
 			stats.Total += jobStats.Total
