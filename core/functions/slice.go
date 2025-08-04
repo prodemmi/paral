@@ -1,23 +1,26 @@
 package functions
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func (f *Function) slice() (interface{}, error) {
-	if len(f.argResults) != 3 {
+func Slice(args ...interface{}) (interface{}, error) {
+	if len(args) != 3 {
 		return nil, fmt.Errorf("slice: requires exactly 3 arguments (input, from, to)")
 	}
-	from, ok := f.argResults[1].(int)
+
+	from, ok := args[1].(int)
 	if !ok {
 		return nil, fmt.Errorf("slice: second argument must be an integer (from index)")
 	}
-	to, ok := f.argResults[2].(int)
+	to, ok := args[2].(int)
 	if !ok {
 		return nil, fmt.Errorf("slice: third argument must be an integer (to index)")
 	}
 	if from < 0 || from > to {
 		return nil, fmt.Errorf("slice: invalid indices (from=%d, to=%d)", from, to)
 	}
-	switch input := f.argResults[0].(type) {
+	switch input := args[0].(type) {
 	case string:
 		if to > len(input) {
 			return nil, fmt.Errorf("slice: to index (%d) exceeds string length (%d)", to, len(input))

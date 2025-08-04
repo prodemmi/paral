@@ -5,15 +5,16 @@ import (
 	"strings"
 )
 
-func (f *Function) split() (interface{}, error) {
-	if len(f.argResults) != 2 {
+func Split(args ...interface{}) (interface{}, error) {
+	if len(args) != 2 {
 		return nil, fmt.Errorf("split: requires exactly 2 arguments (separator, input)")
 	}
-	separator, ok := f.argResults[0].(string)
+
+	separator, ok := args[0].(string)
 	if !ok {
 		return nil, fmt.Errorf("split: first argument must be a string (separator)")
 	}
-	input, ok := f.argResults[1].(string)
+	input, ok := args[1].(string)
 	if !ok {
 		return nil, fmt.Errorf("split: second argument must be a string (input)")
 	}

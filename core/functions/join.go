@@ -5,12 +5,13 @@ import (
 	"strings"
 )
 
-func (f *Function) join() (interface{}, error) {
-	if len(f.argResults) == 0 {
+func Join(args ...interface{}) (interface{}, error) {
+	if len(args) == 0 {
 		return "", nil
 	}
+
 	var result []string
-	for _, arg := range f.argResults {
+	for _, arg := range args {
 		switch v := arg.(type) {
 		case string:
 			result = append(result, v)

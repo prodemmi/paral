@@ -5,20 +5,19 @@ import (
 	"strconv"
 )
 
-func (f *Function) printf() (interface{}, error) {
-	if len(f.argResults) == 0 {
-		f.result = ""
-		return f.result, nil
+func Printf(args ...interface{}) (interface{}, error) {
+	if len(args) == 0 {
+		return "", nil
 	}
-	format, ok := f.argResults[0].(string)
+
+	format, ok := args[0].(string)
 	if !ok {
-		f.result = ""
-		return f.result, fmt.Errorf("printf: first argument must be string")
+		return "", fmt.Errorf("printf: first argument must be string")
 	}
 	if unescaped, err := strconv.Unquote(`"` + format + `"`); err == nil {
 		format = unescaped
 	}
-	args := f.argResults[1:]
+	newArgs := args[1:]
 	for i, arg := range args {
 		if str, ok := arg.(string); ok {
 			if unescaped, err := strconv.Unquote(`"` + str + `"`); err == nil {
@@ -26,6 +25,5 @@ func (f *Function) printf() (interface{}, error) {
 			}
 		}
 	}
-	f.result = fmt.Sprintf(format, args...)
-	return f.result, nil
+	return fmt.Sprintf(format, newArgs...), nil
 }

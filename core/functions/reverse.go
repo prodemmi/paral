@@ -1,10 +1,11 @@
 package functions
 
-func (f *Function) reverse() (interface{}, error) {
-	if len(f.argResults) == 0 {
+func Reverse(args ...interface{}) (interface{}, error) {
+	if len(args) == 0 {
 		return nil, nil
 	}
-	switch v := f.argResults[0].(type) {
+
+	switch v := args[0].(type) {
 	case string:
 		runes := []rune(v)
 		for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {

@@ -3,7 +3,6 @@ package functions
 import (
 	"fmt"
 	"math"
-	"paral/core/variable"
 )
 
 func IsInt(val float64) bool {
@@ -58,69 +57,5 @@ func ToFloat64(val interface{}) (float64, error) {
 		return 0, fmt.Errorf("cannot convert string to number: %v", v)
 	default:
 		return 0, fmt.Errorf("unsupported type: %T", v)
-	}
-}
-
-func ResolveValue(arg interface{}, forValue interface{}, forIndex int) (interface{}, error) {
-	if str, ok := arg.(string); ok {
-		if str == "@value" && forValue != nil {
-			return forValue, nil
-		}
-		if str == "@key" && forIndex >= 0 {
-			return forIndex, nil
-		}
-	}
-
-	switch v := arg.(type) {
-	case variable.Variable:
-		switch val := v.Value.(type) {
-		case variable.StringValue:
-			return val.Value, nil
-		case variable.IntValue:
-			return val.Value, nil
-		case variable.FloatValue:
-			return val.Value, nil
-		case variable.BoolValue:
-			return val.Value, nil
-		case variable.ListValue:
-			return val.Value, nil
-		case variable.MatrixValue:
-			return val.Value, nil
-		default:
-			return val, nil
-		}
-	case Function:
-		v.forValues = forValue
-		v.forIndex = forIndex
-		return v.Call()
-	case *Function:
-		v.forValues = forValue
-		v.forIndex = forIndex
-		return v.Call()
-	case []interface{}:
-		resolved := make([]interface{}, len(v))
-		for i, item := range v {
-			val, err := ResolveValue(item, forValue, forIndex)
-			if err != nil {
-				return nil, err
-			}
-			resolved[i] = val
-		}
-		return resolved, nil
-	case [][]interface{}:
-		resolved := make([][]interface{}, len(v))
-		for i, inner := range v {
-			resolved[i] = make([]interface{}, len(inner))
-			for j, item := range inner {
-				val, err := ResolveValue(item, forValue, forIndex)
-				if err != nil {
-					return nil, err
-				}
-				resolved[i][j] = val
-			}
-		}
-		return resolved, nil
-	default:
-		return v, nil
 	}
 }

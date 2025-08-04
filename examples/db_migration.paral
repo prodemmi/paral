@@ -7,7 +7,6 @@ notify_db:
     > @try curl -H "Content-Type: application/json" -d '{"db": @arg("db_name"),"status":"migration_complete"}' "https://hooks.example.com/db-status"
 
 @id "backup"
-@parallel
 @for databases
 backup:
     > @defer 
@@ -19,7 +18,7 @@ backup:
       if(@catch)
         @stash("error", @catch)
 
-@dependall backup
+@defer
 @for databases
 migrate:
     > @defer 

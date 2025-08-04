@@ -5,9 +5,10 @@ import (
 	"strings"
 )
 
-func (f *Function) lower() (interface{}, error) {
-	if len(f.argResults) == 0 {
+func Lower(args ...interface{}) (interface{}, error) {
+	if len(args) == 0 {
 		return "", nil
 	}
-	return strings.ToLower(fmt.Sprint(f.argResults[0])), nil
+
+	return strings.ToLower(fmt.Sprint(args[0])), nil
 }

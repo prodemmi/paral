@@ -51,29 +51,35 @@ func (s *BaseParalParserListener) EnterTask_directive(ctx *Task_directiveContext
 // ExitTask_directive is called when production task_directive is exited.
 func (s *BaseParalParserListener) ExitTask_directive(ctx *Task_directiveContext) {}
 
-// EnterCommand_block is called when production command_block is entered.
-func (s *BaseParalParserListener) EnterCommand_block(ctx *Command_blockContext) {}
+// EnterPipeline_block is called when production pipeline_block is entered.
+func (s *BaseParalParserListener) EnterPipeline_block(ctx *Pipeline_blockContext) {}
 
-// ExitCommand_block is called when production command_block is exited.
-func (s *BaseParalParserListener) ExitCommand_block(ctx *Command_blockContext) {}
+// ExitPipeline_block is called when production pipeline_block is exited.
+func (s *BaseParalParserListener) ExitPipeline_block(ctx *Pipeline_blockContext) {}
 
-// EnterCommand_content is called when production command_content is entered.
-func (s *BaseParalParserListener) EnterCommand_content(ctx *Command_contentContext) {}
+// EnterPipeline_content is called when production pipeline_content is entered.
+func (s *BaseParalParserListener) EnterPipeline_content(ctx *Pipeline_contentContext) {}
 
-// ExitCommand_content is called when production command_content is exited.
-func (s *BaseParalParserListener) ExitCommand_content(ctx *Command_contentContext) {}
+// ExitPipeline_content is called when production pipeline_content is exited.
+func (s *BaseParalParserListener) ExitPipeline_content(ctx *Pipeline_contentContext) {}
 
-// EnterCommand_item is called when production command_item is entered.
-func (s *BaseParalParserListener) EnterCommand_item(ctx *Command_itemContext) {}
+// EnterPipeline_item is called when production pipeline_item is entered.
+func (s *BaseParalParserListener) EnterPipeline_item(ctx *Pipeline_itemContext) {}
 
-// ExitCommand_item is called when production command_item is exited.
-func (s *BaseParalParserListener) ExitCommand_item(ctx *Command_itemContext) {}
+// ExitPipeline_item is called when production pipeline_item is exited.
+func (s *BaseParalParserListener) ExitPipeline_item(ctx *Pipeline_itemContext) {}
 
 // EnterDirective is called when production directive is entered.
 func (s *BaseParalParserListener) EnterDirective(ctx *DirectiveContext) {}
 
 // ExitDirective is called when production directive is exited.
 func (s *BaseParalParserListener) ExitDirective(ctx *DirectiveContext) {}
+
+// EnterStash is called when production stash is entered.
+func (s *BaseParalParserListener) EnterStash(ctx *StashContext) {}
+
+// ExitStash is called when production stash is exited.
+func (s *BaseParalParserListener) ExitStash(ctx *StashContext) {}
 
 // EnterCondition is called when production condition is entered.
 func (s *BaseParalParserListener) EnterCondition(ctx *ConditionContext) {}

@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
-func (f *Function) upper() (interface{}, error) {
-	if len(f.argResults) == 0 {
+func Upper(args ...interface{}) (interface{}, error) {
+	if len(args) == 0 {
 		return "", nil
 	}
-	return strings.ToUpper(fmt.Sprint(f.argResults[0])), nil
+	return strings.ToUpper(fmt.Sprint(args[0])), nil
 }

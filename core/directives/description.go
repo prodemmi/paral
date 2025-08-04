@@ -1,5 +1,0 @@
-package directives
-
-func Description() {
-
-}

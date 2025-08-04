@@ -33,6 +33,7 @@ func (el *ErrorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbo
 
 	// Enhanced error formatting
 	el.formatError(line, column, msg, offendingSymbol)
+	os.Exit(1)
 }
 
 func (el *ErrorListener) formatError(line, column int, msg string, offendingSymbol interface{}) {

@@ -1,10 +1,11 @@
 package functions
 
-func (f *Function) last() (interface{}, error) {
-	if len(f.argResults) == 0 {
+func Last(args ...interface{}) (interface{}, error) {
+	if len(args) == 0 {
 		return nil, nil
 	}
-	switch v := f.argResults[0].(type) {
+
+	switch v := args[0].(type) {
 	case string:
 		if len(v) > 0 {
 			return string(v[len(v)-1]), nil

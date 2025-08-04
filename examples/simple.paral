@@ -1,18 +1,8 @@
-version = @sprintf("v1.0.1")
+url      = "https://google.com"
+items    = ["ubuntu", "fedora"] :: ["noble", "jammy"]
 
-@id "build_app"
-@manual
-@description "It build the app version"
-build:
-    -> @printf("🔧 Building the app %s...", version)
-
-@id "build_web"
-@description "It build the web version"
-@manual
-build:
-    -> @printf("🔧 Building the web %s...", version)
-
-@id "start_build"
-start_build:
-    -> @trigger(build_app)
-    -> @trigger(build_web)
+@id "scrap"
+@for items
+scrap:
+    -> @stash["first_stash"] << @sprintf("This is a stash pipeline for index %s-%s", @first(@value), @last(@value))
+    -> @print(@stash("first_stash"))

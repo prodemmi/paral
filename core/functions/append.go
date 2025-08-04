@@ -1,13 +1,15 @@
 package functions
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func (f *Function) append() (interface{}, error) {
-	if len(f.argResults) != 2 {
+func Append(args ...interface{}) (interface{}, error) {
+	if len(args) != 2 {
 		return nil, fmt.Errorf("append: requires exactly 2 arguments (input, appendTo)")
 	}
-	appendTo := f.argResults[1]
-	switch input := f.argResults[0].(type) {
+	appendTo := args[1]
+	switch input := args[0].(type) {
 	case string:
 		appendStr, ok := appendTo.(string)
 		if !ok {

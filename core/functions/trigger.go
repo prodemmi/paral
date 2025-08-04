@@ -5,11 +5,12 @@ import (
 	"fmt"
 )
 
-func (f *Function) trigger() (interface{}, error) {
-	if len(f.argResults) < 1 {
+func Trigger(args ...interface{}) (interface{}, error) {
+	if len(args) < 1 {
 		return nil, errors.New("no arguments provided")
 	}
-	jobName, ok := f.argResults[0].(string)
+
+	jobName, ok := args[0].(string)
 	if !ok || jobName == "" {
 		return nil, errors.New("task id not provided or invalid")
 	}

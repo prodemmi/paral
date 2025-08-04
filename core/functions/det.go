@@ -1,12 +1,15 @@
 package functions
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func (f *Function) det() (interface{}, error) {
-	if len(f.argResults) != 1 {
+func Det(args ...interface{}) (interface{}, error) {
+	if len(args) != 1 {
 		return nil, fmt.Errorf("det: requires exactly 1 argument (matrix)")
 	}
-	matrix, ok := f.argResults[0].([][]interface{})
+
+	matrix, ok := args[0].([][]interface{})
 	if !ok {
 		return nil, fmt.Errorf("det: argument must be a matrix")
 	}

@@ -1,12 +1,15 @@
 package functions
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func (f *Function) transpose() (interface{}, error) {
-	if len(f.argResults) != 1 {
+func Transpose(args ...interface{}) (interface{}, error) {
+	if len(args) != 1 {
 		return nil, fmt.Errorf("transpose: requires exactly 1 argument (matrix)")
 	}
-	matrix, ok := f.argResults[0].([][]interface{})
+
+	matrix, ok := args[0].([][]interface{})
 	if !ok {
 		return nil, fmt.Errorf("transpose: argument must be a matrix")
 	}

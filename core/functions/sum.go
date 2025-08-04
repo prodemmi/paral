@@ -1,12 +1,15 @@
 package functions
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func (f *Function) sum() (interface{}, error) {
-	if len(f.argResults) != 1 {
+func Sum(args ...interface{}) (interface{}, error) {
+	if len(args) != 1 {
 		return nil, fmt.Errorf("sum: requires exactly 1 argument (list or matrix)")
 	}
-	switch v := f.argResults[0].(type) {
+
+	switch v := args[0].(type) {
 	case []interface{}:
 		if len(v) == 0 {
 			return 0, nil

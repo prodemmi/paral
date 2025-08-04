@@ -29,7 +29,7 @@ func (p *Parser) parseVariable(ctx parser.IVariable_assignmentContext) *variable
 		if err != nil {
 			fnum, err := strconv.ParseFloat(numText, 64)
 			if err != nil {
-				p.Reporter.ThrowSyntaxError(fmt.Sprintf("Invalid number: %s", numText), mt)
+				p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("Invalid number: %s", numText), mt)
 			}
 			return &variable.Variable{
 				VarBase: variable.VarBase{Name: name},
@@ -67,7 +67,7 @@ func (p *Parser) parseVariable(ctx parser.IVariable_assignmentContext) *variable
 		for _, list := range val.Matrix_expr().AllList_expr() {
 			row := core.ExtractListValues(list)
 			if len(row) == 0 {
-				p.Reporter.Warn(fmt.Sprintf("Empty list in matrix %s", name), mt)
+				p.Runtime.Reporter.Warn(fmt.Sprintf("Empty list in matrix %s", name), mt)
 			}
 			matrixValues = append(matrixValues, row)
 		}
@@ -85,21 +85,21 @@ func (p *Parser) parseVariable(ctx parser.IVariable_assignmentContext) *variable
 		refName := val.IDENTIFIER().GetText()
 		refVar := p.Runtime.GetVariable(refName)
 		if refVar == nil {
-			p.Reporter.ThrowSyntaxError(fmt.Sprintf("Undefined variable: %s", refName), mt)
+			p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("Undefined variable: %s", refName), mt)
 		}
 		return &variable.Variable{
 			VarBase: variable.VarBase{Name: name},
 			Value:   refVar.Value,
 		}
 	} else if val.Nested_function() != nil {
-		nestedFunc := p.parseNestedFunction(val.Nested_function())
+		nestedFunc := p.parseNestedFunction(nil, val.Nested_function())
 		result, _ := nestedFunc.Call()
 		return &variable.Variable{
 			VarBase: variable.VarBase{Name: name},
 			Value:   result,
 		}
 	} else if val.Function() != nil {
-		function := p.parseFunction(val.Function())
+		function := p.parseFunction(nil, val.Function())
 		result, _ := function.Call()
 		return &variable.Variable{
 			VarBase: variable.VarBase{Name: name},
@@ -107,7 +107,7 @@ func (p *Parser) parseVariable(ctx parser.IVariable_assignmentContext) *variable
 		}
 	} else {
 		fmt.Println("val", val.GetText())
-		p.Reporter.ThrowSyntaxError("Unknown value type in variable definition", mt)
+		p.Runtime.Reporter.ThrowSyntaxError("Unknown value type in variable definition", mt)
 	}
 
 	return nil

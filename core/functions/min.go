@@ -1,14 +1,16 @@
 package functions
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func (f *Function) min() (interface{}, error) {
-	if len(f.argResults) == 0 {
+func Min(args ...interface{}) (interface{}, error) {
+	if len(args) == 0 {
 		return nil, fmt.Errorf("min: at least one argument required")
 	}
 
-	if len(f.argResults) == 1 {
-		switch v := f.argResults[0].(type) {
+	if len(args) == 1 {
+		switch v := args[0].(type) {
 		case []interface{}:
 			if len(v) == 0 {
 				return nil, fmt.Errorf("min: empty list")
@@ -58,11 +60,11 @@ func (f *Function) min() (interface{}, error) {
 		}
 	}
 
-	minVal, err := ToFloat64(f.argResults[0])
+	minVal, err := ToFloat64(args[0])
 	if err != nil {
-		return nil, fmt.Errorf("min: arguments must be numbers, got %v", f.argResults[0])
+		return nil, fmt.Errorf("min: arguments must be numbers, got %v", args[0])
 	}
-	for _, arg := range f.argResults[1:] {
+	for _, arg := range args[1:] {
 		val, err := ToFloat64(arg)
 		if err != nil {
 			return nil, fmt.Errorf("min: arguments must be numbers, got %v", arg)

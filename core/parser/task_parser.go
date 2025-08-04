@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (p *Parser) parseJob(ctx parser.ITask_definitionContext) *runtime.Task {
+func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
 	filename := ctx.GetStop().GetInputStream().GetSourceName()
 	line := ctx.GetStop().GetLine()
 	column := ctx.GetStop().GetColumn()
@@ -49,7 +49,7 @@ func (p *Parser) parseJob(ctx parser.ITask_definitionContext) *runtime.Task {
 	// Check for duplicate task
 	existJob := p.Runtime.GetTaskByID(name)
 	if existJob != nil {
-		p.Reporter.ThrowRuntimeError(
+		p.Runtime.Reporter.ThrowRuntimeError(
 			fmt.Sprintf("task %q has already been defined", name), mt,
 		)
 	}
@@ -61,19 +61,17 @@ func (p *Parser) parseJob(ctx parser.ITask_definitionContext) *runtime.Task {
 	for _, directiveExpr := range ctx.AllTask_directive() {
 		if directive := p.parseTaskDirective(directiveExpr); directive != nil {
 			if err := task.AddTaskDirective(directive); err != nil {
-				p.Reporter.ThrowSyntaxError(fmt.Sprintf("Invalid directive: %v", err), mt)
+				p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("\nInvalid directive: %v", err), mt)
 			}
 		}
 	}
 
-	// Process commands
-	commandCount := 0
-	for _, commandBlock := range ctx.AllCommand_block() {
-		if cmd := p.parseCommand(commandBlock); cmd != nil {
-			commandCount++
-			task.AddTaskCommand(cmd)
+	for _, pipelineBlock := range ctx.AllPipeline_block() {
+		if pipeline := p.parsePipeline(task, pipelineBlock); pipeline != nil {
+			task.AddTaskPipeline(pipeline)
 		}
 	}
+
 	return task
 }
 

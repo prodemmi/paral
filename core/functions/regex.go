@@ -5,15 +5,16 @@ import (
 	"regexp"
 )
 
-func (f *Function) regex() (interface{}, error) {
-	if len(f.argResults) != 2 {
+func Regex(args ...interface{}) (interface{}, error) {
+	if len(args) != 2 {
 		return nil, fmt.Errorf("regex: requires exactly 2 arguments (regex, input)")
 	}
-	pattern, ok := f.argResults[0].(string)
+
+	pattern, ok := args[0].(string)
 	if !ok {
 		return nil, fmt.Errorf("regex: first argument must be a string (regex pattern)")
 	}
-	input, ok := f.argResults[1].(string)
+	input, ok := args[1].(string)
 	if !ok {
 		return nil, fmt.Errorf("regex: second argument must be a string (input)")
 	}

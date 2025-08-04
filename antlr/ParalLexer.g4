@@ -2,7 +2,7 @@ lexer grammar ParalLexer;
 
 // ---------------------- Default Mode ----------------------
 
-CMD_ARROW: '->' -> pushMode(COMMAND);
+CMD_ARROW: '->' -> pushMode(PIPELINE);
 
 AT : '@';
 FUNCTION_START: '@' IDENTIFIER '(' -> pushMode(FUNCTION);
@@ -28,33 +28,45 @@ COLON : ':';
 COLONCOLON : '::';
 COMMA : ',';
 
-LBRACK : '[';  // Move these up
+LBRACK : '[';
 RBRACK : ']';
 
 LRBRACK: '(';
 RRBRACK: ')';
 
-IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;  // Keep this after brackets
+DOUBLE_BACK_ARROW: '<<';
+
+IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 
 NEWLINE: ('\r'? '\n');
 WS: [ \t]+ -> skip;
 
-// ---------------------- COMMAND Mode ----------------------
+// ---------------------- PIPELINE Mode ----------------------
 
-mode COMMAND;
+mode PIPELINE;
 
-COMMAND_NEWLINE: ('\r'? '\n') -> popMode;
+PIPELINE_NEWLINE: ('\r'? '\n') -> popMode;
+PIPELINE_STASH: '@stash[' -> pushMode(STASH_MODE);
+PIPELINE_DOUBLE_BACK_ARROW: '<<' -> type(DOUBLE_BACK_ARROW);  // Add this line
+PIPELINE_IF: '@if(' -> mode(IF_MODE);
+PIPELINE_LOOP_KEY: '@key';
+PIPELINE_LOOP_VALUE: '@value';
 FUNCTION_CALL_START: '@' IDENTIFIER '(' -> pushMode(FUNCTION);
-COMMAND_IF: '@if(' -> mode(IF_MODE);
-COMMAND_LOOP_KEY: '@key';
-COMMAND_LOOP_VALUE: '@value';
-COMMAND_STRING: STRING -> type(STRING);
 
-COMMAND_LBRACK : '[' -> type(LBRACK);
-COMMAND_RBRACK : ']' -> type(RBRACK);
+PIPELINE_WS: [ \t]+ -> skip;
+// Allow quoted strings within command raw text
+COMMAND_RAW_TEXT: (~[@\r\n\t] | '"' ( '\\' . | ~["\\\r\n] )* '"' | '\'' ( '\\' . | ~['\\\r\n] )* '\'')+;
 
-COMMAND_WS: [ \t]+ -> skip;
-COMMAND_RAW_TEXT: ~[@\r\n\t(),]+;
+// ---------------------- STASH Mode ----------------------
+
+mode STASH_MODE;
+
+STASH_LBRACK : '[' -> type(LBRACK);
+STASH_RBRACK : ']' -> type(RBRACK);
+STASH_DOUBLE_BACK_ARROW: '<<' -> type(DOUBLE_BACK_ARROW), popMode;
+STASH_STRING: '"' ( '\\' . | ~["\\\r\n] )* '"' -> type(STRING);
+STASH_SINGLE_QUOTE_STRING: '\'' ( '\\' . | ~['\\\r\n] )* '\'' -> type(SINGLE_QUOTE_STRING);
+STASH_WS: [ \t]+ -> skip;
 
 // ---------------------- FUNCTION Mode ----------------------
 
@@ -64,8 +76,8 @@ NESTED_FUNCTION_START: '@' IDENTIFIER '(' -> pushMode(FUNCTION);
 FUNCTION_END: ')' -> popMode;
 
 // Add loop variable to FUNCTION mode
-FUNCTION_LOOP_KEY: '@key' -> type(COMMAND_LOOP_KEY);
-FUNCTION_LOOP_VALUE: '@value' -> type(COMMAND_LOOP_VALUE);
+FUNCTION_LOOP_KEY: '@key' -> type(PIPELINE_LOOP_KEY);
+FUNCTION_LOOP_VALUE: '@value' -> type(PIPELINE_LOOP_VALUE);
 
 FUNCTION_LBRACK : '[' -> type(LBRACK);
 FUNCTION_RBRACK : ']' -> type(RBRACK);

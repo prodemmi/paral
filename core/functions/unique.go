@@ -5,12 +5,13 @@ import (
 	"strings"
 )
 
-func (f *Function) unique() (interface{}, error) {
-	if len(f.argResults) == 0 {
+func Unique(args ...interface{}) (interface{}, error) {
+	if len(args) == 0 {
 		return nil, nil
 	}
+
 	seen := make(map[string]bool)
-	switch v := f.argResults[0].(type) {
+	switch v := args[0].(type) {
 	case string:
 		var result []string
 		for _, r := range v {

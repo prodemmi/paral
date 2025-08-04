@@ -163,7 +163,7 @@ body {
   border-left-color: #9c27b0;
 }
 
-.node-item.command {
+.node-item.pipeline {
   background: #fff3e0;
   border-left-color: #ff9800;
 }
@@ -179,7 +179,7 @@ body {
   background: #9c27b0;
 }
 
-.node-type-indicator.command {
+.node-type-indicator.pipeline {
   background: #ff9800;
 }
 

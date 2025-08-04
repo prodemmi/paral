@@ -23,17 +23,20 @@ type ParalParserListener interface {
 	// EnterTask_directive is called when entering the task_directive production.
 	EnterTask_directive(c *Task_directiveContext)
 
-	// EnterCommand_block is called when entering the command_block production.
-	EnterCommand_block(c *Command_blockContext)
+	// EnterPipeline_block is called when entering the pipeline_block production.
+	EnterPipeline_block(c *Pipeline_blockContext)
 
-	// EnterCommand_content is called when entering the command_content production.
-	EnterCommand_content(c *Command_contentContext)
+	// EnterPipeline_content is called when entering the pipeline_content production.
+	EnterPipeline_content(c *Pipeline_contentContext)
 
-	// EnterCommand_item is called when entering the command_item production.
-	EnterCommand_item(c *Command_itemContext)
+	// EnterPipeline_item is called when entering the pipeline_item production.
+	EnterPipeline_item(c *Pipeline_itemContext)
 
 	// EnterDirective is called when entering the directive production.
 	EnterDirective(c *DirectiveContext)
+
+	// EnterStash is called when entering the stash production.
+	EnterStash(c *StashContext)
 
 	// EnterCondition is called when entering the condition production.
 	EnterCondition(c *ConditionContext)
@@ -89,17 +92,20 @@ type ParalParserListener interface {
 	// ExitTask_directive is called when exiting the task_directive production.
 	ExitTask_directive(c *Task_directiveContext)
 
-	// ExitCommand_block is called when exiting the command_block production.
-	ExitCommand_block(c *Command_blockContext)
+	// ExitPipeline_block is called when exiting the pipeline_block production.
+	ExitPipeline_block(c *Pipeline_blockContext)
 
-	// ExitCommand_content is called when exiting the command_content production.
-	ExitCommand_content(c *Command_contentContext)
+	// ExitPipeline_content is called when exiting the pipeline_content production.
+	ExitPipeline_content(c *Pipeline_contentContext)
 
-	// ExitCommand_item is called when exiting the command_item production.
-	ExitCommand_item(c *Command_itemContext)
+	// ExitPipeline_item is called when exiting the pipeline_item production.
+	ExitPipeline_item(c *Pipeline_itemContext)
 
 	// ExitDirective is called when exiting the directive production.
 	ExitDirective(c *DirectiveContext)
+
+	// ExitStash is called when exiting the stash production.
+	ExitStash(c *StashContext)
 
 	// ExitCondition is called when exiting the condition production.
 	ExitCondition(c *ConditionContext)

@@ -17,25 +17,25 @@ variable_assignment
     ;
 
 task_definition
-    : (task_directive NEWLINE)* IDENTIFIER COLON NEWLINE command_block+
+    : (task_directive NEWLINE)* IDENTIFIER COLON NEWLINE pipeline_block+
     ;
 
 task_directive
     : directive
     ;
 
-command_block
-    : CMD_ARROW command_content COMMAND_NEWLINE
+pipeline_block
+    : CMD_ARROW pipeline_content PIPELINE_NEWLINE
     ;
 
-command_content
-    : command_item*
+pipeline_content
+    : pipeline_item*
     ;
 
-command_item
-    : function
+pipeline_item
+    : stash
     | condition
-    | loop_variable
+    | function
     | COMMAND_RAW_TEXT
     ;
 
@@ -46,6 +46,10 @@ directive
     ;
 
 // ----------------- functions and conditions -------------
+
+stash
+    : PIPELINE_STASH string_expr RBRACK DOUBLE_BACK_ARROW pipeline_content
+    ;
 
 condition
     : if_condition
@@ -61,7 +65,7 @@ nested_function
     ;
 
 if_condition
-    : AT IF LRBRACK expression RRBRACK NEWLINE* command_content NEWLINE* AT ENDIF
+    : AT IF LRBRACK expression RRBRACK NEWLINE* pipeline_content NEWLINE* AT ENDIF
     ;
 
 // Argument list for functions
@@ -72,7 +76,7 @@ argument_list
 // Expression can be a value or a nested function
 expression
     : loop_variable
-    | function  // Add this line to allow functions in expressions
+    | function
     | nested_function
     | URL
     | number_expr
@@ -113,6 +117,6 @@ list_expr
     ;
 
 loop_variable
-    : COMMAND_LOOP_KEY
-    | COMMAND_LOOP_VALUE
+    : PIPELINE_LOOP_KEY
+    | PIPELINE_LOOP_VALUE
     ;

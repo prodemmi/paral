@@ -1,12 +1,15 @@
 package functions
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func (f *Function) middle() (interface{}, error) {
-	if len(f.argResults) == 0 {
+func Middle(args ...interface{}) (interface{}, error) {
+	if len(args) == 0 {
 		return nil, nil
 	}
-	switch v := f.argResults[0].(type) {
+
+	switch v := args[0].(type) {
 	case string:
 		if len(v) <= 2 {
 			return "", nil

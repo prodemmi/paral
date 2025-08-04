@@ -7,8 +7,7 @@ import (
 
 type Parser struct {
 	*parser.BaseParalParserListener
-	Runtime  *runtime.Runtime
-	Reporter *runtime.Reporter
+	Runtime *runtime.Runtime
 }
 
 func (p *Parser) ExitVariable_assignment(ctx *parser.Variable_assignmentContext) {
@@ -18,7 +17,7 @@ func (p *Parser) ExitVariable_assignment(ctx *parser.Variable_assignmentContext)
 }
 
 func (p *Parser) ExitTask_definition(ctx *parser.Task_definitionContext) {
-	if task := p.parseJob(ctx); task != nil {
-		p.Runtime.AddJob(task)
+	if task := p.parseTask(ctx); task != nil {
+		p.Runtime.AddTask(task)
 	}
 }

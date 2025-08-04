@@ -98,13 +98,13 @@
         // Zoom controls
         function zoomIn() {
           if (diagram) {
-            diagram.commandHandler.increaseZoom();
+            diagram.pipelineHandler.increaseZoom();
           }
         }
 
         function zoomOut() {
           if (diagram) {
-            diagram.commandHandler.decreaseZoom();
+            diagram.pipelineHandler.decreaseZoom();
           }
         }
 
@@ -341,7 +341,7 @@
                   new go.Binding("fill", "type", t => {
                     switch(t) {
                       case "task": return "#667eea";
-                      case "command": return "#ff9f43";
+                      case "pipeline": return "#ff9f43";
                       default: return "#74b9ff";
                     }
                   })

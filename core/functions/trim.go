@@ -5,9 +5,10 @@ import (
 	"strings"
 )
 
-func (f *Function) trim() (interface{}, error) {
-	if len(f.argResults) == 0 {
+func Trim(args ...interface{}) (interface{}, error) {
+	if len(args) == 0 {
 		return "", nil
 	}
-	return strings.TrimSpace(fmt.Sprint(f.argResults[0])), nil
+
+	return strings.TrimSpace(fmt.Sprint(args[0])), nil
 }

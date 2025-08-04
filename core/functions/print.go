@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-func (f *Function) print() (interface{}, error) {
+func Print(args ...interface{}) (interface{}, error) {
 	parts := []string{}
-	for _, a := range f.argResults {
+	for _, a := range args {
 		str := fmt.Sprint(a)
 		if unescaped, err := strconv.Unquote(`"` + str + `"`); err == nil {
 			parts = append(parts, unescaped)
@@ -16,6 +16,6 @@ func (f *Function) print() (interface{}, error) {
 			parts = append(parts, str)
 		}
 	}
-	f.result = strings.Join(parts, "")
-	return f.result, nil
+
+	return strings.Join(parts, " "), nil
 }

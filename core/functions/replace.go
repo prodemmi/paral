@@ -5,12 +5,13 @@ import (
 	"strings"
 )
 
-func (f *Function) replace() (interface{}, error) {
-	if len(f.argResults) < 3 {
+func Replace(args ...interface{}) (interface{}, error) {
+	if len(args) < 3 {
 		return "", fmt.Errorf("replace: requires 3 arguments")
 	}
-	old := fmt.Sprint(f.argResults[0])
-	newVal := fmt.Sprint(f.argResults[1])
-	str := fmt.Sprint(f.argResults[2])
+
+	old := fmt.Sprint(args[0])
+	newVal := fmt.Sprint(args[1])
+	str := fmt.Sprint(args[2])
 	return strings.ReplaceAll(str, old, newVal), nil
 }

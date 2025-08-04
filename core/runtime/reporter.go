@@ -62,9 +62,9 @@ func (c *Reporter) formatMessage(msgType, msg string, metadata *metadata.Metadat
 
 	if file != "" {
 		if line > 0 || column > 0 {
-			location = fmt.Sprintf("%s%s:%d:%d %s ", Blue, file, line, column, Reset)
+			location = fmt.Sprintf("%s%s:%d:%d\n\t%s ", Blue, file, line, column, Reset)
 		} else {
-			location = fmt.Sprintf("%s%s %s ", Blue, file, Reset)
+			location = fmt.Sprintf("%s%s\n\t%s ", Blue, file, Reset)
 		}
 	}
 

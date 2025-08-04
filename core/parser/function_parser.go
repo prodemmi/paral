@@ -2,13 +2,13 @@ package parser
 
 import (
 	parser "paral/antlr/antlr"
-	"paral/core/functions"
 	"paral/core/metadata"
+	"paral/core/runtime"
 	"strconv"
 	"strings"
 )
 
-func (p *Parser) parseNestedFunction(fnCtx parser.INested_functionContext) functions.Function {
+func (p *Parser) parseNestedFunction(task *runtime.Task, fnCtx parser.INested_functionContext) runtime.Function {
 	fn := fnCtx.(*parser.Nested_functionContext)
 	fnName := strings.Trim(fn.NESTED_FUNCTION_START().GetText(), "@(")
 	args := []interface{}{}
@@ -55,6 +55,20 @@ func (p *Parser) parseNestedFunction(fnCtx parser.INested_functionContext) funct
 					continue
 				}
 
+				// Handle function
+				if strToken := variableValue.Function(); strToken != nil {
+					nestedFunction := p.parseFunction(task, strToken)
+					args = append(args, nestedFunction)
+					continue
+				}
+
+				// Handle arg function
+				if strToken := variableValue.Nested_function(); strToken != nil {
+					nestedFunction := p.parseNestedFunction(task, strToken)
+					args = append(args, nestedFunction)
+					continue
+				}
+
 				if numToken := variableValue.List_expr(); numToken != nil {
 					var list []interface{}
 					for _, listItem := range numToken.AllExpression() {
@@ -63,17 +77,27 @@ func (p *Parser) parseNestedFunction(fnCtx parser.INested_functionContext) funct
 					args = append(args, list)
 					continue
 				}
+
+				if numToken := variableValue.Loop_variable(); numToken != nil {
+					if loopValue := numToken.PIPELINE_LOOP_VALUE(); loopValue != nil {
+						args = append(args, loopValue.GetText())
+					}
+					if loopKey := numToken.PIPELINE_LOOP_KEY(); loopKey != nil {
+						args = append(args, loopKey.GetText())
+					}
+					continue
+				}
 			}
 		}
 	}
 
-	return *functions.NewFunction(fnName, metadata.Metadata{
+	return *runtime.NewFunction(fnName, metadata.Metadata{
 		Line:   fnCtx.GetStop().GetLine(),
 		Column: fnCtx.GetStop().GetColumn(),
-	}, args...)
+	}, task, args...)
 }
 
-func (p *Parser) parseFunction(fnCtx parser.IFunctionContext) functions.Function {
+func (p *Parser) parseFunction(task *runtime.Task, fnCtx parser.IFunctionContext) *runtime.Function {
 	fn := fnCtx.(*parser.FunctionContext)
 	var fnName string
 	if fn.FUNCTION_CALL_START() != nil {
@@ -110,6 +134,20 @@ func (p *Parser) parseFunction(fnCtx parser.IFunctionContext) functions.Function
 					continue
 				}
 
+				// Handle function
+				if strToken := variableValue.Function(); strToken != nil {
+					nestedFunction := p.parseFunction(task, strToken)
+					args = append(args, nestedFunction)
+					continue
+				}
+
+				// Handle arg function
+				if strToken := variableValue.Nested_function(); strToken != nil {
+					nestedFunction := p.parseNestedFunction(task, strToken)
+					args = append(args, nestedFunction)
+					continue
+				}
+
 				// Handle number literals
 				if numToken := variableValue.Number_expr(); numToken != nil {
 					text := numToken.GetText()
@@ -133,17 +171,27 @@ func (p *Parser) parseFunction(fnCtx parser.IFunctionContext) functions.Function
 					args = append(args, list)
 					continue
 				}
+
+				if numToken := variableValue.Loop_variable(); numToken != nil {
+					if loopValue := numToken.PIPELINE_LOOP_VALUE(); loopValue != nil {
+						args = append(args, loopValue.GetText())
+					}
+					if loopKey := numToken.PIPELINE_LOOP_KEY(); loopKey != nil {
+						args = append(args, loopKey.GetText())
+					}
+					continue
+				}
 			}
 
 			// Handle nested functions
 			if innerFn := expr.Nested_function(); innerFn != nil {
-				args = append(args, p.parseNestedFunction(innerFn))
+				args = append(args, p.parseNestedFunction(task, innerFn))
 			}
 		}
 	}
 
-	return *functions.NewFunction(fnName, metadata.Metadata{
+	return runtime.NewFunction(fnName, metadata.Metadata{
 		Line:   fnCtx.GetStop().GetLine(),
 		Column: fnCtx.GetStop().GetColumn(),
-	}, args...)
+	}, task, args...)
 }
