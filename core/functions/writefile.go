@@ -18,12 +18,19 @@ func Writefile(args ...interface{}) (interface{}, error) {
 	}
 
 	dataVal := args[1]
-	data, ok := dataVal.(string)
-	if !ok {
+	data, ok := dataVal.(*string)
+	if data != nil && !ok {
 		return nil, fmt.Errorf("@writefile(): second argument must be a string (data to write)")
 	}
 
-	if err := os.WriteFile(filename, []byte(data), 0644); err != nil {
+	var content []byte
+	if data != nil {
+		content = []byte(*data)
+	} else {
+		content = make([]byte, 0)
+	}
+
+	if err := os.WriteFile(filename, content, 0644); err != nil {
 		return nil, err
 	}
 

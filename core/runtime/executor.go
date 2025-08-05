@@ -634,6 +634,7 @@ func (c *TaskExecutor) executeJob(task *Task, ctx *ExecutionContext) (JobStats, 
 func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, output *TaskOutput) JobStats {
 	stats := JobStats{}
 	indent := "    "
+	task.ClearUnusedStashes()
 	for _, pipeline := range task.Pipelines {
 		var result string
 		var success bool
@@ -645,7 +646,7 @@ func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, outpu
 		if pipeline.Stash != nil {
 			result, success = pipeline.Stash.GetValue(ctx, task, c.CommandExecutor)
 			if success {
-				task.PushStashStack(pipeline.Stash.Name, result, pipeline.Stash)
+				c.Runtime.PushStashStack(pipeline.Stash.Name, task.GetTaskId(), result, pipeline.Stash)
 				displayResult = fmt.Sprintf("%s▶ stash %q saved: %s", indent, pipeline.Stash.Name, strings.TrimRight(result, "\n"))
 			} else {
 				displayResult = fmt.Sprintf("%s❌ stash %q failed", indent, pipeline.Stash.Name)
@@ -705,6 +706,9 @@ func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, outpu
 			stats.Failed++
 		}
 	}
+
+	task.SetTaskIsFinished()
+
 	return stats
 }
 

@@ -10,6 +10,8 @@ type Stash struct {
 	RawText  string
 	Command  *Command
 	Metadata metadata.Metadata
+
+	DepCount int
 }
 
 func NewStash(name, taskID, rawText string, metadata metadata.Metadata, pipeline *Command) *Stash {

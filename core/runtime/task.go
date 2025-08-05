@@ -21,8 +21,9 @@ type Task struct {
 	Metadata         metadata.Metadata
 	Runtime          *Runtime
 	LoopStack        []*TaskLoopContext
-	StashStack       [][]*TaskStashContext
 	currentLoopIndex int
+
+	isFinished bool
 }
 
 type TaskPipeline struct {
@@ -35,12 +36,6 @@ type TaskPipeline struct {
 type TaskLoopContext struct {
 	Value interface{}
 	Key   int
-}
-
-type TaskStashContext struct {
-	Stash       *Stash
-	CacheResult interface{}
-	Key         string
 }
 
 func NewTask(runtime *Runtime, name, description string, filename string, metadata metadata.Metadata) *Task {
@@ -164,26 +159,32 @@ func (t *Task) GetActiveLoopContext() *TaskLoopContext {
 	return t.LoopStack[t.currentLoopIndex]
 }
 
-func (t *Task) PushStashStack(name string, value interface{}, stash *Stash) {
-	for len(t.StashStack) <= t.currentLoopIndex {
-		t.StashStack = append(t.StashStack, []*TaskStashContext{})
-	}
-	t.StashStack[t.currentLoopIndex] = append(t.StashStack[t.currentLoopIndex], &TaskStashContext{
-		Key:         name,
-		Stash:       stash,
-		CacheResult: value,
-	})
-}
+func (t *Task) ClearUnusedStashes() {
+	runtime := t.Runtime
 
-func (t *Task) GetActiveStashValue(name string) interface{} {
-	for i := len(t.StashStack) - 1; i >= 0; i-- {
-		for j := len(t.StashStack[i]) - 1; j >= 0; j-- {
-			if t.StashStack[i][j].Key == name {
-				return t.StashStack[i][j].CacheResult
+	for i := range runtime.StashStack {
+		stack := runtime.StashStack[i]
+		filteredStack := stack[:0]
+
+		for _, stashCtx := range stack {
+			stillNeeded := false
+			for _, task := range runtime.Tasks {
+				if runtime.IsTaskDependent(task.GetTaskId(), stashCtx.TaskID) && !task.isFinished {
+					stillNeeded = true
+					break
+				}
+			}
+			if stillNeeded {
+				filteredStack = append(filteredStack, stashCtx)
 			}
 		}
+
+		runtime.StashStack[i] = filteredStack
 	}
-	return nil
+}
+
+func (t *Task) SetTaskIsFinished() {
+	t.isFinished = true
 }
 
 func (t *Task) GetTaskId() string {

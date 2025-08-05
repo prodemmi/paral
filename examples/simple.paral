@@ -1,8 +1,14 @@
-url      = "https://google.com"
-items    = ["ubuntu", "fedora"] :: ["noble", "jammy"]
+url = "https://google.com"
+filename = "output.txt"
 
-@for items
-task "scrap_task" {
-    -> @stash["first_stash"] << @sprintf("This is a stash pipeline for index %s-%s", @first(@value), @last(@value))
+task "scrap" {
+    -> @stash["first_stash"] << curl -s https://google.com
+    -> @stash["first_stash"] << @replace(@stash("first_stash"), "\n", "")
     -> echo @sprintf(@stash("first_stash"))
+}
+
+@depend scrap
+task "save" {
+    -> echo @sprintf(@stash("first_stash"))
+    -> @writefile(filename, @stash("first_stash"))
 }

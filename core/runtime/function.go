@@ -15,17 +15,19 @@ type Function struct {
 	Report   string
 	Metadata metadata.Metadata
 	RawText  string
-	Task     *Task
+	TaskID   string
+	Runtime  *Runtime
 
 	loopContext *TaskLoopContext // set in runtime
 }
 
-func NewFunction(name string, mt metadata.Metadata, task *Task, args ...interface{}) *Function {
+func NewFunction(name string, mt metadata.Metadata, taskID string, runtime *Runtime, args ...interface{}) *Function {
 	f := &Function{
 		Type:        name,
 		Args:        args,
 		Metadata:    mt,
-		Task:        task,
+		TaskID:      taskID,
+		Runtime:     runtime,
 		loopContext: nil,
 	}
 	f.RawText = f.GetRaw()
@@ -112,7 +114,7 @@ func (f *Function) Call() (interface{}, error) {
 		return functions.Getvar(args...)
 	case "stash":
 		stashName := args[0].(string)
-		stashValue := f.Task.GetActiveStashValue(stashName)
+		stashValue := f.GetActiveStashValue(stashName)
 		return functions.Stash(stashValue, args...)
 	case "getenv":
 		return functions.Getenv(args...)
@@ -134,13 +136,13 @@ func (f *Function) GetRaw() string {
 				if f.loopContext != nil {
 					parts = append(parts, fmt.Sprintf("%v", f.loopContext.Value))
 				} else {
-					//f.Task.Runtime.Reporter.ThrowRuntimeError("loop context is nil: cannot resolve @value", nil)
+					f.Runtime.Reporter.ThrowRuntimeError("loop context is nil: cannot resolve @value", &f.Metadata)
 				}
 			} else if v == "@key" {
 				if f.loopContext != nil {
 					parts = append(parts, fmt.Sprintf("%d", f.loopContext.Key))
 				} else {
-					//f.Task.Runtime.Reporter.ThrowRuntimeError("loop context is nil: cannot resolve @key", nil)
+					f.Runtime.Reporter.ThrowRuntimeError("loop context is nil: cannot resolve @key", &f.Metadata)
 				}
 			} else {
 				parts = append(parts, fmt.Sprintf(`"%s"`, v))
@@ -242,6 +244,10 @@ func (f *Function) ResolveValue(arg interface{}) (interface{}, error) {
 	default:
 		return v, nil
 	}
+}
+
+func (f *Function) GetActiveStashValue(stashName string) interface{} {
+	return f.Runtime.GetActiveStashValue(stashName, f.TaskID)
 }
 
 func (f *Function) String() string {

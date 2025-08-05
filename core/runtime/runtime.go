@@ -12,6 +12,15 @@ type Runtime struct {
 	Metadata *metadata.Metadata
 	Reporter *Reporter
 	Executor *TaskExecutor
+
+	StashStack [][]*StashContext
+}
+
+type StashContext struct {
+	TaskID      string
+	Stash       *Stash
+	CacheResult interface{}
+	Key         string
 }
 
 func NewRuntime(metadata *metadata.Metadata, reporter *Reporter) *Runtime {
@@ -81,6 +90,28 @@ func (r *Runtime) GetTaskDependencies(task *Task) []string {
 	return dependencies
 }
 
+func (r *Runtime) IsTaskDependent(taskID string, dependTaskID string) bool {
+	currentTask := r.GetTaskByID(taskID)
+	if currentTask == nil {
+		r.Reporter.ThrowSyntaxError("", nil)
+	}
+	if taskID == dependTaskID {
+		return true
+	}
+	for _, directive := range currentTask.Directives {
+		if directive.Type == "depend" {
+			targetTask := r.GetTaskByID(directive.Params[0].(string))
+			targetTaskID := targetTask.GetTaskId()
+			if targetTaskID == dependTaskID {
+				return true
+			} else {
+				return r.IsTaskDependent(targetTaskID, dependTaskID)
+			}
+		}
+	}
+	return false
+}
+
 // HasDeferDirective checks if a task has @defer directive
 func (r *Runtime) HasDeferDirective(task *Task) bool {
 	for _, directive := range task.Directives {
@@ -119,6 +150,32 @@ func (r *Runtime) GetExecutionOrder() ([]*Task, []*Task, error) {
 	}
 
 	return sortedTasks, deferTasks, nil
+}
+
+func (r *Runtime) PushStashStack(name string, taskID string, value interface{}, stash *Stash) {
+	task := r.GetTaskByID(taskID)
+	for len(r.StashStack) <= task.currentLoopIndex {
+		r.StashStack = append(r.StashStack, []*StashContext{})
+	}
+	r.StashStack[task.currentLoopIndex] = append(r.StashStack[task.currentLoopIndex], &StashContext{
+		Key:         name,
+		Stash:       stash,
+		CacheResult: value,
+		TaskID:      taskID,
+	})
+}
+
+func (r *Runtime) GetActiveStashValue(name string, taskID string) interface{} {
+	for i := range r.StashStack {
+		stack := r.StashStack[len(r.StashStack)-1-i]
+		for j := range stack {
+			stash := stack[len(stack)-1-j]
+			if r.IsTaskDependent(taskID, stash.TaskID) && stash.Key == name {
+				return stash.CacheResult
+			}
+		}
+	}
+	return nil
 }
 
 // topologicalSort sorts tasks based on their dependencies
