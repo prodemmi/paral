@@ -112,28 +112,6 @@ func (t *ThreadSafeWriter) Write(p []byte) (n int, err error) {
 	return t.writer.Write(p)
 }
 
-func (c *TaskExecutor) ExecWithConfig(config *ExecutionConfig) {
-	ctx := c.createExecutionContext(config)
-	if config.Profile {
-		ctx.Stats.StartTime = time.Now()
-	}
-	if !config.Silent {
-		c.printVariables(ctx)
-	}
-	if config.DryRun {
-		_, _ = fmt.Fprintln(ctx.Writer, "DRY RUN - Commands that would be executed:")
-		c.executeDryRun(ctx)
-	} else {
-		c.executeParallel(ctx)
-	}
-	if config.Profile {
-		ctx.Stats.EndTime = time.Now()
-	}
-	if !config.Silent {
-		c.printSummary(ctx)
-	}
-}
-
 func (ce *CommandExecutor) ExecuteShellCommand(pipeline string, forValue interface{}, ctx *ExecutionContext) ([]byte, bool) {
 	for _, v := range ce.Runtime.Vars {
 		placeholder := fmt.Sprintf("$%s", v.Name)
@@ -159,7 +137,33 @@ func (ce *CommandExecutor) ExecuteShellCommand(pipeline string, forValue interfa
 		cmd = exec.Command("sh", "-c", pipeline)
 	}
 	output, err := cmd.CombinedOutput()
-	return output, err == nil
+	if err != nil {
+		ce.Reporter.Warn(fmt.Sprintf("Command failed: %s, error: %v", pipeline, err), nil)
+		return output, false
+	}
+	return output, true
+}
+
+func (c *TaskExecutor) ExecWithConfig(config *ExecutionConfig) {
+	ctx := c.createExecutionContext(config)
+	if config.Profile {
+		ctx.Stats.StartTime = time.Now()
+	}
+	if !config.Silent {
+		c.printVariables(ctx)
+	}
+	if config.DryRun {
+		_, _ = fmt.Fprintln(ctx.Writer, "DRY RUN - Commands that would be executed:")
+		c.executeDryRun(ctx)
+	} else {
+		c.executeParallel(ctx)
+	}
+	if config.Profile {
+		ctx.Stats.EndTime = time.Now()
+	}
+	if !config.Silent {
+		c.printSummary(ctx)
+	}
 }
 
 func (c *TaskExecutor) createExecutionContext(config *ExecutionConfig) *ExecutionContext {
@@ -410,34 +414,18 @@ func (c *TaskExecutor) printTaskDryRun(task *Task, ctx *ExecutionContext) {
 
 func (c *TaskExecutor) printJobPipelinesDryRun(task *Task, ctx *ExecutionContext) {
 	loopContext := task.GetActiveLoopContext()
-	indent := "    " // Adjusted indentation for pipelines
+	indent := "    "
 	for _, pipeline := range task.Pipelines {
 		var displayCmd string
 		var isStash, isTrigger, isPrint bool
 
 		if pipeline.Stash != nil {
 			isStash = true
-			displayCmd = fmt.Sprintf("stash %q saved", pipeline.Stash.Name)
 			if pipeline.Stash.Command != nil {
-				if len(pipeline.Stash.Command.Functions) > 0 {
-					for _, fn := range pipeline.Stash.Command.Functions {
-						if loopContext != nil {
-							fn.SetLoopContext(loopContext)
-						}
-						_, err := fn.Call()
-						if err != nil {
-							displayCmd = fmt.Sprintf("%s (%v)", displayCmd, err)
-							_, _ = ctx.Colors.Red.Fprintf(ctx.Writer, "%s❌ %s\n", indent, displayCmd)
-							c.Reporter.ThrowSyntaxError(fmt.Sprintf("Error in stash function '%s': %v", fn.Type, err), &fn.Metadata)
-							continue
-						}
-						if fn.Type == "sprintf" {
-							displayCmd = fmt.Sprintf("stash %q saved", pipeline.Stash.Name)
-						}
-					}
-				} else {
-					displayCmd = fmt.Sprintf("stash %q saved", pipeline.Stash.Name)
-				}
+				result := pipeline.Stash.Command.GetRawResult(loopContext, ctx)
+				displayCmd = fmt.Sprintf("stash %q saved: %s", pipeline.Stash.Name, strings.TrimRight(result, "\n"))
+			} else {
+				displayCmd = fmt.Sprintf("stash %q saved", pipeline.Stash.Name)
 			}
 		} else if pipeline.Function != nil {
 			if loopContext != nil {
@@ -450,7 +438,7 @@ func (c *TaskExecutor) printJobPipelinesDryRun(task *Task, ctx *ExecutionContext
 				c.Reporter.ThrowSyntaxError(fmt.Sprintf("Error in function '%s': %v", pipeline.Function.Type, err), &pipeline.Function.Metadata)
 				continue
 			}
-			if strings.TrimSpace(fmt.Sprint(result)) != "" { // Check for non-empty result
+			if strings.TrimSpace(fmt.Sprint(result)) != "" {
 				displayCmd = fmt.Sprint(result)
 				switch pipeline.Function.Type {
 				case "trigger":
@@ -462,25 +450,28 @@ func (c *TaskExecutor) printJobPipelinesDryRun(task *Task, ctx *ExecutionContext
 				case "print", "println", "printf", "sprintf":
 					displayCmd = strings.TrimRight(fmt.Sprint(result), "\n")
 					isPrint = true
+				default:
+					displayCmd = strings.TrimRight(fmt.Sprint(result), "\n")
 				}
 			} else {
 				continue // Skip empty output
 			}
 		} else if pipeline.Command != nil {
-			cmdResult := pipeline.Command.GetRawResult(loopContext, ctx)
-			if strings.TrimSpace(cmdResult) != "" { // Check for non-empty result
-				displayCmd = cmdResult
-			} else {
+			displayCmd = pipeline.Command.GetRawResult(loopContext, ctx)
+			if strings.TrimSpace(displayCmd) == "" {
 				continue // Skip empty output
 			}
 		}
 
-		if isTrigger {
-			_, _ = ctx.Colors.Green.Fprintf(ctx.Writer, "%s🚀 %s\n", indent, displayCmd)
-		} else if isStash || isPrint {
-			_, _ = ctx.Colors.Cyan.Fprintf(ctx.Writer, "%s▶ %s\n", indent, displayCmd)
-		} else {
-			_, _ = ctx.Colors.Blue.Fprintf(ctx.Writer, "%s▶ %s\n", indent, displayCmd)
+		shouldPrint := isPrint || (!isStash && !isTrigger && pipeline.Command != nil) || ctx.Config.Verbose
+		if shouldPrint {
+			if isTrigger {
+				_, _ = ctx.Colors.Green.Fprintf(ctx.Writer, "%s🚀 %s\n", indent, displayCmd)
+			} else if isStash {
+				_, _ = ctx.Colors.Cyan.Fprintf(ctx.Writer, "%s▶ %s\n", indent, displayCmd)
+			} else {
+				_, _ = ctx.Colors.Blue.Fprintf(ctx.Writer, "%s▶ %s\n", indent, displayCmd)
+			}
 		}
 	}
 }
@@ -642,23 +633,25 @@ func (c *TaskExecutor) executeJob(task *Task, ctx *ExecutionContext) (JobStats, 
 
 func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, output *TaskOutput) JobStats {
 	stats := JobStats{}
-	indent := "    " // Adjusted indentation for pipelines
+	indent := "    "
 	for _, pipeline := range task.Pipelines {
 		var result string
 		var success bool
 		var err error
 		var displayResult string
+		var shouldPrint bool
 		stats.Total++
 
 		if pipeline.Stash != nil {
 			result, success = pipeline.Stash.GetValue(ctx, task, c.CommandExecutor)
 			if success {
 				task.PushStashStack(pipeline.Stash.Name, result, pipeline.Stash)
-				displayResult = fmt.Sprintf("%s▶ stash %q saved", indent, pipeline.Stash.Name)
+				displayResult = fmt.Sprintf("%s▶ stash %q saved: %s", indent, pipeline.Stash.Name, strings.TrimRight(result, "\n"))
 			} else {
 				displayResult = fmt.Sprintf("%s❌ stash %q failed", indent, pipeline.Stash.Name)
 				c.Reporter.ThrowRuntimeError(fmt.Sprintf("Stash %q failed", pipeline.Stash.Name), &pipeline.Stash.Metadata)
 			}
+			shouldPrint = ctx.Config.Verbose // Stash pipelines only print in verbose mode
 		} else if pipeline.Function != nil {
 			loopContext := task.GetActiveLoopContext()
 			if loopContext != nil {
@@ -672,33 +665,38 @@ func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, outpu
 			} else {
 				success = true
 				result = fmt.Sprint(functionResult)
-				if strings.TrimSpace(result) != "" { // Check for non-empty result
+				if strings.TrimSpace(result) != "" {
 					switch pipeline.Function.Type {
 					case "trigger":
 						if len(pipeline.Function.Args) > 0 {
 							taskName := pipeline.Function.GetCalculatedArgsByIndex(0)
 							displayResult = fmt.Sprintf("%s🚀 trigger task '%s'", indent, taskName)
 						}
+						shouldPrint = ctx.Config.Verbose // Triggers only print in verbose mode
 					case "print", "println", "printf", "sprintf":
 						displayResult = fmt.Sprintf("%s▶ %s", indent, strings.TrimRight(result, "\n"))
+						shouldPrint = true // Print functions always print
 					default:
 						displayResult = fmt.Sprintf("%s▶ %s", indent, strings.TrimRight(result, "\n"))
+						shouldPrint = ctx.Config.Verbose // Other functions only print in verbose mode
 					}
 				}
 			}
 		} else if pipeline.Command != nil {
 			result, success, err = pipeline.Command.GetResult(ctx, task, c.CommandExecutor)
-			if strings.TrimSpace(result) != "" { // Check for non-empty result
+			if strings.TrimSpace(result) != "" {
 				if success {
 					displayResult = fmt.Sprintf("%s▶ %s", indent, strings.TrimRight(result, "\n"))
+					shouldPrint = true // Commands produce output when executed
 				} else {
 					displayResult = fmt.Sprintf("%s❌ %s (%v)", indent, strings.TrimRight(result, "\n"), err)
 					c.Reporter.ThrowRuntimeError(fmt.Sprintf("Command failed: %v", err), &task.Metadata)
+					shouldPrint = true // Errors always print
 				}
 			}
 		}
 
-		if !ctx.Config.Silent && displayResult != "" {
+		if !ctx.Config.Silent && displayResult != "" && shouldPrint {
 			output.OutputLines = append(output.OutputLines, displayResult)
 		}
 		if success {

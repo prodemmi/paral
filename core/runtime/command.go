@@ -18,6 +18,7 @@ func (c *Command) GetRawResult(loopContext *TaskLoopContext, ctx *ExecutionConte
 		}
 		result, err := function.Call()
 		if err != nil {
+			// Log error but continue to allow partial resolution
 			continue
 		}
 		funcRaw := function.GetRaw()
@@ -34,38 +35,42 @@ func (c *Command) GetRawResult(loopContext *TaskLoopContext, ctx *ExecutionConte
 			cmd = strings.ReplaceAll(cmd, funcRaw, fmt.Sprintf("%v", res))
 		}
 	}
-	return cmd
+	return strings.TrimSpace(cmd)
 }
 
 func (c *Command) GetResult(ctx *ExecutionContext, task *Task, executor *CommandExecutor) (string, bool, error) {
-	rawResult := c.RawText
-	loopContext := task.GetActiveLoopContext() // Type assertion for LoopContext
-	success := true
+	// Resolve all function calls in RawText
+	loopContext := task.GetActiveLoopContext()
+	resolvedCmd := c.GetRawResult(loopContext, ctx)
+
+	// If the resolved command doesn't start with '@', execute it as a shell command
+	if !strings.HasPrefix(resolvedCmd, "@") {
+		if loopContext == nil {
+			loopContext = &TaskLoopContext{}
+		}
+		output, cmdSuccess := executor.ExecuteShellCommand(resolvedCmd, loopContext.Value, ctx)
+		if !cmdSuccess {
+			return string(output), false, fmt.Errorf("shell command failed: %s", resolvedCmd)
+		}
+		return strings.TrimRight(string(output), "\n"), true, nil
+	}
+
+	// Handle function-only commands
+	result := resolvedCmd
 	for _, fn := range c.Functions {
 		if loopContext != nil {
 			fn.SetLoopContext(loopContext)
 		}
 		fnResult, err := fn.Call()
 		if err != nil {
-			return rawResult, false, err
+			return result, false, err
 		}
 		if fnResult != nil {
-			rawResult = fmt.Sprint(fnResult)
+			result = fmt.Sprint(fnResult)
 		}
 	}
 
-	if !strings.HasPrefix(strings.TrimSpace(c.RawText), "@") {
-		if loopContext == nil {
-			loopContext = &TaskLoopContext{}
-		}
-		output, cmdSuccess := executor.ExecuteShellCommand(c.RawText, loopContext.Value, ctx)
-		if !cmdSuccess {
-			return string(output), false, nil
-		}
-		return string(output), true, nil
-	}
-
-	return rawResult, success, nil
+	return strings.TrimRight(result, "\n"), true, nil
 }
 
 func (c *Command) getIndentation(task interface{}) string {

@@ -5,4 +5,4 @@ items    = ["ubuntu", "fedora"] :: ["noble", "jammy"]
 @for items
 scrap:
     -> @stash["first_stash"] << @sprintf("This is a stash pipeline for index %s-%s", @first(@value), @last(@value))
-    -> @print(@stash("first_stash"))
+    -> echo @sprintf(@stash("first_stash"))
