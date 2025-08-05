@@ -58,8 +58,9 @@ func NewTask(runtime *Runtime, name, description string, filename string, metada
 }
 
 type Directive struct {
-	Type   string
-	Params []interface{}
+	Type     string
+	Params   []interface{}
+	Metadata metadata.Metadata
 }
 
 func NewTaskDirective() *Directive {
@@ -76,7 +77,7 @@ func (t *Task) AddTaskDirective(directive *Directive) error {
 	var dirValue []interface{}
 
 	switch name {
-	case "id", "description", "envfile", "for", "schedule":
+	case "description", "envfile", "for", "schedule":
 		if len(args) != 1 {
 			return fmt.Errorf("@%s requires exactly one string value, got %d arguments", name, len(args))
 		}
@@ -114,7 +115,7 @@ func (t *Task) AddTaskDirective(directive *Directive) error {
 		}
 		dirValue = []interface{}{dirValue[0].(bool)}
 	default:
-		t.Runtime.Reporter.Warn(fmt.Sprintf("Unknown task directive @%s", name), &t.Metadata)
+		t.Runtime.Reporter.ThrowRuntimeError(fmt.Sprintf("Unknown task directive @%s", name), &directive.Metadata)
 		dirValue = args
 	}
 
@@ -185,12 +186,6 @@ func (t *Task) GetActiveStashValue(name string) interface{} {
 	return nil
 }
 
-// GetTaskId returns the task ID (either from @id directive or task name)
 func (t *Task) GetTaskId() string {
-	for _, directive := range t.Directives {
-		if directive.Type == "id" && len(directive.Params) > 0 {
-			return fmt.Sprint(directive.Params[0])
-		}
-	}
 	return t.Name
 }

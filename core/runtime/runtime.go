@@ -61,15 +61,6 @@ func (r *Runtime) GetTaskByID(id string) *Task {
 			targetJob = task
 			break
 		}
-		// Also check if task has an @id directive matching the jobName
-		for _, directive := range task.Directives {
-			if directive.Type == "id" && len(directive.Params) > 0 {
-				if fmt.Sprint(directive.Params[0]) == id {
-					targetJob = task
-					break
-				}
-			}
-		}
 		if targetJob != nil {
 			break
 		}

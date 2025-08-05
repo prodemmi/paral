@@ -17,7 +17,7 @@ variable_assignment
     ;
 
 task_definition
-    : (task_directive NEWLINE)* IDENTIFIER COLON NEWLINE pipeline_block+
+    : (task_directive NEWLINE)* TASK string_expr LBRACE NEWLINE* pipeline_block* RBRACE
     ;
 
 task_directive

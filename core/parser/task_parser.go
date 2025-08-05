@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	parser "paral/antlr/antlr"
+	"paral/core"
 	"paral/core/metadata"
 	"paral/core/runtime"
 	"strings"
@@ -13,28 +14,28 @@ func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
 	line := ctx.GetStop().GetLine()
 	column := ctx.GetStop().GetColumn()
 
-	// Default name from IDENTIFIER
-	name := ctx.IDENTIFIER().GetText()
+	// Get task name from string expression
+	strExpr := ctx.String_expr()
+	var name string
+	if strExpr.STRING() != nil {
+		name = core.TrimQuotes(strExpr.STRING().GetText())
+	} else if strExpr.SINGLE_QUOTE_STRING() != nil {
+		name = core.TrimQuotes(strExpr.SINGLE_QUOTE_STRING().GetText())
+	} else {
+		name = strExpr.GetText()
+	}
+
 	description := ""
 
-	// Override name with @id directive if present
+	// Process directives to override name with @id if present
 	for _, directiveExpr := range ctx.AllTask_directive() {
-		if dcr := directiveExpr.Directive(); dcr != nil && dcr.IDENTIFIER().GetText() == "id" {
-			if len(dcr.AllExpression()) > 0 {
-				idCandidate := dcr.AllExpression()[0].GetText()
-				if strings.HasPrefix(idCandidate, "\"") && strings.HasSuffix(idCandidate, "\"") {
-					idCandidate = strings.Trim(idCandidate, "\"")
-				}
-				name = idCandidate
-			}
-		}
 		if dcr := directiveExpr.Directive(); dcr != nil && dcr.IDENTIFIER().GetText() == "description" {
 			if len(dcr.AllExpression()) > 0 {
-				idCandidate := dcr.AllExpression()[0].GetText()
-				if strings.HasPrefix(idCandidate, "\"") && strings.HasSuffix(idCandidate, "\"") {
-					idCandidate = strings.Trim(idCandidate, "\"")
+				descCandidate := dcr.AllExpression()[0].GetText()
+				if strings.HasPrefix(descCandidate, "\"") && strings.HasSuffix(descCandidate, "\"") {
+					descCandidate = strings.Trim(descCandidate, "\"")
 				}
-				description = idCandidate
+				description = descCandidate
 			}
 		}
 	}
@@ -66,6 +67,7 @@ func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
 		}
 	}
 
+	// Process pipeline blocks
 	for _, pipelineBlock := range ctx.AllPipeline_block() {
 		if pipeline := p.parsePipeline(task, pipelineBlock); pipeline != nil {
 			task.AddTaskPipeline(pipeline)
@@ -85,6 +87,11 @@ func (p *Parser) parseTaskDirective(ctx parser.ITask_directiveContext) *runtime.
 				text = strings.Trim(text, "\"")
 			}
 			directive.Params = append(directive.Params, text)
+		}
+		directive.Metadata = metadata.Metadata{
+			Content: ctx.GetText(),
+			Line:    ctx.GetStart().GetLine(),
+			Column:  ctx.GetStart().GetColumn(),
 		}
 	}
 	return directive

@@ -8,6 +8,7 @@ AT : '@';
 FUNCTION_START: '@' IDENTIFIER '(' -> pushMode(FUNCTION);
 IF : 'if';
 ENDIF : 'endif';
+TASK : 'task';
 
 ASSIGN : '=';
 
@@ -34,6 +35,9 @@ RBRACK : ']';
 LRBRACK: '(';
 RRBRACK: ')';
 
+LBRACE: '{';
+RBRACE: '}';
+
 DOUBLE_BACK_ARROW: '<<';
 
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
@@ -47,7 +51,7 @@ mode PIPELINE;
 
 PIPELINE_NEWLINE: ('\r'? '\n') -> popMode;
 PIPELINE_STASH: '@stash[' -> pushMode(STASH_MODE);
-PIPELINE_DOUBLE_BACK_ARROW: '<<' -> type(DOUBLE_BACK_ARROW);  // Add this line
+PIPELINE_DOUBLE_BACK_ARROW: '<<' -> type(DOUBLE_BACK_ARROW);
 PIPELINE_IF: '@if(' -> mode(IF_MODE);
 PIPELINE_LOOP_KEY: '@key';
 PIPELINE_LOOP_VALUE: '@value';

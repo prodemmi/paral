@@ -1,8 +1,8 @@
 url      = "https://google.com"
 items    = ["ubuntu", "fedora"] :: ["noble", "jammy"]
 
-@id "scrap"
 @for items
-scrap:
+task "scrap_task" {
     -> @stash["first_stash"] << @sprintf("This is a stash pipeline for index %s-%s", @first(@value), @last(@value))
     -> echo @sprintf(@stash("first_stash"))
+}
