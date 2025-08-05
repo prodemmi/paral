@@ -417,9 +417,17 @@ func (c *TaskExecutor) printJobPipelinesDryRun(task *Task, ctx *ExecutionContext
 	indent := "    "
 	for _, pipeline := range task.Pipelines {
 		var displayCmd string
-		var isStash, isTrigger, isPrint bool
+		var isBuf, isStash, isTrigger, isPrint bool
 
-		if pipeline.Stash != nil {
+		if pipeline.Buf != nil {
+			isBuf = true
+			if pipeline.Buf.Command != nil {
+				result := pipeline.Buf.Command.GetRawResult(loopContext, ctx)
+				displayCmd = fmt.Sprintf("buf %q saved: %s", pipeline.Buf.Name, strings.TrimRight(result, "\n"))
+			} else {
+				displayCmd = fmt.Sprintf("buf %q saved", pipeline.Buf.Name)
+			}
+		} else if pipeline.Stash != nil {
 			isStash = true
 			if pipeline.Stash.Command != nil {
 				result := pipeline.Stash.Command.GetRawResult(loopContext, ctx)
@@ -463,7 +471,7 @@ func (c *TaskExecutor) printJobPipelinesDryRun(task *Task, ctx *ExecutionContext
 			}
 		}
 
-		shouldPrint := isPrint || (!isStash && !isTrigger && pipeline.Command != nil) || ctx.Config.Verbose
+		shouldPrint := isPrint || (!isBuf && !isStash && !isTrigger && pipeline.Command != nil) || ctx.Config.Verbose
 		if shouldPrint {
 			if isTrigger {
 				_, _ = ctx.Colors.Green.Fprintf(ctx.Writer, "%s🚀 %s\n", indent, displayCmd)
@@ -643,7 +651,17 @@ func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, outpu
 		var shouldPrint bool
 		stats.Total++
 
-		if pipeline.Stash != nil {
+		if pipeline.Buf != nil {
+			result, success = pipeline.Buf.GetValue(ctx, task, c.CommandExecutor)
+			if success {
+				c.Runtime.PushBufStack(pipeline.Buf.Name, task.GetTaskId(), result, pipeline.Buf)
+				displayResult = fmt.Sprintf("%s▶ buf %q saved: %s", indent, pipeline.Buf.Name, strings.TrimRight(result, "\n"))
+			} else {
+				displayResult = fmt.Sprintf("%s❌ buf %q failed", indent, pipeline.Buf.Name)
+				c.Reporter.ThrowRuntimeError(fmt.Sprintf("buf %q failed", pipeline.Buf.Name), &pipeline.Buf.Metadata)
+			}
+			shouldPrint = ctx.Config.Verbose // Stash pipelines only print in verbose mode
+		} else if pipeline.Stash != nil {
 			result, success = pipeline.Stash.GetValue(ctx, task, c.CommandExecutor)
 			if success {
 				c.Runtime.PushStashStack(pipeline.Stash.Name, task.GetTaskId(), result, pipeline.Stash)

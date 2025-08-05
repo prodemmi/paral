@@ -13,6 +13,7 @@ type Runtime struct {
 	Reporter *Reporter
 	Executor *TaskExecutor
 
+	BufStack   [][]*BufContext
 	StashStack [][]*StashContext
 }
 
@@ -21,6 +22,13 @@ type StashContext struct {
 	Stash       *Stash
 	CacheResult interface{}
 	Key         string
+}
+
+type BufContext struct {
+	Buf          *Buf
+	SourceTaskID string
+	CacheResult  interface{}
+	Key          string
 }
 
 func NewRuntime(metadata *metadata.Metadata, reporter *Reporter) *Runtime {
@@ -93,7 +101,7 @@ func (r *Runtime) GetTaskDependencies(task *Task) []string {
 func (r *Runtime) IsTaskDependent(taskID string, dependTaskID string) bool {
 	currentTask := r.GetTaskByID(taskID)
 	if currentTask == nil {
-		r.Reporter.ThrowSyntaxError("", nil)
+		r.Reporter.ThrowSyntaxError(fmt.Sprintf("task with id %q not exist", taskID), nil)
 	}
 	if taskID == dependTaskID {
 		return true
@@ -152,6 +160,19 @@ func (r *Runtime) GetExecutionOrder() ([]*Task, []*Task, error) {
 	return sortedTasks, deferTasks, nil
 }
 
+func (r *Runtime) PushBufStack(name string, taskID string, value interface{}, buf *Buf) {
+	task := r.GetTaskByID(taskID)
+	for len(r.BufStack) <= task.currentLoopIndex {
+		r.BufStack = append(r.BufStack, []*BufContext{})
+	}
+	r.BufStack[task.currentLoopIndex] = append(r.BufStack[task.currentLoopIndex], &BufContext{
+		Key:          name,
+		Buf:          buf,
+		CacheResult:  value,
+		SourceTaskID: taskID,
+	})
+}
+
 func (r *Runtime) PushStashStack(name string, taskID string, value interface{}, stash *Stash) {
 	task := r.GetTaskByID(taskID)
 	for len(r.StashStack) <= task.currentLoopIndex {
@@ -172,6 +193,19 @@ func (r *Runtime) GetActiveStashValue(name string, taskID string) interface{} {
 			stash := stack[len(stack)-1-j]
 			if r.IsTaskDependent(taskID, stash.TaskID) && stash.Key == name {
 				return stash.CacheResult
+			}
+		}
+	}
+	return nil
+}
+
+func (r *Runtime) GetBufValue(name string) interface{} {
+	for i := range r.BufStack {
+		stack := r.BufStack[len(r.BufStack)-1-i]
+		for j := range stack {
+			buf := stack[len(stack)-1-j]
+			if buf.Key == name {
+				return buf.CacheResult
 			}
 		}
 	}

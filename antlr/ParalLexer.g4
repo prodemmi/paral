@@ -50,6 +50,7 @@ WS: [ \t]+ -> skip;
 mode PIPELINE;
 
 PIPELINE_NEWLINE: ('\r'? '\n') -> popMode;
+PIPELINE_BUF: '@buf[' -> pushMode(BUF_MODE);
 PIPELINE_STASH: '@stash[' -> pushMode(STASH_MODE);
 PIPELINE_DOUBLE_BACK_ARROW: '<<' -> type(DOUBLE_BACK_ARROW);
 PIPELINE_IF: '@if(' -> mode(IF_MODE);
@@ -60,6 +61,17 @@ FUNCTION_CALL_START: '@' IDENTIFIER '(' -> pushMode(FUNCTION);
 PIPELINE_WS: [ \t]+ -> skip;
 // Allow quoted strings within command raw text
 COMMAND_RAW_TEXT: (~[@\r\n\t] | '"' ( '\\' . | ~["\\\r\n] )* '"' | '\'' ( '\\' . | ~['\\\r\n] )* '\'')+;
+
+// ---------------------- BUF Mode ----------------------
+
+mode BUF_MODE;
+
+BUF_LBRACK : '[' -> type(LBRACK);
+BUF_RBRACK : ']' -> type(RBRACK);
+BUF_DOUBLE_BACK_ARROW: '<<' -> type(DOUBLE_BACK_ARROW), popMode;
+BUF_STRING: '"' ( '\\' . | ~["\\\r\n] )* '"' -> type(STRING);
+BUF_SINGLE_QUOTE_STRING: '\'' ( '\\' . | ~['\\\r\n] )* '\'' -> type(SINGLE_QUOTE_STRING);
+BUF_WS: [ \t]+ -> skip;
 
 // ---------------------- STASH Mode ----------------------
 

@@ -75,6 +75,12 @@ func (s *BaseParalParserListener) EnterDirective(ctx *DirectiveContext) {}
 // ExitDirective is called when production directive is exited.
 func (s *BaseParalParserListener) ExitDirective(ctx *DirectiveContext) {}
 
+// EnterBuf is called when production buf is entered.
+func (s *BaseParalParserListener) EnterBuf(ctx *BufContext) {}
+
+// ExitBuf is called when production buf is exited.
+func (s *BaseParalParserListener) ExitBuf(ctx *BufContext) {}
+
 // EnterStash is called when production stash is entered.
 func (s *BaseParalParserListener) EnterStash(ctx *StashContext) {}
 

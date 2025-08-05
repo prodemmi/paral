@@ -35,6 +35,9 @@ type ParalParserListener interface {
 	// EnterDirective is called when entering the directive production.
 	EnterDirective(c *DirectiveContext)
 
+	// EnterBuf is called when entering the buf production.
+	EnterBuf(c *BufContext)
+
 	// EnterStash is called when entering the stash production.
 	EnterStash(c *StashContext)
 
@@ -103,6 +106,9 @@ type ParalParserListener interface {
 
 	// ExitDirective is called when exiting the directive production.
 	ExitDirective(c *DirectiveContext)
+
+	// ExitBuf is called when exiting the buf production.
+	ExitBuf(c *BufContext)
 
 	// ExitStash is called when exiting the stash production.
 	ExitStash(c *StashContext)

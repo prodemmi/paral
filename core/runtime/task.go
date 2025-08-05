@@ -27,6 +27,7 @@ type Task struct {
 }
 
 type TaskPipeline struct {
+	Buf      *Buf
 	Stash    *Stash
 	Command  *Command
 	Function *Function

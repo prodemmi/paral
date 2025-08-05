@@ -11,6 +11,14 @@ func (p *Parser) parsePipeline(task *runtime.Task, ctx parser.IPipeline_blockCon
 
 func (p *Parser) parsePipelineContent(task *runtime.Task, ctx parser.IPipeline_contentContext) *runtime.TaskPipeline {
 	for blockIndex, item := range ctx.AllPipeline_item() {
+		if bufCtx := item.Buf(); bufCtx != nil {
+			buf := p.parseBuf(task, bufCtx)
+			task.AddTaskPipeline(&runtime.TaskPipeline{
+				Buf:   buf,
+				Block: blockIndex,
+			})
+			continue
+		}
 		if stashCtx := item.Stash(); stashCtx != nil {
 			stash := p.parseStash(task, stashCtx)
 			task.AddTaskPipeline(&runtime.TaskPipeline{

@@ -116,6 +116,10 @@ func (f *Function) Call() (interface{}, error) {
 		stashName := args[0].(string)
 		stashValue := f.GetActiveStashValue(stashName)
 		return functions.Stash(stashValue, args...)
+	case "buf":
+		bufName := args[0].(string)
+		bufValue := f.GetBufValue(bufName)
+		return functions.Buf(bufValue, args...)
 	case "getenv":
 		return functions.Getenv(args...)
 	case "setenv":
@@ -248,6 +252,10 @@ func (f *Function) ResolveValue(arg interface{}) (interface{}, error) {
 
 func (f *Function) GetActiveStashValue(stashName string) interface{} {
 	return f.Runtime.GetActiveStashValue(stashName, f.TaskID)
+}
+
+func (f *Function) GetBufValue(bufName string) interface{} {
+	return f.Runtime.GetBufValue(bufName)
 }
 
 func (f *Function) String() string {

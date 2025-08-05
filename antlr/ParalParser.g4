@@ -33,7 +33,8 @@ pipeline_content
     ;
 
 pipeline_item
-    : stash
+    : buf
+    | stash
     | condition
     | function
     | COMMAND_RAW_TEXT
@@ -46,6 +47,10 @@ directive
     ;
 
 // ----------------- functions and conditions -------------
+
+buf
+    : PIPELINE_BUF string_expr RBRACK DOUBLE_BACK_ARROW pipeline_content
+    ;
 
 stash
     : PIPELINE_STASH string_expr RBRACK DOUBLE_BACK_ARROW pipeline_content

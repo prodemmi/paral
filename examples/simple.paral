@@ -1,14 +1,13 @@
 url = "https://google.com"
 filename = "output.txt"
 
+
 task "scrap" {
-    -> @stash["first_stash"] << curl -s https://google.com
-    -> @stash["first_stash"] << @replace(@stash("first_stash"), "\n", "")
-    -> echo @sprintf(@stash("first_stash"))
+    -> @buf["first_stash"] << curl -s https://google.com
 }
 
-@depend scrap
-task "save" {
-    -> echo @sprintf(@stash("first_stash"))
-    -> @writefile(filename, @stash("first_stash"))
+
+task "scrap2" {
+    -> sleep 3
+    -> echo @sprintf(@buf("first_stash"))
 }
