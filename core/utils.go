@@ -11,6 +11,10 @@ func TrimQuotes(s string) string {
 	return strings.Trim(s, "\"'")
 }
 
+func HasQuotes(s string) bool {
+	return strings.Trim(s, "\"'") != s
+}
+
 // ExtractListValues extracts values from a list_expr
 func ExtractListValues(list parser.IList_exprContext) []interface{} {
 	var values []interface{}

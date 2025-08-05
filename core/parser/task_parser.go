@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 	parser "paral/antlr/antlr"
-	"paral/core"
 	"paral/core/metadata"
 	"paral/core/runtime"
 	"strings"
@@ -15,15 +14,7 @@ func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
 	column := ctx.GetStop().GetColumn()
 
 	// Get task name from string expression
-	strExpr := ctx.String_expr()
-	var name string
-	if strExpr.STRING() != nil {
-		name = core.TrimQuotes(strExpr.STRING().GetText())
-	} else if strExpr.SINGLE_QUOTE_STRING() != nil {
-		name = core.TrimQuotes(strExpr.SINGLE_QUOTE_STRING().GetText())
-	} else {
-		name = strExpr.GetText()
-	}
+	name := ctx.IDENTIFIER().GetText()
 
 	description := ""
 
@@ -62,7 +53,7 @@ func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
 	for _, directiveExpr := range ctx.AllTask_directive() {
 		if directive := p.parseTaskDirective(directiveExpr); directive != nil {
 			if err := task.AddTaskDirective(directive); err != nil {
-				p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("\nInvalid directive: %v", err), mt)
+				p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("\nInvalid directive: %v", err), &directive.Metadata)
 			}
 		}
 	}
@@ -83,16 +74,13 @@ func (p *Parser) parseTaskDirective(ctx parser.ITask_directiveContext) *runtime.
 		directive.Type = dcr.IDENTIFIER().GetText()
 		for _, dcrParam := range dcr.AllExpression() {
 			text := dcrParam.GetText()
-			if strings.HasPrefix(text, "\"") && strings.HasSuffix(text, "\"") {
-				text = strings.Trim(text, "\"")
-			}
 			directive.Params = append(directive.Params, text)
 		}
-		directive.Metadata = metadata.Metadata{
-			Content: ctx.GetText(),
-			Line:    ctx.GetStart().GetLine(),
-			Column:  ctx.GetStart().GetColumn(),
-		}
+	}
+	directive.Metadata = metadata.Metadata{
+		Content: ctx.GetText(),
+		Line:    ctx.GetStart().GetLine(),
+		Column:  ctx.GetStart().GetColumn(),
 	}
 	return directive
 }

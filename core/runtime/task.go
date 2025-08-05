@@ -2,7 +2,11 @@ package runtime
 
 import (
 	"fmt"
+	"paral/core"
 	"paral/core/metadata"
+	"paral/core/variable"
+	"strings"
+	"time"
 )
 
 var require_error = func(name string) error {
@@ -37,6 +41,18 @@ type TaskPipeline struct {
 type TaskLoopContext struct {
 	Value interface{}
 	Key   int
+}
+
+type TaskForDirectiveContext struct {
+	Value    interface{}
+	Key      int
+	IsMatrix bool
+}
+
+type TaskScheduleDirectiveContext struct {
+	Value            string
+	IsLinuxFormat    bool
+	IsDurationFormat bool
 }
 
 func NewTask(runtime *Runtime, name, description string, filename string, metadata metadata.Metadata) *Task {
@@ -116,8 +132,9 @@ func (t *Task) AddTaskDirective(directive *Directive) error {
 	}
 
 	t.Directives = append(t.Directives, &Directive{
-		Type:   name,
-		Params: dirValue,
+		Type:     name,
+		Params:   dirValue,
+		Metadata: directive.Metadata,
 	})
 
 	return nil
@@ -131,6 +148,15 @@ func (t *Task) AddTaskPipeline(pipeline *TaskPipeline) {
 func (t *Task) IsManual() bool {
 	for _, directive := range t.Directives {
 		if directive.Type == "manual" && directive.Params[0].(bool) == true {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *Task) IsScheduled() bool {
+	for _, directive := range t.Directives {
+		if directive.Type == "schedule" && directive.Params[0].(string) != "" {
 			return true
 		}
 	}
@@ -186,6 +212,91 @@ func (t *Task) ClearUnusedStashes() {
 
 func (t *Task) SetTaskIsFinished() {
 	t.isFinished = true
+}
+
+func (t *Task) GetTaskForDirectiveContext() *TaskForDirectiveContext {
+	for _, directive := range t.Directives {
+		if directive.Type == "for" && len(directive.Params) > 0 {
+			varName := fmt.Sprint(directive.Params[0])
+			for _, v := range t.Runtime.Vars {
+				if v.Name == varName {
+					if listVal, ok := v.Value.(variable.ListValue); ok {
+						return &TaskForDirectiveContext{
+							Value:    listVal.Value,
+							IsMatrix: false,
+						}
+					}
+					if _, ok := v.Value.(variable.MatrixValue); ok {
+						value, _ := v.GetMatrixCombinations()
+						return &TaskForDirectiveContext{
+							Value:    value,
+							IsMatrix: true,
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (t *Task) GetTaskScheduleDirectiveContext() *TaskScheduleDirectiveContext {
+	for _, directive := range t.Directives {
+		if directive.Type == "schedule" && len(directive.Params) == 1 {
+			scheduleValue, ok := directive.Params[0].(string)
+			if !ok {
+				t.Runtime.Reporter.ThrowRuntimeError("@schedule directive has not value", &directive.Metadata)
+			}
+			if core.HasQuotes(scheduleValue) {
+				if strings.Contains(scheduleValue, " ") {
+					return &TaskScheduleDirectiveContext{
+						Value:         core.TrimQuotes(scheduleValue),
+						IsLinuxFormat: true,
+					}
+				} else {
+					durationFormatValue, _ := time.ParseDuration(core.TrimQuotes(scheduleValue))
+					return &TaskScheduleDirectiveContext{
+						Value:            durationFormatValue.String(),
+						IsDurationFormat: true,
+					}
+				}
+			} else if duration, err := time.ParseDuration(scheduleValue); err == nil {
+				return &TaskScheduleDirectiveContext{
+					Value:            duration.String(),
+					IsDurationFormat: true,
+				}
+			} else {
+				scheduleVarValue := t.Runtime.GetVariable(scheduleValue)
+				if scheduleVarValue != nil {
+					switch v := scheduleVarValue.Value.(type) {
+					case variable.StringValue:
+						return &TaskScheduleDirectiveContext{
+							Value:         v.Value,
+							IsLinuxFormat: true,
+						}
+					case variable.DurationValue:
+						return &TaskScheduleDirectiveContext{
+							Value:            v.Value,
+							IsDurationFormat: true,
+						}
+					}
+				} else {
+					msg := fmt.Sprintf("@schedule directive has an unknown value %q", scheduleValue)
+					t.Runtime.Reporter.ThrowSyntaxError(msg, &directive.Metadata)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (t *Task) GetScheduleDirective() *Directive {
+	for _, directive := range t.Directives {
+		if directive.Type == "schedule" {
+			return directive
+		}
+	}
+	return nil
 }
 
 func (t *Task) GetTaskId() string {

@@ -2,6 +2,7 @@ package variable
 
 import (
 	"fmt"
+	"paral/core/metadata"
 	"strings"
 )
 
@@ -11,7 +12,8 @@ type VarBase struct {
 
 type Variable struct {
 	VarBase
-	Value interface{}
+	Value    interface{}
+	Metadata *metadata.Metadata
 }
 
 type MatrixValue struct {

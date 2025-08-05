@@ -1,13 +1,14 @@
-url = "https://google.com"
-filename = "output.txt"
+x = "hi"
 
-
-task "scrap" {
-    -> @buf["first_stash"] << curl -s https://google.com
+task hello_world {
+    -> @print("Hello World")
+    -> @print("Hello World 2")
 }
 
-
-task "scrap2" {
-    -> sleep 3
-    -> echo @sprintf(@buf("first_stash"))
+@depend hello_world
+@description "this is the description"
+@schedule 5s
+task hello_world_2 {
+    -> @print("Hello World")
+    -> @print("Hello World 2")
 }

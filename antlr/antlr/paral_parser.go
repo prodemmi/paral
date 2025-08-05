@@ -100,16 +100,16 @@ func paralparserParserInit() {
 		0, 63, 64, 3, 32, 16, 0, 64, 65, 5, 27, 0, 0, 65, 5, 1, 0, 0, 0, 66, 67,
 		3, 8, 4, 0, 67, 68, 5, 27, 0, 0, 68, 70, 1, 0, 0, 0, 69, 66, 1, 0, 0, 0,
 		70, 73, 1, 0, 0, 0, 71, 69, 1, 0, 0, 0, 71, 72, 1, 0, 0, 0, 72, 74, 1,
-		0, 0, 0, 73, 71, 1, 0, 0, 0, 74, 75, 5, 6, 0, 0, 75, 76, 3, 36, 18, 0,
-		76, 80, 5, 23, 0, 0, 77, 79, 5, 27, 0, 0, 78, 77, 1, 0, 0, 0, 79, 82, 1,
-		0, 0, 0, 80, 78, 1, 0, 0, 0, 80, 81, 1, 0, 0, 0, 81, 86, 1, 0, 0, 0, 82,
-		80, 1, 0, 0, 0, 83, 85, 3, 10, 5, 0, 84, 83, 1, 0, 0, 0, 85, 88, 1, 0,
-		0, 0, 86, 84, 1, 0, 0, 0, 86, 87, 1, 0, 0, 0, 87, 89, 1, 0, 0, 0, 88, 86,
-		1, 0, 0, 0, 89, 90, 5, 24, 0, 0, 90, 7, 1, 0, 0, 0, 91, 92, 3, 16, 8, 0,
-		92, 9, 1, 0, 0, 0, 93, 94, 5, 1, 0, 0, 94, 95, 3, 12, 6, 0, 95, 96, 5,
-		29, 0, 0, 96, 11, 1, 0, 0, 0, 97, 99, 3, 14, 7, 0, 98, 97, 1, 0, 0, 0,
-		99, 102, 1, 0, 0, 0, 100, 98, 1, 0, 0, 0, 100, 101, 1, 0, 0, 0, 101, 13,
-		1, 0, 0, 0, 102, 100, 1, 0, 0, 0, 103, 109, 3, 18, 9, 0, 104, 109, 3, 20,
+		0, 0, 0, 73, 71, 1, 0, 0, 0, 74, 75, 5, 6, 0, 0, 75, 76, 5, 26, 0, 0, 76,
+		80, 5, 23, 0, 0, 77, 79, 5, 27, 0, 0, 78, 77, 1, 0, 0, 0, 79, 82, 1, 0,
+		0, 0, 80, 78, 1, 0, 0, 0, 80, 81, 1, 0, 0, 0, 81, 86, 1, 0, 0, 0, 82, 80,
+		1, 0, 0, 0, 83, 85, 3, 10, 5, 0, 84, 83, 1, 0, 0, 0, 85, 88, 1, 0, 0, 0,
+		86, 84, 1, 0, 0, 0, 86, 87, 1, 0, 0, 0, 87, 89, 1, 0, 0, 0, 88, 86, 1,
+		0, 0, 0, 89, 90, 5, 24, 0, 0, 90, 7, 1, 0, 0, 0, 91, 92, 3, 16, 8, 0, 92,
+		9, 1, 0, 0, 0, 93, 94, 5, 1, 0, 0, 94, 95, 3, 12, 6, 0, 95, 96, 5, 29,
+		0, 0, 96, 11, 1, 0, 0, 0, 97, 99, 3, 14, 7, 0, 98, 97, 1, 0, 0, 0, 99,
+		102, 1, 0, 0, 0, 100, 98, 1, 0, 0, 0, 100, 101, 1, 0, 0, 0, 101, 13, 1,
+		0, 0, 0, 102, 100, 1, 0, 0, 0, 103, 109, 3, 18, 9, 0, 104, 109, 3, 20,
 		10, 0, 105, 109, 3, 22, 11, 0, 106, 109, 3, 24, 12, 0, 107, 109, 5, 37,
 		0, 0, 108, 103, 1, 0, 0, 0, 108, 104, 1, 0, 0, 0, 108, 105, 1, 0, 0, 0,
 		108, 106, 1, 0, 0, 0, 108, 107, 1, 0, 0, 0, 109, 15, 1, 0, 0, 0, 110, 111,
@@ -749,7 +749,7 @@ type ITask_definitionContext interface {
 
 	// Getter signatures
 	TASK() antlr.TerminalNode
-	String_expr() IString_exprContext
+	IDENTIFIER() antlr.TerminalNode
 	LBRACE() antlr.TerminalNode
 	RBRACE() antlr.TerminalNode
 	AllTask_directive() []ITask_directiveContext
@@ -799,20 +799,8 @@ func (s *Task_definitionContext) TASK() antlr.TerminalNode {
 	return s.GetToken(ParalParserTASK, 0)
 }
 
-func (s *Task_definitionContext) String_expr() IString_exprContext {
-	var t antlr.RuleContext
-	for _, ctx := range s.GetChildren() {
-		if _, ok := ctx.(IString_exprContext); ok {
-			t = ctx.(antlr.RuleContext)
-			break
-		}
-	}
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IString_exprContext)
+func (s *Task_definitionContext) IDENTIFIER() antlr.TerminalNode {
+	return s.GetToken(ParalParserIDENTIFIER, 0)
 }
 
 func (s *Task_definitionContext) LBRACE() antlr.TerminalNode {
@@ -977,7 +965,11 @@ func (p *ParalParser) Task_definition() (localctx ITask_definitionContext) {
 	}
 	{
 		p.SetState(75)
-		p.String_expr()
+		p.Match(ParalParserIDENTIFIER)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
 	}
 	{
 		p.SetState(76)

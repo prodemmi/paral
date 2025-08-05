@@ -32,35 +32,41 @@ func (p *Parser) parseVariable(ctx parser.IVariable_assignmentContext) *variable
 				p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("Invalid number: %s", numText), mt)
 			}
 			return &variable.Variable{
-				VarBase: variable.VarBase{Name: name},
-				Value:   variable.FloatValue{VarBase: variable.VarBase{Name: name}, Value: fnum},
+				VarBase:  variable.VarBase{Name: name},
+				Value:    variable.FloatValue{VarBase: variable.VarBase{Name: name}, Value: fnum},
+				Metadata: mt,
 			}
 		} else {
 			return &variable.Variable{
-				VarBase: variable.VarBase{Name: name},
-				Value:   variable.IntValue{VarBase: variable.VarBase{Name: name}, Value: num},
+				VarBase:  variable.VarBase{Name: name},
+				Value:    variable.IntValue{VarBase: variable.VarBase{Name: name}, Value: num},
+				Metadata: mt,
 			}
 		}
 	} else if val.String_expr() != nil {
 		return &variable.Variable{
-			VarBase: variable.VarBase{Name: name},
-			Value:   variable.StringValue{VarBase: variable.VarBase{Name: name}, Value: core.TrimQuotes(val.GetText())},
+			VarBase:  variable.VarBase{Name: name},
+			Value:    variable.StringValue{VarBase: variable.VarBase{Name: name}, Value: core.TrimQuotes(val.GetText())},
+			Metadata: mt,
 		}
 	} else if val.Boolean_expr() != nil {
 		boolText := val.GetText()
 		return &variable.Variable{
-			VarBase: variable.VarBase{Name: name},
-			Value:   variable.BoolValue{VarBase: variable.VarBase{Name: name}, Value: boolText == "true"},
+			VarBase:  variable.VarBase{Name: name},
+			Value:    variable.BoolValue{VarBase: variable.VarBase{Name: name}, Value: boolText == "true"},
+			Metadata: mt,
 		}
 	} else if val.Duration_expr() != nil {
 		return &variable.Variable{
-			VarBase: variable.VarBase{Name: name},
-			Value:   variable.DurationValue{VarBase: variable.VarBase{Name: name}, Value: val.GetText()},
+			VarBase:  variable.VarBase{Name: name},
+			Value:    variable.DurationValue{VarBase: variable.VarBase{Name: name}, Value: val.GetText()},
+			Metadata: mt,
 		}
 	} else if val.URL() != nil {
 		return &variable.Variable{
-			VarBase: variable.VarBase{Name: name},
-			Value:   variable.StringValue{VarBase: variable.VarBase{Name: name}, Value: val.GetText()},
+			VarBase:  variable.VarBase{Name: name},
+			Value:    variable.StringValue{VarBase: variable.VarBase{Name: name}, Value: val.GetText()},
+			Metadata: mt,
 		}
 	} else if val.Matrix_expr() != nil {
 		var matrixValues [][]interface{}
@@ -72,14 +78,16 @@ func (p *Parser) parseVariable(ctx parser.IVariable_assignmentContext) *variable
 			matrixValues = append(matrixValues, row)
 		}
 		return &variable.Variable{
-			VarBase: variable.VarBase{Name: name},
-			Value:   variable.MatrixValue{VarBase: variable.VarBase{Name: name}, Value: matrixValues},
+			VarBase:  variable.VarBase{Name: name},
+			Value:    variable.MatrixValue{VarBase: variable.VarBase{Name: name}, Value: matrixValues},
+			Metadata: mt,
 		}
 	} else if val.List_expr() != nil {
 		listValues := core.ExtractListValues(val.List_expr())
 		return &variable.Variable{
-			VarBase: variable.VarBase{Name: name},
-			Value:   variable.ListValue{VarBase: variable.VarBase{Name: name}, Value: listValues},
+			VarBase:  variable.VarBase{Name: name},
+			Value:    variable.ListValue{VarBase: variable.VarBase{Name: name}, Value: listValues},
+			Metadata: mt,
 		}
 	} else if val.IDENTIFIER() != nil {
 		refName := val.IDENTIFIER().GetText()
@@ -88,22 +96,25 @@ func (p *Parser) parseVariable(ctx parser.IVariable_assignmentContext) *variable
 			p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("Undefined variable: %s", refName), mt)
 		}
 		return &variable.Variable{
-			VarBase: variable.VarBase{Name: name},
-			Value:   refVar.Value,
+			VarBase:  variable.VarBase{Name: name},
+			Value:    refVar.Value,
+			Metadata: mt,
 		}
 	} else if val.Nested_function() != nil {
 		nestedFunc := p.parseNestedFunction(nil, val.Nested_function())
 		result, _ := nestedFunc.Call()
 		return &variable.Variable{
-			VarBase: variable.VarBase{Name: name},
-			Value:   result,
+			VarBase:  variable.VarBase{Name: name},
+			Value:    result,
+			Metadata: mt,
 		}
 	} else if val.Function() != nil {
 		function := p.parseFunction(nil, val.Function())
 		result, _ := function.Call()
 		return &variable.Variable{
-			VarBase: variable.VarBase{Name: name},
-			Value:   result,
+			VarBase:  variable.VarBase{Name: name},
+			Value:    result,
+			Metadata: mt,
 		}
 	} else {
 		fmt.Println("val", val.GetText())

@@ -1,14 +1,17 @@
 package runtime
 
 import (
+	"context"
 	"fmt"
+	"github.com/robfig/cron/v3"
 	"io"
-	"math/rand"
 	"os"
 	"os/exec"
+	"os/signal"
 	"paral/core/variable"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/fatih/color"
@@ -18,6 +21,12 @@ type TaskExecutor struct {
 	Runtime         *Runtime
 	Reporter        *Reporter
 	CommandExecutor *CommandExecutor
+	scheduler       *cron.Cron
+	scheduledTasks  []*Task
+	regularTasks    []*Task
+	ctx             context.Context
+	cancel          context.CancelFunc
+	wg              sync.WaitGroup
 }
 
 type TaskOutput struct {
@@ -25,6 +34,7 @@ type TaskOutput struct {
 	Description string
 	OutputLines []string
 	IsVerbose   bool
+	Timestamp   time.Time
 }
 
 type ThreadSafeWriter struct {
@@ -40,11 +50,12 @@ type ExecutionConfig struct {
 	DryRun      bool
 	NoColor     bool
 	Profile     bool
-	LogLevel    string
+	LogLevel    string // @TODO: implement
 	MaxWorkers  int
 	Timeout     int
 	OutputFile  string
 	Writer      io.Writer
+	KeepAlive   bool // New flag to keep app running for scheduled tasks
 }
 
 type ExecutionStats struct {
@@ -55,6 +66,8 @@ type ExecutionStats struct {
 	StartTime          time.Time
 	EndTime            time.Time
 	JobStats           map[string]JobStats
+	ScheduledJobStats  map[string]*ScheduledJobStats
+	mutex              sync.RWMutex
 }
 
 type JobStats struct {
@@ -62,6 +75,16 @@ type JobStats struct {
 	Successful int
 	Failed     int
 	Duration   time.Duration
+}
+
+type ScheduledJobStats struct {
+	TotalRuns       int
+	SuccessfulRuns  int
+	FailedRuns      int
+	LastRun         time.Time
+	NextRun         time.Time
+	TotalDuration   time.Duration
+	AverageDuration time.Duration
 }
 
 type ExecutionContext struct {
@@ -88,10 +111,15 @@ type CommandExecutor struct {
 }
 
 func NewExecutor(runtime *Runtime) *TaskExecutor {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	return &TaskExecutor{
 		Runtime:         runtime,
 		Reporter:        runtime.Reporter,
 		CommandExecutor: NewCommandExecutor(runtime),
+		scheduler:       cron.New(cron.WithSeconds()), // Enable seconds precision
+		ctx:             ctx,
+		cancel:          cancel,
 	}
 }
 
@@ -107,6 +135,9 @@ func NewThreadSafeWriter(w io.Writer) *ThreadSafeWriter {
 }
 
 func (t *ThreadSafeWriter) Write(p []byte) (n int, err error) {
+	if t == nil || t.writer == nil {
+		return 0, fmt.Errorf("writer is nil")
+	}
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 	return t.writer.Write(p)
@@ -130,12 +161,14 @@ func (ce *CommandExecutor) ExecuteShellCommand(pipeline string, forValue interfa
 	}
 	valueStr := fmt.Sprint(forValue)
 	pipeline = strings.ReplaceAll(pipeline, "@value", valueStr)
+
 	var cmd *exec.Cmd
 	if ctx.Config.Timeout > 0 {
 		cmd = exec.Command("timeout", fmt.Sprintf("%d", ctx.Config.Timeout), "sh", "-c", pipeline)
 	} else {
 		cmd = exec.Command("sh", "-c", pipeline)
 	}
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		ce.Reporter.Warn(fmt.Sprintf("Command failed: %s, error: %v", pipeline, err), nil)
@@ -146,24 +179,327 @@ func (ce *CommandExecutor) ExecuteShellCommand(pipeline string, forValue interfa
 
 func (c *TaskExecutor) ExecWithConfig(config *ExecutionConfig) {
 	ctx := c.createExecutionContext(config)
+
 	if config.Profile {
 		ctx.Stats.StartTime = time.Now()
 	}
-	if !config.Silent {
+
+	if !config.Silent && !config.SummaryOnly {
 		c.printVariables(ctx)
 	}
+
+	// Separate scheduled and regular tasks
+	c.separateTasks()
+
 	if config.DryRun {
 		_, _ = fmt.Fprintln(ctx.Writer, "DRY RUN - Commands that would be executed:")
 		c.executeDryRun(ctx)
-	} else {
-		c.executeParallel(ctx)
+		return
 	}
+
+	// Setup signal handling for graceful shutdown
+	c.setupSignalHandling(ctx)
+
+	// Start output processor
+	outputChan := make(chan TaskOutput, 100)
+	var printWg sync.WaitGroup
+
+	if !ctx.Config.Silent && !config.SummaryOnly {
+		printWg.Add(1)
+		go func() {
+			defer printWg.Done()
+			c.processOutput(outputChan, ctx)
+		}()
+	}
+
+	// Execute regular tasks first
+	if len(c.regularTasks) > 0 {
+		c.executeRegularTasks(ctx, outputChan)
+	}
+
+	// Setup and start scheduled tasks
+	hasScheduledTasks := len(c.scheduledTasks) > 0
+	if hasScheduledTasks {
+		c.setupScheduledTasks(ctx, outputChan)
+		c.scheduler.Start()
+
+		if !config.Silent {
+			c.printScheduledTasksInfo(ctx)
+		}
+	}
+
+	// Keep the application running if there are scheduled tasks or keep-alive is requested
+	if hasScheduledTasks && (config.KeepAlive || hasScheduledTasks) {
+		c.waitForScheduledTasks(ctx)
+	}
+
+	// Cleanup
+	c.shutdown(ctx)
+
+	// Close output channel and wait for processing to complete
+	close(outputChan)
+	if !ctx.Config.Silent {
+		printWg.Wait()
+	}
+
 	if config.Profile {
 		ctx.Stats.EndTime = time.Now()
 	}
-	if !config.Silent {
+
+	if !config.Silent || config.SummaryOnly {
 		c.printSummary(ctx)
 	}
+}
+
+func (c *TaskExecutor) separateTasks() {
+	c.scheduledTasks = []*Task{}
+	c.regularTasks = []*Task{}
+
+	for _, task := range c.Runtime.Tasks {
+		if task.IsManual() {
+			continue // Skip manual tasks
+		}
+
+		if task.IsScheduled() {
+			c.scheduledTasks = append(c.scheduledTasks, task)
+		} else {
+			c.regularTasks = append(c.regularTasks, task)
+		}
+	}
+}
+
+func (c *TaskExecutor) setupSignalHandling(ctx *ExecutionContext) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		sig := <-sigChan
+		if ctx.Config.Verbose {
+			_, _ = ctx.Colors.Yellow.Fprintf(ctx.Writer, "\nreceived %s signal, stopping scheduled tasks...\n", sig)
+		}
+		c.cancel()
+
+		// Force exit after timeout if graceful shutdown fails
+		go func() {
+			time.Sleep(10 * time.Second)
+			if ctx.Config.Verbose {
+				_, _ = ctx.Colors.Red.Fprintln(ctx.Writer, "force exit after timeout")
+			}
+			os.Exit(1)
+		}()
+	}()
+}
+
+func (c *TaskExecutor) setupScheduledTasks(ctx *ExecutionContext, outputChan chan TaskOutput) {
+	for _, task := range c.scheduledTasks {
+		scheduleDirective := task.GetScheduleDirective()
+		if scheduleDirective == nil {
+			continue
+		}
+
+		taskScheduleDirectiveContext := task.GetTaskScheduleDirectiveContext()
+		if taskScheduleDirectiveContext == nil {
+			continue
+		}
+
+		// Create a wrapper function that handles the execution context
+		taskFunc := c.createScheduledTaskFunc(task, ctx, outputChan)
+
+		// Add to cron scheduler
+		value := taskScheduleDirectiveContext.Value
+		var cronSpec string
+
+		if taskScheduleDirectiveContext.IsLinuxFormat {
+			cronSpec = value
+		} else if taskScheduleDirectiveContext.IsDurationFormat {
+			cronSpec = "@every " + value
+		} else {
+			cronSpec = value
+		}
+
+		entryID, err := c.scheduler.AddFunc(cronSpec, taskFunc)
+		if err != nil {
+			c.Reporter.ThrowRuntimeError(fmt.Sprintf("failed to schedule task '%s': %v", task.Name, err), &task.Metadata)
+			continue
+		}
+
+		// Initialize stats for this scheduled task
+		ctx.Stats.mutex.Lock()
+		if ctx.Stats.ScheduledJobStats == nil {
+			ctx.Stats.ScheduledJobStats = make(map[string]*ScheduledJobStats)
+		}
+		ctx.Stats.ScheduledJobStats[task.Name] = &ScheduledJobStats{
+			NextRun: c.scheduler.Entry(entryID).Next,
+		}
+		ctx.Stats.mutex.Unlock()
+	}
+}
+
+func (c *TaskExecutor) createScheduledTaskFunc(task *Task, ctx *ExecutionContext, outputChan chan TaskOutput) func() {
+	return func() {
+		select {
+		case <-c.ctx.Done():
+			return // Context cancelled, stop execution
+		default:
+			// Execute the task
+			startTime := time.Now()
+
+			// Update stats - mark as started
+			ctx.Stats.mutex.Lock()
+			if stats, exists := ctx.Stats.ScheduledJobStats[task.Name]; exists {
+				stats.TotalRuns++
+				stats.LastRun = startTime
+				// Update next run time
+				for _, entry := range c.scheduler.Entries() {
+					stats.NextRun = entry.Next
+					break
+				}
+			}
+			ctx.Stats.mutex.Unlock()
+
+			// Execute the task with proper dependency handling
+			jobStats, taskOutput := c.executeScheduledJob(task, ctx)
+
+			duration := time.Since(startTime)
+
+			// Update final stats
+			ctx.Stats.mutex.Lock()
+			if stats, exists := ctx.Stats.ScheduledJobStats[task.Name]; exists {
+				if jobStats.Failed == 0 {
+					stats.SuccessfulRuns++
+				} else {
+					stats.FailedRuns++
+				}
+				stats.TotalDuration += duration
+				if stats.TotalRuns > 0 {
+					stats.AverageDuration = stats.TotalDuration / time.Duration(stats.TotalRuns)
+				}
+			}
+
+			ctx.Stats.TotalCommands += jobStats.Total
+			ctx.Stats.SuccessfulCommands += jobStats.Successful
+			ctx.Stats.FailedCommands += jobStats.Failed
+			ctx.Stats.mutex.Unlock()
+
+			// Send output for live display - FIX: Always send output, even if silent
+			if taskOutput != nil {
+				taskOutput.Timestamp = startTime
+				select {
+				case outputChan <- *taskOutput:
+				case <-time.After(100 * time.Millisecond):
+					// Timeout to prevent blocking if channel is full
+				}
+			}
+		}
+	}
+}
+
+func (c *TaskExecutor) executeRegularTasks(ctx *ExecutionContext, outputChan chan TaskOutput) {
+	independentTasks, deferTasks, err := c.Runtime.GetExecutionOrder()
+	if err != nil {
+		c.Reporter.ThrowRuntimeError(err.Error(), c.Runtime.Metadata)
+		return
+	}
+
+	// Filter out scheduled tasks from regular execution
+	independentTasks = c.filterScheduledTasks(independentTasks)
+	deferTasks = c.filterScheduledTasks(deferTasks)
+
+	if onlyIndependentTasksWithoutDeps(independentTasks) {
+		c.executeTasksInParallel(independentTasks, ctx, outputChan)
+	} else {
+		c.executeTasksWithDependencies(independentTasks, ctx, outputChan)
+	}
+
+	if len(deferTasks) > 0 {
+		c.executeTasksInParallel(deferTasks, ctx, outputChan)
+	}
+}
+
+func (c *TaskExecutor) filterScheduledTasks(tasks []*Task) []*Task {
+	filtered := []*Task{}
+	for _, task := range tasks {
+		if !task.IsScheduled() {
+			filtered = append(filtered, task)
+		}
+	}
+	return filtered
+}
+
+func (c *TaskExecutor) waitForScheduledTasks(ctx *ExecutionContext) {
+	if !ctx.Config.Silent {
+		_, _ = ctx.Colors.Cyan.Fprintln(ctx.Writer, "🕐 Waiting for scheduled tasks... (Press Ctrl+C to stop)")
+	}
+
+	<-c.ctx.Done()
+}
+
+func (c *TaskExecutor) shutdown(ctx *ExecutionContext) {
+	if c.scheduler != nil {
+		// Stop the scheduler with context
+		shutdownCtx := c.scheduler.Stop()
+
+		select {
+		case <-shutdownCtx.Done():
+		case <-time.After(3 * time.Second):
+			if ctx.Config.Verbose {
+				_, _ = ctx.Colors.Yellow.Fprintln(ctx.Writer, "scheduler shutdown timeout, forcing exit")
+			}
+		}
+	}
+
+	// Wait for goroutines with timeout
+	done := make(chan struct{})
+	go func() {
+		c.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// All goroutines finished
+	case <-time.After(2 * time.Second):
+		if !ctx.Config.Silent {
+			_, _ = ctx.Colors.Yellow.Fprintln(ctx.Writer, "⚠️  Timeout waiting for goroutines")
+		}
+	}
+}
+
+func (c *TaskExecutor) printScheduledTasksInfo(ctx *ExecutionContext) {
+	if len(c.scheduledTasks) == 0 {
+		return
+	}
+
+	_, _ = ctx.Colors.Cyan.Fprintln(ctx.Writer, "  Scheduled Tasks:")
+	for _, task := range c.scheduledTasks {
+		scheduleDirective := task.GetScheduleDirective()
+		if scheduleDirective != nil && len(scheduleDirective.Params) > 0 {
+			schedule := fmt.Sprint(scheduleDirective.Params[0])
+			_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "   🕐 %s: %s\n", task.Name, schedule)
+
+			ctx.Stats.mutex.RLock()
+			if stats, exists := ctx.Stats.ScheduledJobStats[task.Name]; exists && !stats.NextRun.IsZero() {
+				_, _ = ctx.Colors.Gray.Fprintf(ctx.Writer, "      Next run: %s\n", stats.NextRun.Format("2006-01-02 15:04:05"))
+			}
+			ctx.Stats.mutex.RUnlock()
+		}
+	}
+	_, _ = fmt.Fprintln(ctx.Writer)
+}
+
+func (c *TaskExecutor) executeScheduledJob(task *Task, ctx *ExecutionContext) (JobStats, *TaskOutput) {
+	// Check dependencies first
+	dependencies := c.Runtime.GetTaskDependencies(task)
+	for _, depId := range dependencies {
+		depTask := c.Runtime.GetTaskByID(depId)
+		if depTask != nil && !depTask.isFinished {
+			// Execute dependency first (this could be improved with better dependency resolution)
+			c.executeJob(depTask, ctx)
+		}
+	}
+
+	// Execute the scheduled task
+	return c.executeJob(task, ctx)
 }
 
 func (c *TaskExecutor) createExecutionContext(config *ExecutionConfig) *ExecutionContext {
@@ -183,17 +519,21 @@ func (c *TaskExecutor) createExecutionContext(config *ExecutionConfig) *Executio
 	}
 	safeWriter := NewThreadSafeWriter(writer)
 	colors := c.createColorScheme(config.NoColor)
-	nonManualJobs := 0
+
+	nonAutoStartTasks := 0
 	for _, task := range c.Runtime.Tasks {
-		if !task.IsManual() {
-			nonManualJobs++
+		if !(task.IsManual()) {
+			nonAutoStartTasks++
 		}
 	}
+
 	stats := &ExecutionStats{
-		TotalJobs: nonManualJobs,
-		JobStats:  make(map[string]JobStats),
-		StartTime: time.Now(),
+		TotalJobs:         nonAutoStartTasks,
+		JobStats:          make(map[string]JobStats),
+		ScheduledJobStats: make(map[string]*ScheduledJobStats),
+		StartTime:         time.Now(),
 	}
+
 	return &ExecutionContext{
 		Config: config,
 		Stats:  stats,
@@ -271,12 +611,11 @@ func (c *TaskExecutor) processOutput(outputChan chan TaskOutput, ctx *ExecutionC
 			}
 		}
 	}
-	_, _ = fmt.Fprintln(ctx.Writer)
 }
 
 func (c *TaskExecutor) printVerboseLine(line string, ctx *ExecutionContext) {
 	switch {
-	case strings.HasPrefix(line, "📦 Task"):
+	case strings.HasPrefix(line, "  Task"):
 		_, _ = ctx.Colors.Yellow.Fprintf(ctx.Writer, "%s\n", line)
 	case strings.HasPrefix(line, "  🔄 Looping"):
 		_, _ = ctx.Colors.Cyan.Fprintf(ctx.Writer, "%s\n", line)
@@ -300,7 +639,7 @@ func (c *TaskExecutor) printVariables(ctx *ExecutionContext) {
 		return
 	}
 	if ctx.Config.Short {
-		_, _ = fmt.Fprintf(ctx.Writer, "Variables: ")
+		_, _ = fmt.Fprintf(ctx.Writer, "  Variables: ")
 		for i, v := range c.Runtime.Vars {
 			if i > 0 {
 				_, _ = fmt.Fprint(ctx.Writer, ", ")
@@ -308,10 +647,9 @@ func (c *TaskExecutor) printVariables(ctx *ExecutionContext) {
 			_, valueStr := v.Format()
 			_, _ = fmt.Fprintf(ctx.Writer, "%s=%s", v.Name, valueStr)
 		}
-		_, _ = fmt.Fprintln(ctx.Writer)
 		return
 	}
-	_, _ = ctx.Colors.Magenta.Fprint(ctx.Writer, "Variables: ")
+	_, _ = ctx.Colors.Magenta.Fprint(ctx.Writer, "  Variables: ")
 	for i, v := range c.Runtime.Vars {
 		if i > 0 {
 			_, _ = ctx.Colors.Magenta.Fprint(ctx.Writer, ", ")
@@ -319,6 +657,7 @@ func (c *TaskExecutor) printVariables(ctx *ExecutionContext) {
 		_, valueStr := v.Format()
 		_, _ = ctx.Colors.Magenta.Fprintf(ctx.Writer, "%s=%s", v.Name, valueStr)
 	}
+	_, _ = fmt.Fprintln(ctx.Writer)
 	_, _ = fmt.Fprintln(ctx.Writer)
 }
 
@@ -344,12 +683,12 @@ func (c *TaskExecutor) printTaskDryRun(task *Task, ctx *ExecutionContext) {
 	taskId := task.GetTaskId()
 	dependencies := c.Runtime.GetTaskDependencies(task)
 	if ctx.Config.Verbose && len(task.Description) > 0 {
-		_, _ = ctx.Colors.Yellow.Fprintf(ctx.Writer, "📦 Task: %s (%s)\n", taskId, task.Description)
+		_, _ = ctx.Colors.Yellow.Fprintf(ctx.Writer, "  Task %q (%s):\n", taskId, task.Description)
 	} else {
-		_, _ = ctx.Colors.Yellow.Fprintf(ctx.Writer, "📦 Task: %s\n", taskId)
+		_, _ = ctx.Colors.Yellow.Fprintf(ctx.Writer, "  Task %q\n", taskId)
 	}
 	if len(dependencies) > 0 {
-		_, _ = ctx.Colors.Magenta.Fprintf(ctx.Writer, "  📋 Depends on: %v\n", dependencies)
+		_, _ = ctx.Colors.Magenta.Fprintf(ctx.Writer, "  🕐 Depends on: %v\n", dependencies)
 	}
 	if c.Runtime.HasDeferDirective(task) {
 		_, _ = ctx.Colors.Magenta.Fprintf(ctx.Writer, "  ⏳ Waits for all other tasks to complete\n")
@@ -476,9 +815,9 @@ func (c *TaskExecutor) printJobPipelinesDryRun(task *Task, ctx *ExecutionContext
 			if isTrigger {
 				_, _ = ctx.Colors.Green.Fprintf(ctx.Writer, "%s🚀 %s\n", indent, displayCmd)
 			} else if isStash {
-				_, _ = ctx.Colors.Cyan.Fprintf(ctx.Writer, "%s▶ %s\n", indent, displayCmd)
+				_, _ = ctx.Colors.Cyan.Fprintf(ctx.Writer, "%s ▶ %s\n", indent, displayCmd)
 			} else {
-				_, _ = ctx.Colors.Blue.Fprintf(ctx.Writer, "%s▶ %s\n", indent, displayCmd)
+				_, _ = ctx.Colors.Blue.Fprintf(ctx.Writer, "%s ▶ %s\n", indent, displayCmd)
 			}
 		}
 	}
@@ -527,15 +866,10 @@ func (c *TaskExecutor) executeTasksInParallel(tasks []*Task, ctx *ExecutionConte
 	if len(tasks) == 0 {
 		return
 	}
-	rand.Seed(time.Now().UnixNano())
-	shuffledTasks := make([]*Task, len(tasks))
-	copy(shuffledTasks, tasks)
-	rand.Shuffle(len(shuffledTasks), func(i, j int) {
-		shuffledTasks[i], shuffledTasks[j] = shuffledTasks[j], shuffledTasks[i]
-	})
+
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
-	for _, task := range shuffledTasks {
+	for _, task := range tasks {
 		wg.Add(1)
 		go func(t *Task) {
 			defer wg.Done()
@@ -562,52 +896,50 @@ func (c *TaskExecutor) executeJob(task *Task, ctx *ExecutionContext) (JobStats, 
 		OutputLines: []string{},
 		IsVerbose:   ctx.Config.Verbose,
 	}
+
+	dependencies := c.Runtime.GetTaskDependencies(task)
+	if ctx.Config.Verbose && len(dependencies) > 0 {
+		taskDirectivesPrefix := ctx.Colors.Gray.Sprintf("\n  @depends on: %v", dependencies)
+		output.OutputLines = append(output.OutputLines, taskDirectivesPrefix)
+	}
+
+	// Add timestamp only for scheduled tasks
+	var taskPrefix string
+	if task.IsScheduled() {
+		timestamp := startTime.Format("15:04:05")
+		taskPrefix = ctx.Colors.Magenta.Sprintf("  Task %q [%s]:", task.Name, timestamp)
+	} else {
+		taskPrefix = ctx.Colors.Magenta.Sprintf("  Task %q", task.Name)
+
+	}
+
 	if ctx.Config.Verbose && len(task.Description) > 0 {
-		output.OutputLines = append(output.OutputLines, fmt.Sprintf("📦 Task: %s (%s)", task.Name, task.Description))
+		output.OutputLines = append(output.OutputLines, fmt.Sprintf("%s (%s)", taskPrefix, task.Description))
 	} else if !ctx.Config.Silent && !ctx.Config.Short {
-		output.OutputLines = append(output.OutputLines, fmt.Sprintf("📦 Task: %s", task.Name))
+		output.OutputLines = append(output.OutputLines, taskPrefix)
 	}
+
 	stats := JobStats{}
-	var forValues interface{}
-	var forEnabled bool
-	var isMatrix bool
-	for _, directive := range task.Directives {
-		if directive.Type == "for" && len(directive.Params) > 0 {
-			varName := fmt.Sprint(directive.Params[0])
-			for _, v := range c.Runtime.Vars {
-				if v.Name == varName {
-					if listVal, ok := v.Value.(variable.ListValue); ok {
-						forValues = listVal.Value
-						forEnabled = true
-						isMatrix = false
-						break
-					}
-					if _, ok := v.Value.(variable.MatrixValue); ok {
-						forValues, _ = v.GetMatrixCombinations()
-						forEnabled = true
-						isMatrix = true
-						break
-					}
-				}
-			}
-		}
-	}
-	if forEnabled {
+
+	taskForDirectiveContext := task.GetTaskForDirectiveContext()
+	taskScheduleDirectiveContext := task.GetTaskScheduleDirectiveContext()
+
+	if taskForDirectiveContext != nil {
 		var displayValues []string
-		if isMatrix {
-			for _, val := range forValues.([][]interface{}) {
+		if taskForDirectiveContext.IsMatrix {
+			for _, val := range taskForDirectiveContext.Value.([][]interface{}) {
 				displayValues = append(displayValues, fmt.Sprint(val))
 			}
 		} else {
-			for _, val := range forValues.([]interface{}) {
+			for _, val := range taskForDirectiveContext.Value.([]interface{}) {
 				displayValues = append(displayValues, fmt.Sprint(val))
 			}
 		}
 		if !ctx.Config.Silent && ctx.Config.Verbose {
 			output.OutputLines = append(output.OutputLines, fmt.Sprintf("  🔄 Looping over: %v", displayValues))
 		}
-		if isMatrix {
-			for key, val := range forValues.([][]interface{}) {
+		if taskForDirectiveContext.IsMatrix {
+			for key, val := range taskForDirectiveContext.Value.([][]interface{}) {
 				if !ctx.Config.Silent && ctx.Config.Verbose {
 					output.OutputLines = append(output.OutputLines, fmt.Sprintf("    → Item: %v", val))
 				}
@@ -619,7 +951,7 @@ func (c *TaskExecutor) executeJob(task *Task, ctx *ExecutionContext) (JobStats, 
 				stats.Failed += jobStats.Failed
 			}
 		} else {
-			for key, val := range forValues.([]interface{}) {
+			for key, val := range taskForDirectiveContext.Value.([]interface{}) {
 				if !ctx.Config.Silent && ctx.Config.Verbose {
 					output.OutputLines = append(output.OutputLines, fmt.Sprintf("    → Item: %v", val))
 				}
@@ -631,10 +963,16 @@ func (c *TaskExecutor) executeJob(task *Task, ctx *ExecutionContext) (JobStats, 
 				stats.Failed += jobStats.Failed
 			}
 		}
+	} else if taskScheduleDirectiveContext != nil {
+		// FIX: Don't create a new cron scheduler here - scheduled tasks are handled elsewhere
+		// This was causing the blocking issue
+		task.ClearLoopStack()
+		stats = c.runTaskPipelines(task, ctx, output)
 	} else {
 		task.ClearLoopStack()
 		stats = c.runTaskPipelines(task, ctx, output)
 	}
+
 	stats.Duration = time.Since(startTime)
 	return stats, output
 }
@@ -655,9 +993,9 @@ func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, outpu
 			result, success = pipeline.Buf.GetValue(ctx, task, c.CommandExecutor)
 			if success {
 				c.Runtime.PushBufStack(pipeline.Buf.Name, task.GetTaskId(), result, pipeline.Buf)
-				displayResult = fmt.Sprintf("%s▶ buf %q saved: %s", indent, pipeline.Buf.Name, strings.TrimRight(result, "\n"))
+				displayResult = fmt.Sprintf("%s ▶ buf %q saved: %s", indent, pipeline.Buf.Name, strings.TrimRight(result, "\n"))
 			} else {
-				displayResult = fmt.Sprintf("%s❌ buf %q failed", indent, pipeline.Buf.Name)
+				displayResult = fmt.Sprintf("%s ❌ buf %q failed", indent, pipeline.Buf.Name)
 				c.Reporter.ThrowRuntimeError(fmt.Sprintf("buf %q failed", pipeline.Buf.Name), &pipeline.Buf.Metadata)
 			}
 			shouldPrint = ctx.Config.Verbose // Stash pipelines only print in verbose mode
@@ -665,9 +1003,9 @@ func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, outpu
 			result, success = pipeline.Stash.GetValue(ctx, task, c.CommandExecutor)
 			if success {
 				c.Runtime.PushStashStack(pipeline.Stash.Name, task.GetTaskId(), result, pipeline.Stash)
-				displayResult = fmt.Sprintf("%s▶ stash %q saved: %s", indent, pipeline.Stash.Name, strings.TrimRight(result, "\n"))
+				displayResult = fmt.Sprintf("%s ▶ stash %q saved: %s", indent, pipeline.Stash.Name, strings.TrimRight(result, "\n"))
 			} else {
-				displayResult = fmt.Sprintf("%s❌ stash %q failed", indent, pipeline.Stash.Name)
+				displayResult = fmt.Sprintf("%s ❌ stash %q failed", indent, pipeline.Stash.Name)
 				c.Reporter.ThrowRuntimeError(fmt.Sprintf("Stash %q failed", pipeline.Stash.Name), &pipeline.Stash.Metadata)
 			}
 			shouldPrint = ctx.Config.Verbose // Stash pipelines only print in verbose mode
@@ -693,10 +1031,10 @@ func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, outpu
 						}
 						shouldPrint = ctx.Config.Verbose // Triggers only print in verbose mode
 					case "print", "println", "printf", "sprintf":
-						displayResult = fmt.Sprintf("%s▶ %s", indent, strings.TrimRight(result, "\n"))
+						displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
 						shouldPrint = true // Print functions always print
 					default:
-						displayResult = fmt.Sprintf("%s▶ %s", indent, strings.TrimRight(result, "\n"))
+						displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
 						shouldPrint = ctx.Config.Verbose // Other functions only print in verbose mode
 					}
 				}
@@ -705,7 +1043,7 @@ func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, outpu
 			result, success, err = pipeline.Command.GetResult(ctx, task, c.CommandExecutor)
 			if strings.TrimSpace(result) != "" {
 				if success {
-					displayResult = fmt.Sprintf("%s▶ %s", indent, strings.TrimRight(result, "\n"))
+					displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
 					shouldPrint = true // Commands produce output when executed
 				} else {
 					displayResult = fmt.Sprintf("%s❌ %s (%v)", indent, strings.TrimRight(result, "\n"), err)
@@ -735,26 +1073,45 @@ func (c *TaskExecutor) printSummary(ctx *ExecutionContext) {
 		c.printShortSummary(ctx)
 		return
 	}
-	_, _ = ctx.Colors.Cyan.Fprintln(ctx.Writer, "📊 Execution Summary:")
-	_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "   ✅ Tasks executed: %d\n", ctx.Stats.TotalJobs)
-	_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "   ✅ Total pipelines: %d\n", ctx.Stats.TotalCommands)
+
+	if ctx.Config.SummaryOnly {
+		_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "  Regular tasks executed: %d\n", len(c.regularTasks))
+		_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "  Scheduled tasks: %d\n", len(c.scheduledTasks))
+		_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "  Total pipelines: %d\n", ctx.Stats.TotalCommands)
+	} else {
+		_, _ = ctx.Colors.Cyan.Fprintln(ctx.Writer, "\n  Execution Summary:")
+		_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "   ✅ Regular tasks executed: %d\n", len(c.regularTasks))
+		_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "   ✅ Scheduled tasks: %d\n", len(c.scheduledTasks))
+		_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "   ✅ Total pipelines: %d\n", ctx.Stats.TotalCommands)
+	}
+
 	if ctx.Stats.SuccessfulCommands == ctx.Stats.TotalCommands {
-		_, _ = ctx.Colors.Green.Fprintf(ctx.Writer, "   ✅ All %d pipelines succeeded\n", ctx.Stats.SuccessfulCommands)
+		if ctx.Config.SummaryOnly {
+			_, _ = ctx.Colors.Green.Fprintf(ctx.Writer, "  All %d pipelines succeeded\n", ctx.Stats.SuccessfulCommands)
+		} else {
+			_, _ = ctx.Colors.Green.Fprintf(ctx.Writer, "   ✅ All %d pipelines succeeded\n", ctx.Stats.SuccessfulCommands)
+		}
 	} else {
 		_, _ = ctx.Colors.Green.Fprintf(ctx.Writer, "   ✅ Successful: %d\n", ctx.Stats.SuccessfulCommands)
 		_, _ = ctx.Colors.Red.Fprintf(ctx.Writer, "   ❌ Failed: %d\n", ctx.Stats.FailedCommands)
 	}
+
+	// Print scheduled task statistics
+	ctx.Stats.mutex.RLock()
+	if len(ctx.Stats.ScheduledJobStats) > 0 {
+		_, _ = ctx.Colors.Cyan.Fprintln(ctx.Writer, "   Scheduled Task Statistics:")
+		for taskName, stats := range ctx.Stats.ScheduledJobStats {
+			_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "     %s: %d runs (✅%d ❌%d) avg: %v\n",
+				taskName, stats.TotalRuns, stats.SuccessfulRuns, stats.FailedRuns, stats.AverageDuration)
+		}
+	}
+	ctx.Stats.mutex.RUnlock()
+
 	if ctx.Config.Profile {
 		duration := ctx.Stats.EndTime.Sub(ctx.Stats.StartTime)
 		_, _ = ctx.Colors.Green.Fprintf(ctx.Writer, "   ✅ Total execution time: %v\n", duration)
-		if ctx.Config.Verbose {
-			_, _ = ctx.Colors.White.Fprintln(ctx.Writer, "   📊 Task breakdown:")
-			for jobName, jobStats := range ctx.Stats.JobStats {
-				_, _ = ctx.Colors.White.Fprintf(ctx.Writer, "     %s: %v (✅%d ❌%d)\n",
-					jobName, jobStats.Duration, jobStats.Successful, jobStats.Failed)
-			}
-		}
 	}
+
 	if ctx.Stats.SuccessfulCommands != ctx.Stats.TotalCommands {
 		_, _ = ctx.Colors.Red.Fprintln(ctx.Writer, "Execution completed with errors!")
 	}

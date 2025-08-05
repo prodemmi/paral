@@ -74,11 +74,11 @@ func ParseFlags() *ExecutionOptions {
 
 func ShowVersion() {
 	fmt.Println("Paral v1.0.0")
-	fmt.Println("A parallel task execution tool")
+	fmt.Println("A task execution tool")
 }
 
 func ShowHelp() {
-	fmt.Println("Paral - Parallel Task Execution Tool")
+	fmt.Println("Paral - Task Execution Tool")
 	fmt.Println()
 	fmt.Println("Usage: paral [options] <file>")
 	fmt.Println()
@@ -192,7 +192,8 @@ func main() {
 
 	// Check for input file
 	if flag.NArg() < 1 {
-		fmt.Println("No input file provided")
+		fmt.Println("* No input file provided")
+		ShowHelp()
 		os.Exit(1)
 	}
 
