@@ -93,6 +93,12 @@ func (s *BaseParalParserListener) EnterCondition(ctx *ConditionContext) {}
 // ExitCondition is called when production condition is exited.
 func (s *BaseParalParserListener) ExitCondition(ctx *ConditionContext) {}
 
+// EnterIf_condition is called when production if_condition is entered.
+func (s *BaseParalParserListener) EnterIf_condition(ctx *If_conditionContext) {}
+
+// ExitIf_condition is called when production if_condition is exited.
+func (s *BaseParalParserListener) ExitIf_condition(ctx *If_conditionContext) {}
+
 // EnterFunction is called when production function is entered.
 func (s *BaseParalParserListener) EnterFunction(ctx *FunctionContext) {}
 
@@ -104,12 +110,6 @@ func (s *BaseParalParserListener) EnterNested_function(ctx *Nested_functionConte
 
 // ExitNested_function is called when production nested_function is exited.
 func (s *BaseParalParserListener) ExitNested_function(ctx *Nested_functionContext) {}
-
-// EnterIf_condition is called when production if_condition is entered.
-func (s *BaseParalParserListener) EnterIf_condition(ctx *If_conditionContext) {}
-
-// ExitIf_condition is called when production if_condition is exited.
-func (s *BaseParalParserListener) ExitIf_condition(ctx *If_conditionContext) {}
 
 // EnterArgument_list is called when production argument_list is entered.
 func (s *BaseParalParserListener) EnterArgument_list(ctx *Argument_listContext) {}

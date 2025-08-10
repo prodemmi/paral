@@ -44,14 +44,14 @@ type ParalParserListener interface {
 	// EnterCondition is called when entering the condition production.
 	EnterCondition(c *ConditionContext)
 
+	// EnterIf_condition is called when entering the if_condition production.
+	EnterIf_condition(c *If_conditionContext)
+
 	// EnterFunction is called when entering the function production.
 	EnterFunction(c *FunctionContext)
 
 	// EnterNested_function is called when entering the nested_function production.
 	EnterNested_function(c *Nested_functionContext)
-
-	// EnterIf_condition is called when entering the if_condition production.
-	EnterIf_condition(c *If_conditionContext)
 
 	// EnterArgument_list is called when entering the argument_list production.
 	EnterArgument_list(c *Argument_listContext)
@@ -116,14 +116,14 @@ type ParalParserListener interface {
 	// ExitCondition is called when exiting the condition production.
 	ExitCondition(c *ConditionContext)
 
+	// ExitIf_condition is called when exiting the if_condition production.
+	ExitIf_condition(c *If_conditionContext)
+
 	// ExitFunction is called when exiting the function production.
 	ExitFunction(c *FunctionContext)
 
 	// ExitNested_function is called when exiting the nested_function production.
 	ExitNested_function(c *Nested_functionContext)
-
-	// ExitIf_condition is called when exiting the if_condition production.
-	ExitIf_condition(c *If_conditionContext)
 
 	// ExitArgument_list is called when exiting the argument_list production.
 	ExitArgument_list(c *Argument_listContext)

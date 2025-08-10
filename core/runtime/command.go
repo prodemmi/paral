@@ -13,9 +13,6 @@ type Command struct {
 func (c *Command) GetRawResult(loopContext *TaskLoopContext, ctx *ExecutionContext) string {
 	cmd := c.RawText
 	for _, function := range c.Functions {
-		if loopContext != nil {
-			function.SetLoopContext(loopContext)
-		}
 		result, err := function.Call()
 		if err != nil {
 			// Log error but continue to allow partial resolution
@@ -58,9 +55,6 @@ func (c *Command) GetResult(ctx *ExecutionContext, task *Task, executor *Command
 	// Handle function-only commands
 	result := resolvedCmd
 	for _, fn := range c.Functions {
-		if loopContext != nil {
-			fn.SetLoopContext(loopContext)
-		}
 		fnResult, err := fn.Call()
 		if err != nil {
 			return result, false, err

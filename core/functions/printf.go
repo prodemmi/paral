@@ -9,7 +9,6 @@ func Printf(args ...interface{}) (interface{}, error) {
 	if len(args) == 0 {
 		return "", nil
 	}
-
 	format, ok := args[0].(string)
 	if !ok {
 		return "", fmt.Errorf("printf: first argument must be string")

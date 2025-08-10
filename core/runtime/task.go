@@ -31,11 +31,12 @@ type Task struct {
 }
 
 type TaskPipeline struct {
-	Buf      *Buf
-	Stash    *Stash
-	Command  *Command
-	Function *Function
-	Block    int
+	Buf         *Buf
+	Stash       *Stash
+	Command     *Command
+	Function    *Function
+	IfCondition *IfCondition
+	Block       int
 }
 
 type TaskLoopContext struct {
@@ -301,4 +302,158 @@ func (t *Task) GetScheduleDirective() *Directive {
 
 func (t *Task) GetTaskId() string {
 	return t.Name
+}
+
+func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor *CommandExecutor) (success bool, displayResult string, shouldPrint bool) {
+	indent := "    "
+	success = true // Default to true, will be set to false if any pipeline fails
+
+	if tp.Buf != nil {
+		result, ok := tp.Buf.GetValue(ctx, task, cmdExecutor)
+		if ok {
+			cmdExecutor.Runtime.PushBufStack(tp.Buf.Name, task.GetTaskId(), result, tp.Buf)
+			displayResult = fmt.Sprintf("%s ▶ buf %q saved: %s", indent, tp.Buf.Name, strings.TrimRight(result, "\n"))
+		} else {
+			success = false
+			displayResult = fmt.Sprintf("%s ❌ buf %q failed", indent, tp.Buf.Name)
+			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("buf %q failed", tp.Buf.Name), &tp.Buf.Metadata)
+		}
+		shouldPrint = ctx.Config.Verbose // Buf pipelines only print in verbose mode
+	} else if tp.Stash != nil {
+		result, ok := tp.Stash.GetValue(ctx, task, cmdExecutor)
+		if ok {
+			cmdExecutor.Runtime.PushStashStack(tp.Stash.Name, task.GetTaskId(), result, tp.Stash)
+			displayResult = fmt.Sprintf("%s ▶ stash %q saved: %s", indent, tp.Stash.Name, strings.TrimRight(result, "\n"))
+		} else {
+			success = false
+			displayResult = fmt.Sprintf("%s ❌ stash %q failed", indent, tp.Stash.Name)
+			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("Stash %q failed", tp.Stash.Name), &tp.Stash.Metadata)
+		}
+		shouldPrint = ctx.Config.Verbose // Stash pipelines only print in verbose mode
+	} else if tp.IfCondition != nil {
+		var results []string
+		pipelines := tp.IfCondition.ThenPipelines
+
+		if !tp.IfCondition.IsTrue() {
+			pipelines = tp.IfCondition.ElsePipelines
+		}
+
+		for _, pipeline := range pipelines {
+			pipeSuccess, pipeResult, pipeShouldPrint := pipeline.GetResult(ctx, task, cmdExecutor)
+			if !pipeSuccess {
+				success = false
+			}
+			if pipeShouldPrint && strings.TrimSpace(pipeResult) != "" {
+				results = append(results, pipeResult)
+				shouldPrint = true
+			}
+		}
+
+		if len(results) > 0 {
+			displayResult = strings.Join(results, "\n")
+		} else {
+			displayResult = fmt.Sprintf("%s ▶ if condition evaluated, no output", indent)
+			shouldPrint = ctx.Config.Verbose // Only print in verbose mode if no pipeline output
+		}
+	} else if tp.Function != nil {
+		functionResult, err := tp.Function.Call()
+		if err != nil {
+			success = false
+			displayResult = fmt.Sprintf("%s❌ %s (%v)", indent, tp.Function.Type, err)
+			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("Function %q failed: %v", tp.Function.Type, err), &tp.Function.Metadata)
+		} else {
+			result := fmt.Sprint(functionResult)
+			if strings.TrimSpace(result) != "" {
+				switch tp.Function.Type {
+				case "trigger":
+					if len(tp.Function.Args) > 0 {
+						taskName := tp.Function.GetCalculatedArgsByIndex(0)
+						displayResult = fmt.Sprintf("%s🚀 trigger task '%s'", indent, taskName)
+					}
+					shouldPrint = ctx.Config.Verbose // Triggers only print in verbose mode
+				case "print", "println", "printf", "sprintf":
+					displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
+					shouldPrint = true // Print functions always print
+				default:
+					displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
+					shouldPrint = ctx.Config.Verbose // Other functions only print in verbose mode
+				}
+			}
+		}
+	} else if tp.Command != nil {
+		result, ok, err := tp.Command.GetResult(ctx, task, cmdExecutor)
+		if strings.TrimSpace(result) != "" {
+			if ok {
+				displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
+				shouldPrint = true // Commands produce output when executed
+			} else {
+				success = false
+				displayResult = fmt.Sprintf("%s❌ %s (%v)", indent, strings.TrimRight(result, "\n"), err)
+				cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("Command failed: %v", err), &task.Metadata)
+				shouldPrint = true // Errors always print
+			}
+		}
+	}
+
+	return success, displayResult, shouldPrint
+}
+
+func (tp *TaskPipeline) GetDryResult(task *Task, ctx *ExecutionContext) (displayResult string, shouldPrint bool, isTrigger bool, isStash bool, isBuf bool, isPrint bool) {
+	loopContext := task.GetActiveLoopContext()
+
+	if tp.Buf != nil {
+		isBuf = true
+		if tp.Buf != nil {
+			result := tp.Buf.Command.GetRawResult(loopContext, ctx)
+			displayResult = fmt.Sprintf("buf %q saved: %s", tp.Buf.Name, strings.TrimRight(result, "\n"))
+		} else {
+			displayResult = fmt.Sprintf("buf %q saved", tp.Buf.Name)
+		}
+		shouldPrint = ctx.Config.Verbose
+
+	} else if tp.Stash != nil {
+		isStash = true
+		if tp.Stash.Command != nil {
+			result := tp.Stash.Command.GetRawResult(loopContext, ctx)
+			displayResult = fmt.Sprintf("stash %q saved: %s", tp.Stash.Name, strings.TrimRight(result, "\n"))
+		} else {
+			displayResult = fmt.Sprintf("stash %q saved", tp.Stash.Name)
+		}
+		shouldPrint = ctx.Config.Verbose
+
+	} else if tp.Function != nil {
+		result, err := tp.Function.Call()
+		if err != nil {
+			displayResult = fmt.Sprintf("%s (%v)", tp.Function.Type, err)
+			return
+		}
+		resStr := strings.TrimRight(fmt.Sprint(result), "\n")
+		if strings.TrimSpace(resStr) == "" {
+			return
+		}
+		displayResult = resStr
+
+		switch tp.Function.Type {
+		case "trigger":
+			isTrigger = true
+			if len(tp.Function.Args) > 0 {
+				taskName := fmt.Sprint(tp.Function.GetCalculatedArgsByIndex(0))
+				displayResult = fmt.Sprintf("trigger task '%s'", taskName)
+			}
+			shouldPrint = ctx.Config.Verbose
+		case "print", "println", "printf", "sprintf":
+			isPrint = true
+			shouldPrint = true
+		default:
+			shouldPrint = ctx.Config.Verbose
+		}
+
+	} else if tp.Command != nil {
+		displayResult = tp.Command.GetRawResult(loopContext, ctx)
+		if strings.TrimSpace(displayResult) != "" {
+			shouldPrint = true
+		}
+	}
+
+	return
 }

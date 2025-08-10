@@ -17,7 +17,7 @@ variable_assignment
     ;
 
 task_definition
-    : (task_directive NEWLINE)* TASK IDENTIFIER LBRACE NEWLINE* pipeline_block* RBRACE
+    : (task_directive NEWLINE)* TASK IDENTIFIER NEWLINE* BLOCK_START NEWLINE* pipeline_block* NEWLINE* BLOCK_END
     ;
 
 task_directive
@@ -25,7 +25,7 @@ task_directive
     ;
 
 pipeline_block
-    : CMD_ARROW pipeline_content PIPELINE_NEWLINE
+    : PIPELINE_START NEWLINE* pipeline_content (PIPELINE_NEWLINE | EOF | BLOCK_END)?
     ;
 
 pipeline_content
@@ -37,7 +37,6 @@ pipeline_item
     | stash
     | condition
     | function
-    | COMMAND_RAW_TEXT
     ;
 
 // ----------------- task directive -------------
@@ -49,28 +48,28 @@ directive
 // ----------------- functions and conditions -------------
 
 buf
-    : PIPELINE_BUF string_expr RBRACK DOUBLE_BACK_ARROW pipeline_content
+    : PIPELINE_BUF string_expr RBRACK BUF_DOUBLE_BACK_ARROW pipeline_content
     ;
 
 stash
-    : PIPELINE_STASH string_expr RBRACK DOUBLE_BACK_ARROW pipeline_content
+    : PIPELINE_STASH string_expr RBRACK STASH_DOUBLE_BACK_ARROW pipeline_content
     ;
 
 condition
     : if_condition
     ;
 
+if_condition
+    : PIPELINE_IF_CALL_START expression IF_CONDITION_END NEWLINE* BLOCK_START NEWLINE* pipeline_block* NEWLINE* BLOCK_END
+    ;
+
 function
-    : FUNCTION_CALL_START argument_list? FUNCTION_END
-    | FUNCTION_START argument_list? FUNCTION_END  // Add this for default mode functions
+    : PIPELINE_FUNCTION_CALL_START argument_list? FUNCTION_END
+    | FUNCTION_START argument_list? FUNCTION_END
     ;
 
 nested_function
     : NESTED_FUNCTION_START argument_list? FUNCTION_END
-    ;
-
-if_condition
-    : AT IF LRBRACK expression RRBRACK NEWLINE* pipeline_content NEWLINE* AT ENDIF
     ;
 
 // Argument list for functions
@@ -122,6 +121,6 @@ list_expr
     ;
 
 loop_variable
-    : PIPELINE_LOOP_KEY
-    | PIPELINE_LOOP_VALUE
+    : LOOP_KEY
+    | LOOP_VALUE
     ;

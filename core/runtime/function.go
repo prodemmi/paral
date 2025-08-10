@@ -12,25 +12,21 @@ import (
 type Function struct {
 	Type     string
 	Args     []interface{}
-	Report   string
 	Metadata metadata.Metadata
 	RawText  string
 	TaskID   string
 	Runtime  *Runtime
-
-	loopContext *TaskLoopContext // set in runtime
 }
 
 func NewFunction(name string, mt metadata.Metadata, taskID string, runtime *Runtime, args ...interface{}) *Function {
 	f := &Function{
-		Type:        name,
-		Args:        args,
-		Metadata:    mt,
-		TaskID:      taskID,
-		Runtime:     runtime,
-		loopContext: nil,
+		Type:     name,
+		Args:     args,
+		Metadata: mt,
+		TaskID:   taskID,
+		Runtime:  runtime,
+		RawText:  "",
 	}
-	f.RawText = f.GetRaw()
 	return f
 }
 
@@ -43,11 +39,11 @@ func NewTestFunction(name string, args ...interface{}) *Function {
 			Content:  "",
 		},
 	}
-	f.RawText = f.GetRaw()
 	return f
 }
 
 func (f *Function) Call() (interface{}, error) {
+	f.RawText = f.GetRaw()
 	args, err := f.CallArgs(f.Args...)
 	if err != nil {
 		return nil, err
@@ -130,6 +126,8 @@ func (f *Function) Call() (interface{}, error) {
 }
 
 func (f *Function) GetRaw() string {
+	loopContext := f.GetActiveLoopContext()
+
 	parts := []string{}
 	for _, a := range f.Args {
 		switch v := a.(type) {
@@ -137,14 +135,14 @@ func (f *Function) GetRaw() string {
 			parts = append(parts, v.GetRaw())
 		case string:
 			if v == "@value" {
-				if f.loopContext != nil {
-					parts = append(parts, fmt.Sprintf("%v", f.loopContext.Value))
+				if loopContext != nil {
+					parts = append(parts, fmt.Sprintf("%v", loopContext.Value))
 				} else {
 					f.Runtime.Reporter.ThrowRuntimeError("loop context is nil: cannot resolve @value", &f.Metadata)
 				}
 			} else if v == "@key" {
-				if f.loopContext != nil {
-					parts = append(parts, fmt.Sprintf("%d", f.loopContext.Key))
+				if loopContext != nil {
+					parts = append(parts, fmt.Sprintf("%d", loopContext.Key))
 				} else {
 					f.Runtime.Reporter.ThrowRuntimeError("loop context is nil: cannot resolve @key", &f.Metadata)
 				}
@@ -171,10 +169,6 @@ func (f *Function) GetCalculatedArgsByIndex(index int) interface{} {
 	return nil
 }
 
-func (f *Function) SetLoopContext(loopContext *TaskLoopContext) {
-	f.loopContext = loopContext
-}
-
 func (f *Function) CallArgs(args ...interface{}) ([]interface{}, error) {
 	argResults := make([]interface{}, len(args))
 	var err error
@@ -188,14 +182,15 @@ func (f *Function) CallArgs(args ...interface{}) ([]interface{}, error) {
 }
 
 func (f *Function) ResolveValue(arg interface{}) (interface{}, error) {
+	loopContext := f.GetActiveLoopContext()
 	switch v := arg.(type) {
 	case string:
-		if f.loopContext != nil {
+		if loopContext != nil {
 			if v == "@value" {
-				return f.loopContext.Value, nil
+				return loopContext.Value, nil
 			}
 			if v == "@key" {
-				return f.loopContext.Key, nil
+				return loopContext.Key, nil
 			}
 		}
 		return core.TrimQuotes(v), nil
@@ -217,10 +212,8 @@ func (f *Function) ResolveValue(arg interface{}) (interface{}, error) {
 			return val, nil
 		}
 	case Function:
-		v.SetLoopContext(f.loopContext)
 		return v.Call()
 	case *Function:
-		v.SetLoopContext(f.loopContext)
 		return v.Call()
 	case []interface{}:
 		resolved := make([]interface{}, len(v))
@@ -252,6 +245,14 @@ func (f *Function) ResolveValue(arg interface{}) (interface{}, error) {
 
 func (f *Function) GetActiveStashValue(stashName string) interface{} {
 	return f.Runtime.GetActiveStashValue(stashName, f.TaskID)
+}
+
+func (f *Function) GetActiveLoopContext() *TaskLoopContext {
+	task := f.Runtime.GetTaskByID(f.TaskID)
+	if task != nil {
+		return task.GetActiveLoopContext()
+	}
+	return nil
 }
 
 func (f *Function) GetBufValue(bufName string) interface{} {

@@ -22,25 +22,8 @@ func (p *Parser) parseBuf(task *runtime.Task, ctx parser.IBufContext) *runtime.B
 		Column: ctx.GetStart().GetColumn(),
 	}
 
-	content := ctx.Pipeline_content()
-	var cmd *runtime.Command
+	pipeline := p.parsePipelineContent(task, ctx.Pipeline_content())
 
-	for _, item := range content.AllPipeline_item() {
-		if fn := item.Function(); fn != nil {
-			cmd = &runtime.Command{
-				Functions: []*runtime.Function{p.parseFunction(task, fn)},
-				RawText:   fn.GetText(),
-			}
-			break
-		} else if raw := item.COMMAND_RAW_TEXT(); raw != nil {
-			cmd = &runtime.Command{
-				Functions: nil,
-				RawText:   raw.GetText(),
-			}
-			break
-		}
-	}
-
-	buf := runtime.NewBuf(name, task.GetTaskId(), ctx.GetText(), bufMetadata, cmd)
+	buf := runtime.NewBuf(name, task.GetTaskId(), ctx.GetText(), bufMetadata, pipeline.Command)
 	return buf
 }

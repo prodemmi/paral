@@ -117,7 +117,6 @@ func (p *Parser) parseVariable(ctx parser.IVariable_assignmentContext) *variable
 			Metadata: mt,
 		}
 	} else {
-		fmt.Println("val", val.GetText())
 		p.Runtime.Reporter.ThrowSyntaxError("Unknown value type in variable definition", mt)
 	}
 

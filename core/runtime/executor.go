@@ -752,66 +752,12 @@ func (c *TaskExecutor) printTaskDryRun(task *Task, ctx *ExecutionContext) {
 }
 
 func (c *TaskExecutor) printJobPipelinesDryRun(task *Task, ctx *ExecutionContext) {
-	loopContext := task.GetActiveLoopContext()
 	indent := "    "
 	for _, pipeline := range task.Pipelines {
-		var displayCmd string
-		var isBuf, isStash, isTrigger, isPrint bool
+		displayCmd, _, isTrigger, isStash, isBuf, isPrint := pipeline.GetDryResult(task, ctx)
 
-		if pipeline.Buf != nil {
-			isBuf = true
-			if pipeline.Buf.Command != nil {
-				result := pipeline.Buf.Command.GetRawResult(loopContext, ctx)
-				displayCmd = fmt.Sprintf("buf %q saved: %s", pipeline.Buf.Name, strings.TrimRight(result, "\n"))
-			} else {
-				displayCmd = fmt.Sprintf("buf %q saved", pipeline.Buf.Name)
-			}
-		} else if pipeline.Stash != nil {
-			isStash = true
-			if pipeline.Stash.Command != nil {
-				result := pipeline.Stash.Command.GetRawResult(loopContext, ctx)
-				displayCmd = fmt.Sprintf("stash %q saved: %s", pipeline.Stash.Name, strings.TrimRight(result, "\n"))
-			} else {
-				displayCmd = fmt.Sprintf("stash %q saved", pipeline.Stash.Name)
-			}
-		} else if pipeline.Function != nil {
-			if loopContext != nil {
-				pipeline.Function.SetLoopContext(loopContext)
-			}
-			result, err := pipeline.Function.Call()
-			if err != nil {
-				displayCmd = fmt.Sprintf("%s (%v)", pipeline.Function.Type, err)
-				_, _ = ctx.Colors.Red.Fprintf(ctx.Writer, "%s❌ %s\n", indent, displayCmd)
-				c.Reporter.ThrowSyntaxError(fmt.Sprintf("Error in function '%s': %v", pipeline.Function.Type, err), &pipeline.Function.Metadata)
-				continue
-			}
-			if strings.TrimSpace(fmt.Sprint(result)) != "" {
-				displayCmd = fmt.Sprint(result)
-				switch pipeline.Function.Type {
-				case "trigger":
-					if len(pipeline.Function.Args) > 0 {
-						jobName := fmt.Sprint(pipeline.Function.GetCalculatedArgsByIndex(0))
-						displayCmd = fmt.Sprintf("trigger task '%s'", jobName)
-						isTrigger = true
-					}
-				case "print", "println", "printf", "sprintf":
-					displayCmd = strings.TrimRight(fmt.Sprint(result), "\n")
-					isPrint = true
-				default:
-					displayCmd = strings.TrimRight(fmt.Sprint(result), "\n")
-				}
-			} else {
-				continue // Skip empty output
-			}
-		} else if pipeline.Command != nil {
-			displayCmd = pipeline.Command.GetRawResult(loopContext, ctx)
-			if strings.TrimSpace(displayCmd) == "" {
-				continue // Skip empty output
-			}
-		}
-
-		shouldPrint := isPrint || (!isBuf && !isStash && !isTrigger && pipeline.Command != nil) || ctx.Config.Verbose
-		if shouldPrint {
+		shouldPrintOutput := isPrint || (!isBuf && !isStash && !isTrigger && pipeline.Command != nil) || ctx.Config.Verbose
+		if shouldPrintOutput {
 			if isTrigger {
 				_, _ = ctx.Colors.Green.Fprintf(ctx.Writer, "%s🚀 %s\n", indent, displayCmd)
 			} else if isStash {
@@ -979,79 +925,10 @@ func (c *TaskExecutor) executeJob(task *Task, ctx *ExecutionContext) (JobStats, 
 
 func (c *TaskExecutor) runTaskPipelines(task *Task, ctx *ExecutionContext, output *TaskOutput) JobStats {
 	stats := JobStats{}
-	indent := "    "
 	task.ClearUnusedStashes()
 	for _, pipeline := range task.Pipelines {
-		var result string
-		var success bool
-		var err error
-		var displayResult string
-		var shouldPrint bool
 		stats.Total++
-
-		if pipeline.Buf != nil {
-			result, success = pipeline.Buf.GetValue(ctx, task, c.CommandExecutor)
-			if success {
-				c.Runtime.PushBufStack(pipeline.Buf.Name, task.GetTaskId(), result, pipeline.Buf)
-				displayResult = fmt.Sprintf("%s ▶ buf %q saved: %s", indent, pipeline.Buf.Name, strings.TrimRight(result, "\n"))
-			} else {
-				displayResult = fmt.Sprintf("%s ❌ buf %q failed", indent, pipeline.Buf.Name)
-				c.Reporter.ThrowRuntimeError(fmt.Sprintf("buf %q failed", pipeline.Buf.Name), &pipeline.Buf.Metadata)
-			}
-			shouldPrint = ctx.Config.Verbose // Stash pipelines only print in verbose mode
-		} else if pipeline.Stash != nil {
-			result, success = pipeline.Stash.GetValue(ctx, task, c.CommandExecutor)
-			if success {
-				c.Runtime.PushStashStack(pipeline.Stash.Name, task.GetTaskId(), result, pipeline.Stash)
-				displayResult = fmt.Sprintf("%s ▶ stash %q saved: %s", indent, pipeline.Stash.Name, strings.TrimRight(result, "\n"))
-			} else {
-				displayResult = fmt.Sprintf("%s ❌ stash %q failed", indent, pipeline.Stash.Name)
-				c.Reporter.ThrowRuntimeError(fmt.Sprintf("Stash %q failed", pipeline.Stash.Name), &pipeline.Stash.Metadata)
-			}
-			shouldPrint = ctx.Config.Verbose // Stash pipelines only print in verbose mode
-		} else if pipeline.Function != nil {
-			loopContext := task.GetActiveLoopContext()
-			if loopContext != nil {
-				pipeline.Function.SetLoopContext(loopContext)
-			}
-			functionResult, err := pipeline.Function.Call()
-			if err != nil {
-				displayResult = fmt.Sprintf("%s❌ %s (%v)", indent, pipeline.Function.Type, err)
-				c.Reporter.ThrowRuntimeError(fmt.Sprintf("Function %q failed: %v", pipeline.Function.Type, err), &pipeline.Function.Metadata)
-				success = false
-			} else {
-				success = true
-				result = fmt.Sprint(functionResult)
-				if strings.TrimSpace(result) != "" {
-					switch pipeline.Function.Type {
-					case "trigger":
-						if len(pipeline.Function.Args) > 0 {
-							taskName := pipeline.Function.GetCalculatedArgsByIndex(0)
-							displayResult = fmt.Sprintf("%s🚀 trigger task '%s'", indent, taskName)
-						}
-						shouldPrint = ctx.Config.Verbose // Triggers only print in verbose mode
-					case "print", "println", "printf", "sprintf":
-						displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
-						shouldPrint = true // Print functions always print
-					default:
-						displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
-						shouldPrint = ctx.Config.Verbose // Other functions only print in verbose mode
-					}
-				}
-			}
-		} else if pipeline.Command != nil {
-			result, success, err = pipeline.Command.GetResult(ctx, task, c.CommandExecutor)
-			if strings.TrimSpace(result) != "" {
-				if success {
-					displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
-					shouldPrint = true // Commands produce output when executed
-				} else {
-					displayResult = fmt.Sprintf("%s❌ %s (%v)", indent, strings.TrimRight(result, "\n"), err)
-					c.Reporter.ThrowRuntimeError(fmt.Sprintf("Command failed: %v", err), &task.Metadata)
-					shouldPrint = true // Errors always print
-				}
-			}
-		}
+		success, displayResult, shouldPrint := pipeline.GetResult(ctx, task, c.CommandExecutor)
 
 		if !ctx.Config.Silent && displayResult != "" && shouldPrint {
 			output.OutputLines = append(output.OutputLines, displayResult)

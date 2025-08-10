@@ -10,12 +10,12 @@ type Buf struct {
 	Metadata     metadata.Metadata
 }
 
-func NewBuf(name, sourceTaskID, rawText string, metadata metadata.Metadata, pipeline *Command) *Buf {
+func NewBuf(name, sourceTaskID, rawText string, metadata metadata.Metadata, command *Command) *Buf {
 	return &Buf{
 		Name:         name,
 		SourceTaskID: sourceTaskID,
 		RawText:      rawText,
-		Command:      pipeline,
+		Command:      command,
 		Metadata:     metadata,
 	}
 }

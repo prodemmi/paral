@@ -79,10 +79,10 @@ func (p *Parser) parseNestedFunction(task *runtime.Task, fnCtx parser.INested_fu
 				}
 
 				if numToken := variableValue.Loop_variable(); numToken != nil {
-					if loopValue := numToken.PIPELINE_LOOP_VALUE(); loopValue != nil {
+					if loopValue := numToken.LOOP_VALUE(); loopValue != nil {
 						args = append(args, loopValue.GetText())
 					}
-					if loopKey := numToken.PIPELINE_LOOP_KEY(); loopKey != nil {
+					if loopKey := numToken.LOOP_KEY(); loopKey != nil {
 						args = append(args, loopKey.GetText())
 					}
 					continue
@@ -100,8 +100,8 @@ func (p *Parser) parseNestedFunction(task *runtime.Task, fnCtx parser.INested_fu
 func (p *Parser) parseFunction(task *runtime.Task, fnCtx parser.IFunctionContext) *runtime.Function {
 	fn := fnCtx.(*parser.FunctionContext)
 	var fnName string
-	if fn.FUNCTION_CALL_START() != nil {
-		fnName = strings.Trim(fn.FUNCTION_CALL_START().GetText(), "@(")
+	if fn.PIPELINE_FUNCTION_CALL_START() != nil {
+		fnName = strings.Trim(fn.PIPELINE_FUNCTION_CALL_START().GetText(), "@(")
 	} else {
 		fnName = strings.Trim(fn.FUNCTION_START().GetText(), "@(")
 	}
@@ -173,10 +173,10 @@ func (p *Parser) parseFunction(task *runtime.Task, fnCtx parser.IFunctionContext
 				}
 
 				if numToken := variableValue.Loop_variable(); numToken != nil {
-					if loopValue := numToken.PIPELINE_LOOP_VALUE(); loopValue != nil {
+					if loopValue := numToken.LOOP_VALUE(); loopValue != nil {
 						args = append(args, loopValue.GetText())
 					}
-					if loopKey := numToken.PIPELINE_LOOP_KEY(); loopKey != nil {
+					if loopKey := numToken.LOOP_KEY(); loopKey != nil {
 						args = append(args, loopKey.GetText())
 					}
 					continue

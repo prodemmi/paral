@@ -1,14 +1,16 @@
-x = "hi"
+files = ["document.txt", "image.png", "notes.txt", "script.py", "readme.txt"]
+backup_list = []
 
-task hello_world {
-    -> @print("Hello World")
-    -> @print("Hello World 2")
+@for files
+task process_files {
+    -> @printf("Processing file %s (index %d)", @value, @key)
+    -> @if(@contains(@value, ".txt")) {
+        -> @printf("Found text file: %s", @upper(@value))
+        -> @append(backup_list, @value)
+       }
 }
 
-@depend hello_world
-@description "this is the description"
-@schedule 5s
-task hello_world_2 {
-    -> @print("Hello World")
-    -> @print("Hello World 2")
+@depend process_files
+task print_backup {
+    -> @printf("Backup list: %s", @join(backup_list, ", "))
 }
