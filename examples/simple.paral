@@ -12,5 +12,7 @@ task process_files {
 
 @depend process_files
 task print_backup {
-    -> @printf("Backup list: %s", @join(backup_list, ", "))
+    -> @if(@len(backup_list)) {
+        -> @printf("Backup list: %s", @join(backup_list, ", "))
+       }
 }

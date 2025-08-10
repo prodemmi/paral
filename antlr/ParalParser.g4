@@ -66,6 +66,7 @@ if_condition
 function
     : PIPELINE_FUNCTION_CALL_START argument_list? FUNCTION_END
     | FUNCTION_START argument_list? FUNCTION_END
+    | EXPRESSION_FUNCTION_CALL_START argument_list? FUNCTION_END
     ;
 
 nested_function

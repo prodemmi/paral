@@ -91,6 +91,9 @@ mode EXPRESSION;
 
 IF_CONDITION_END: ')' -> popMode;
 
+// Add function call support in EXPRESSION mode
+EXPRESSION_FUNCTION_CALL_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
+
 EXPRESSION_LOOP_KEY: AT 'key' -> type(LOOP_KEY);
 EXPRESSION_LOOP_VALUE: AT 'value' -> type(LOOP_VALUE);
 EXPRESSION_LBRACK: '[' -> type(LBRACK);
