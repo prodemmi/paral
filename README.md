@@ -1,2 +1,2 @@
 # paral
-Paral is a language that simplify the parallel processing.
+Paral is a language that simplify the task processing.

@@ -1,6 +1,6 @@
 # .air.toml
 [build]
-  cmd = "clear && scripts/run.bash"
+  cmd = "clear && scripts/test/run.bash"
   include_ext = ["go", "paral", "g4"]
   exclude_dir = ["gen", "tmp", "antlr/antlr"]
 
