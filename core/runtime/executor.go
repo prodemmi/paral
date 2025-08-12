@@ -3,16 +3,18 @@ package runtime
 import (
 	"context"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"io"
 	"os"
 	"os/exec"
 	"os/signal"
 	"paral/core/variable"
+	"path/filepath"
 	"strings"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/robfig/cron/v3"
 
 	"github.com/fatih/color"
 )
@@ -169,9 +171,12 @@ func (ce *CommandExecutor) ExecuteShellCommand(pipeline string, forValue interfa
 		cmd = exec.Command("sh", "-c", pipeline)
 	}
 
+	cmd.Dir = filepath.Dir(ce.Runtime.Metadata.Filename)
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		ce.Reporter.Warn(fmt.Sprintf("Command failed: %s, error: %v", pipeline, err), nil)
+		// TODO: check this line
+		// ce.Reporter.Warn(fmt.Sprintf("Command failed: %s, error: %v", pipeline, err), nil)
 		return output, false
 	}
 	return output, true

@@ -3,14 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/antlr4-go/antlr/v4"
-	"github.com/gosuri/uilive"
 	"os"
 	ant "paral/antlr/antlr"
 	"paral/core/metadata"
 	parser "paral/core/parser"
 	"paral/core/runtime"
+	"path/filepath"
 	"time"
+
+	"github.com/antlr4-go/antlr/v4"
+	"github.com/gosuri/uilive"
 )
 
 type ExecutionOptions struct {
@@ -198,6 +200,12 @@ func main() {
 	}
 
 	inputFile := flag.Arg(0)
+	absPath, err := filepath.Abs(inputFile)
+	if err != nil {
+		fmt.Printf(fmt.Sprintf("failed to get absolute path: %v", err))
+		os.Exit(1)
+	}
+	inputFile = absPath
 
 	// Start loading animation
 	loader := ShowLoading(inputFile, opts)

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	parser "paral/antlr/antlr"
 	"paral/core/runtime"
 )
@@ -60,9 +61,13 @@ func (p *Parser) parseIfCondition(task *runtime.Task, ctx parser.IIf_conditionCo
 
 // parsePipelineBlocks maps a list of pipeline_block nodes to []*TaskPipeline.
 func (p *Parser) parsePipelineBlocks(task *runtime.Task, blocks []parser.IPipeline_blockContext) []*runtime.TaskPipeline {
+
 	var pipelines []*runtime.TaskPipeline
 	for _, block := range blocks {
 		if pipeline := p.parsePipeline(task, block); pipeline != nil {
+			if pipeline.Command != nil {
+				fmt.Println("pipeline", pipeline.Command.RawText)
+			}
 			pipelines = append(pipelines, pipeline)
 		}
 	}

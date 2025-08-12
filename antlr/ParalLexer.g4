@@ -13,9 +13,14 @@ BOOLEAN: 'true' | 'false';
 ZERO_ONE: [01];
 DURATION: NUMBER [smhd];
 
-URL: ('http' 's'? '://' | 'localhost:') URL_BODY;
-fragment URL_BODY: (URL_CHAR | '.' | '/' | ':' | '?' | '=' | '&' | '%' | '-' | '_')+;
-fragment URL_CHAR: [a-zA-Z0-9];
+// Fixed URL pattern - more robust and handles edge cases
+URL: ('http' 's'? '://' | 'localhost:' [0-9]+) [a-zA-Z0-9._~:/?#[\]@!$&'()*+,;=-]+;
+
+// Fixed PATH pattern - handles Windows/Unix paths properly
+PATH: ([a-zA-Z] ':')? [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+
+    | ([a-zA-Z] ':')? [/\\] [a-zA-Z0-9._-]+
+    | '.' [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+
+    | '..' [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+;
 
 COLON: ':';
 COLONCOLON: '::';
@@ -44,12 +49,13 @@ WS: [ \t]+ -> skip;
 
 // ---------------------- PIPELINE Mode ----------------------
 mode PIPELINE;
-PIPELINE_NEWLINE: ('\r'? '\n') -> type(NEWLINE);  // Stay in pipeline mode
+
+PIPELINE_NEWLINE: ('\r'? '\n') -> type(NEWLINE);  
 PIPELINE_BUF: AT 'buf[' -> pushMode(BUF_MODE);
 PIPELINE_STASH: AT 'stash[' -> pushMode(STASH_MODE);
-PIPELINE_IF_CALL_START: AT 'if(' -> pushMode(EXPRESSION) ;
-PIPELINE_ELSEIF_CALL_START : AT 'elseif(' -> pushMode(EXPRESSION) ;
-PIPELINE_ELSE_CALL         : AT 'else' ;
+PIPELINE_IF_CALL_START: AT 'if(' -> pushMode(EXPRESSION);
+PIPELINE_ELSEIF_CALL_START: AT 'elseif(' -> pushMode(EXPRESSION);
+PIPELINE_ELSE_CALL: AT 'else';
 PIPELINE_FUNCTION_CALL_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
 
 PIPELINE_LOOP_KEY: AT 'key' -> type(LOOP_KEY);
@@ -58,7 +64,18 @@ PIPELINE_BLOCK_START: '{' -> type(BLOCK_START);
 PIPELINE_BLOCK_END: '}' -> type(BLOCK_END);
 PIPELINE_LBRACK: '[' -> type(LBRACK);
 PIPELINE_RBRACK: ']' -> type(RBRACK);
-NESTED_PIPELINE_START: '->' -> type(PIPELINE_START) ;
+NESTED_PIPELINE_START: '->' -> type(PIPELINE_START);
+
+// Fixed PIPELINE URL - same improvements as default mode
+PIPELINE_URL: ('http' 's'? '://' | 'localhost:' [0-9]+) [a-zA-Z0-9._~:/?#[\]@!$&'()*+,;=-]+ -> type(URL);
+
+// Fixed PIPELINE PATH - same improvements as default mode  
+PIPELINE_PATH: (([a-zA-Z] ':')? [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+
+             | ([a-zA-Z] ':')? [/\\] [a-zA-Z0-9._-]+
+             | '.' [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+
+             | '..' [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+)
+             -> type(PATH);
+
 PIPELINE_STRING: '"' ( '\\' . | ~["\\\r\n] )* '"' -> type(STRING);
 PIPELINE_SINGLE_QUOTE_STRING: '\'' ( '\\' . | ~['\\\r\n] )* '\'' -> type(SINGLE_QUOTE_STRING);
 PIPELINE_FLOAT: [0-9]+ '.' [0-9]* -> type(FLOAT);
@@ -69,6 +86,10 @@ PIPELINE_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* -> type(IDENTIFIER);
 PIPELINE_COMMA: ',' -> type(COMMA);
 
 PIPELINE_WS: [ \t]+ -> skip;
+
+UNKNOWN_TEXT
+    : ~[ \r\n{}@\-]+ [ \t]* // Capture trailing whitespace
+    ;
 
 // ---------------------- BUF Mode ----------------------
 mode BUF_MODE;

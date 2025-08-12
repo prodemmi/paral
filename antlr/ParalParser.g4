@@ -37,7 +37,10 @@ pipeline_item
     | stash
     | condition
     | function
+    | unknown_command
     ;
+
+unknown_command: (IDENTIFIER | UNKNOWN_TEXT | PATH | URL)+ (expression)*;
 
 // ----------------- task directive -------------
 
@@ -96,6 +99,7 @@ expression
     | function
     | nested_function
     | URL
+    | PATH
     | number_expr
     | string_expr
     | boolean_expr

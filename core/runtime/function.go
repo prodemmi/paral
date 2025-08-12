@@ -18,14 +18,14 @@ type Function struct {
 	Runtime  *Runtime
 }
 
-func NewFunction(name string, mt metadata.Metadata, taskID string, runtime *Runtime, args ...interface{}) *Function {
+func NewFunction(name string, mt metadata.Metadata, rawText string, taskID string, runtime *Runtime, args ...interface{}) *Function {
 	f := &Function{
 		Type:     name,
 		Args:     args,
 		Metadata: mt,
 		TaskID:   taskID,
 		Runtime:  runtime,
-		RawText:  "",
+		RawText:  rawText,
 	}
 	return f
 }
@@ -44,7 +44,8 @@ func NewTestFunction(name string, args ...interface{}) *Function {
 
 func (f *Function) Call() (interface{}, error) {
 	args, err := f.CallArgs(f.Args...)
-	f.RawText = f.GetRaw()
+	// TODO: fix get raw to return original raw text
+	// f.RawText = f.GetRaw()
 
 	if err != nil {
 		return nil, err

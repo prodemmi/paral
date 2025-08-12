@@ -69,6 +69,12 @@ func (s *BaseParalParserListener) EnterPipeline_item(ctx *Pipeline_itemContext) 
 // ExitPipeline_item is called when production pipeline_item is exited.
 func (s *BaseParalParserListener) ExitPipeline_item(ctx *Pipeline_itemContext) {}
 
+// EnterUnknown_command is called when production unknown_command is entered.
+func (s *BaseParalParserListener) EnterUnknown_command(ctx *Unknown_commandContext) {}
+
+// ExitUnknown_command is called when production unknown_command is exited.
+func (s *BaseParalParserListener) ExitUnknown_command(ctx *Unknown_commandContext) {}
+
 // EnterDirective is called when production directive is entered.
 func (s *BaseParalParserListener) EnterDirective(ctx *DirectiveContext) {}
 

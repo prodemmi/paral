@@ -18,7 +18,7 @@ func (c *Command) GetRawResult() string {
 			// Log error but continue to allow partial resolution
 			continue
 		}
-		funcRaw := function.GetRaw()
+		funcRaw := function.RawText
 		switch res := result.(type) {
 		case string:
 			cmd = strings.ReplaceAll(cmd, funcRaw, res)
@@ -47,7 +47,7 @@ func (c *Command) GetResult(ctx *ExecutionContext, task *Task, executor *Command
 		}
 		output, cmdSuccess := executor.ExecuteShellCommand(resolvedCmd, loopContext.Value, ctx)
 		if !cmdSuccess {
-			return string(output), false, fmt.Errorf("shell command failed: %s", resolvedCmd)
+			return string(output), false, fmt.Errorf("\n\t\t\t%s", output)
 		}
 		return strings.TrimRight(string(output), "\n"), true, nil
 	}

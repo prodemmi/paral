@@ -94,7 +94,7 @@ func (p *Parser) parseNestedFunction(task *runtime.Task, fnCtx parser.INested_fu
 	return *runtime.NewFunction(fnName, metadata.Metadata{
 		Line:   fnCtx.GetStop().GetLine(),
 		Column: fnCtx.GetStop().GetColumn(),
-	}, task.GetTaskId(), p.Runtime, args...)
+	}, fnCtx.GetText(), task.GetTaskId(), p.Runtime, args...)
 }
 
 func (p *Parser) parseFunction(task *runtime.Task, fnCtx parser.IFunctionContext) *runtime.Function {
@@ -116,5 +116,5 @@ func (p *Parser) parseFunction(task *runtime.Task, fnCtx parser.IFunctionContext
 	return runtime.NewFunction(fnName, metadata.Metadata{
 		Line:   fnCtx.GetStop().GetLine(),
 		Column: fnCtx.GetStop().GetColumn(),
-	}, task.GetTaskId(), p.Runtime, args...)
+	}, fnCtx.GetText(), task.GetTaskId(), p.Runtime, args...)
 }

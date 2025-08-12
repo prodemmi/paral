@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"paral/antlr/antlr"
+	parser "paral/antlr/antlr"
 	"paral/core"
 	"paral/core/metadata"
 	"paral/core/runtime"
@@ -21,9 +21,9 @@ func (p *Parser) parseStash(task *runtime.Task, ctx parser.IStashContext) *runti
 		Line:   ctx.GetStart().GetLine(),
 		Column: ctx.GetStart().GetColumn(),
 	}
-
 	pipeline := p.parsePipelineContent(task, ctx.Pipeline_content())
 
-	stash := runtime.NewStash(name, task.GetTaskId(), ctx.GetText(), stashMetadata, pipeline.Command)
+	stash := runtime.NewStash(name, task.GetTaskId(), ctx.GetText(), stashMetadata, pipeline)
+
 	return stash
 }

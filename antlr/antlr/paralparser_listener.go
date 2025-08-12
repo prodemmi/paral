@@ -32,6 +32,9 @@ type ParalParserListener interface {
 	// EnterPipeline_item is called when entering the pipeline_item production.
 	EnterPipeline_item(c *Pipeline_itemContext)
 
+	// EnterUnknown_command is called when entering the unknown_command production.
+	EnterUnknown_command(c *Unknown_commandContext)
+
 	// EnterDirective is called when entering the directive production.
 	EnterDirective(c *DirectiveContext)
 
@@ -109,6 +112,9 @@ type ParalParserListener interface {
 
 	// ExitPipeline_item is called when exiting the pipeline_item production.
 	ExitPipeline_item(c *Pipeline_itemContext)
+
+	// ExitUnknown_command is called when exiting the unknown_command production.
+	ExitUnknown_command(c *Unknown_commandContext)
 
 	// ExitDirective is called when exiting the directive production.
 	ExitDirective(c *DirectiveContext)

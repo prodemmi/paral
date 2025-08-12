@@ -304,9 +304,11 @@ func (t *Task) GetTaskId() string {
 	return t.Name
 }
 
-func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor *CommandExecutor) (success bool, displayResult string, shouldPrint bool) {
+func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor *CommandExecutor) (bool, string, bool) {
 	indent := "    "
-	success = true // Default to true, will be set to false if any pipeline fails
+	success := true
+	displayResult := ""
+	shouldPrint := false
 
 	if tp.Buf != nil {
 		result, ok := tp.Buf.GetValue(ctx, task, cmdExecutor)
@@ -318,7 +320,8 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 			displayResult = fmt.Sprintf("%s ❌ buf %q failed", indent, tp.Buf.Name)
 			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("buf %q failed", tp.Buf.Name), &tp.Buf.Metadata)
 		}
-		shouldPrint = ctx.Config.Verbose // Buf pipelines only print in verbose mode
+		shouldPrint = ctx.Config.Verbose
+
 	} else if tp.Stash != nil {
 		result, ok := tp.Stash.GetValue(ctx, task, cmdExecutor)
 		if ok {
@@ -329,26 +332,30 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 			displayResult = fmt.Sprintf("%s ❌ stash %q failed", indent, tp.Stash.Name)
 			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("Stash %q failed", tp.Stash.Name), &tp.Stash.Metadata)
 		}
-		shouldPrint = ctx.Config.Verbose // Stash pipelines only print in verbose mode
-	} else if tp.Condition != nil {
-		if tp.Condition.IfCondition != nil {
-			var results []string
-			success, output, print := tp.Condition.IfCondition.Execute(ctx, task, cmdExecutor)
-			if print && strings.TrimSpace(output) != "" {
-				results = append(results, output)
-				shouldPrint = true
-			}
-			if !success {
-				success = false
-			}
+		shouldPrint = ctx.Config.Verbose
 
-			if len(results) > 0 {
-				displayResult = strings.Join(results, "\n")
-			} else {
-				displayResult = fmt.Sprintf("%s ▶ if condition evaluated, no output", indent)
-				shouldPrint = ctx.Config.Verbose
+	} else if tp.Condition != nil && tp.Condition.IfCondition != nil {
+		successes, outputs, prints := tp.Condition.IfCondition.Execute(ctx, task, cmdExecutor)
+		for _, s := range successes {
+			if !s {
+				success = false
+				break
 			}
 		}
+		var results []string
+		for i := range outputs {
+			if prints[i] && strings.TrimSpace(outputs[i]) != "" {
+				results = append(results, outputs[i])
+				shouldPrint = true
+			}
+		}
+		if len(results) > 0 {
+			displayResult = strings.Join(results, "\n")
+		} else {
+			displayResult = fmt.Sprintf("%s ▶ if condition evaluated, no output", indent)
+			shouldPrint = ctx.Config.Verbose
+		}
+
 	} else if tp.Function != nil {
 		functionResult, err := tp.Function.Call()
 		if err != nil {
@@ -364,27 +371,28 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 						taskName := tp.Function.GetCalculatedArgsByIndex(0)
 						displayResult = fmt.Sprintf("%s🚀 trigger task '%s'", indent, taskName)
 					}
-					shouldPrint = ctx.Config.Verbose // Triggers only print in verbose mode
+					shouldPrint = ctx.Config.Verbose
 				case "print", "println", "printf", "sprintf":
 					displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
-					shouldPrint = true // Print functions always print
+					shouldPrint = true
 				default:
 					displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
-					shouldPrint = ctx.Config.Verbose // Other functions only print in verbose mode
+					shouldPrint = ctx.Config.Verbose
 				}
 			}
 		}
+
 	} else if tp.Command != nil {
 		result, ok, err := tp.Command.GetResult(ctx, task, cmdExecutor)
 		if strings.TrimSpace(result) != "" {
 			if ok {
 				displayResult = fmt.Sprintf("%s ▶ %s", indent, strings.TrimRight(result, "\n"))
-				shouldPrint = true // Commands produce output when executed
+				shouldPrint = true
 			} else {
 				success = false
 				displayResult = fmt.Sprintf("%s❌ %s (%v)", indent, strings.TrimRight(result, "\n"), err)
 				cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("Command failed: %v", err), &task.Metadata)
-				shouldPrint = true // Errors always print
+				shouldPrint = true
 			}
 		}
 	}
@@ -405,12 +413,8 @@ func (tp *TaskPipeline) GetDryResult(task *Task, ctx *ExecutionContext) (display
 
 	} else if tp.Stash != nil {
 		isStash = true
-		if tp.Stash.Command != nil {
-			result := tp.Stash.Command.GetRawResult()
-			displayResult = fmt.Sprintf("stash %q saved: %s", tp.Stash.Name, strings.TrimRight(result, "\n"))
-		} else {
-			displayResult = fmt.Sprintf("stash %q saved", tp.Stash.Name)
-		}
+		result, _ := tp.Stash.GetRawValue()
+		displayResult = fmt.Sprintf("stash %q saved: %s", tp.Stash.Name, strings.TrimRight(result, "\n"))
 		shouldPrint = ctx.Config.Verbose
 
 	} else if tp.Condition != nil {

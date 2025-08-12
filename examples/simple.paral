@@ -1,19 +1,9 @@
 files = ["document.txt", "image.png", "notes.txt", "script.py", "readme.txt"]
-backup_list = []
 
 @for files
 task process_files {
-    -> @printf("Processing file %s (index %d)", @value, @key)
-    -> @if(@contains(@value, ".txt")) {
-        -> @printf("Found text file: %s", @upper(@value))
-        -> @append(backup_list, @value)
-       }
-}
-
-@depend process_files
-task print_backup {
-    -> @print(backup_list)
-    -> @if(@len(backup_list)) {
-        -> @printf("Backup list: %s", @join(backup_list, ", "))
-       }
+    -> @if(@contains(@value, ".py")) {
+        -> @stash["python_file"] << @sprintf(@value)
+        -> python3 @stash("python_file")
+    }
 }
