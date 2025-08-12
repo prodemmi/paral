@@ -1,6 +1,6 @@
-<p style="text-align:center;">
-    <img src="./assets/logo.png" width="200" />
-</p>
+<div align="center">
+  <img src="./assets/logo.png" width="200" />
+</div>
 
 # Paral
 
