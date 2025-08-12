@@ -10,7 +10,7 @@ type Command struct {
 	RawText   string
 }
 
-func (c *Command) GetRawResult(loopContext *TaskLoopContext, ctx *ExecutionContext) string {
+func (c *Command) GetRawResult() string {
 	cmd := c.RawText
 	for _, function := range c.Functions {
 		result, err := function.Call()
@@ -38,7 +38,7 @@ func (c *Command) GetRawResult(loopContext *TaskLoopContext, ctx *ExecutionConte
 func (c *Command) GetResult(ctx *ExecutionContext, task *Task, executor *CommandExecutor) (string, bool, error) {
 	// Resolve all function calls in RawText
 	loopContext := task.GetActiveLoopContext()
-	resolvedCmd := c.GetRawResult(loopContext, ctx)
+	resolvedCmd := c.GetRawResult()
 
 	// If the resolved command doesn't start with '@', execute it as a shell command
 	if !strings.HasPrefix(resolvedCmd, "@") {

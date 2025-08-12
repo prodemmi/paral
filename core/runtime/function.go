@@ -43,8 +43,9 @@ func NewTestFunction(name string, args ...interface{}) *Function {
 }
 
 func (f *Function) Call() (interface{}, error) {
-	f.RawText = f.GetRaw()
 	args, err := f.CallArgs(f.Args...)
+	f.RawText = f.GetRaw()
+
 	if err != nil {
 		return nil, err
 	}
@@ -131,22 +132,25 @@ func (f *Function) GetRaw() string {
 	parts := []string{}
 	for _, a := range f.Args {
 		switch v := a.(type) {
+		case Function:
+			parts = append(parts, v.GetRaw())
 		case *Function:
 			parts = append(parts, v.GetRaw())
 		case string:
-			if v == "@value" {
+			switch v {
+			case "@value":
 				if loopContext != nil {
 					parts = append(parts, fmt.Sprintf("%v", loopContext.Value))
 				} else {
 					f.Runtime.Reporter.ThrowRuntimeError("loop context is nil: cannot resolve @value", &f.Metadata)
 				}
-			} else if v == "@key" {
+			case "@key":
 				if loopContext != nil {
 					parts = append(parts, fmt.Sprintf("%d", loopContext.Key))
 				} else {
 					f.Runtime.Reporter.ThrowRuntimeError("loop context is nil: cannot resolve @key", &f.Metadata)
 				}
-			} else {
+			default:
 				parts = append(parts, fmt.Sprintf(`"%s"`, v))
 			}
 		default:
@@ -183,7 +187,7 @@ func (f *Function) CallArgs(args ...interface{}) ([]interface{}, error) {
 
 func (f *Function) ResolveValue(arg interface{}) (interface{}, error) {
 	loopContext := f.GetActiveLoopContext()
-	switch v := arg.(type) {
+	switch v := arg.(*Expression).Result.(type) {
 	case string:
 		if loopContext != nil {
 			if v == "@value" {

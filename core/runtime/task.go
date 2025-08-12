@@ -31,12 +31,12 @@ type Task struct {
 }
 
 type TaskPipeline struct {
-	Buf         *Buf
-	Stash       *Stash
-	Command     *Command
-	Function    *Function
-	IfCondition *IfCondition
-	Block       int
+	Buf       *Buf
+	Stash     *Stash
+	Command   *Command
+	Function  *Function
+	Condition *Condition
+	Block     int
 }
 
 type TaskLoopContext struct {
@@ -330,30 +330,24 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("Stash %q failed", tp.Stash.Name), &tp.Stash.Metadata)
 		}
 		shouldPrint = ctx.Config.Verbose // Stash pipelines only print in verbose mode
-	} else if tp.IfCondition != nil {
-		var results []string
-		pipelines := tp.IfCondition.ThenPipelines
-
-		if !tp.IfCondition.IsTrue() {
-			pipelines = tp.IfCondition.ElsePipelines
-		}
-
-		for _, pipeline := range pipelines {
-			pipeSuccess, pipeResult, pipeShouldPrint := pipeline.GetResult(ctx, task, cmdExecutor)
-			if !pipeSuccess {
-				success = false
-			}
-			if pipeShouldPrint && strings.TrimSpace(pipeResult) != "" {
-				results = append(results, pipeResult)
+	} else if tp.Condition != nil {
+		if tp.Condition.IfCondition != nil {
+			var results []string
+			success, output, print := tp.Condition.IfCondition.Execute(ctx, task, cmdExecutor)
+			if print && strings.TrimSpace(output) != "" {
+				results = append(results, output)
 				shouldPrint = true
 			}
-		}
+			if !success {
+				success = false
+			}
 
-		if len(results) > 0 {
-			displayResult = strings.Join(results, "\n")
-		} else {
-			displayResult = fmt.Sprintf("%s ▶ if condition evaluated, no output", indent)
-			shouldPrint = ctx.Config.Verbose // Only print in verbose mode if no pipeline output
+			if len(results) > 0 {
+				displayResult = strings.Join(results, "\n")
+			} else {
+				displayResult = fmt.Sprintf("%s ▶ if condition evaluated, no output", indent)
+				shouldPrint = ctx.Config.Verbose
+			}
 		}
 	} else if tp.Function != nil {
 		functionResult, err := tp.Function.Call()
@@ -399,12 +393,10 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 }
 
 func (tp *TaskPipeline) GetDryResult(task *Task, ctx *ExecutionContext) (displayResult string, shouldPrint bool, isTrigger bool, isStash bool, isBuf bool, isPrint bool) {
-	loopContext := task.GetActiveLoopContext()
-
 	if tp.Buf != nil {
 		isBuf = true
-		if tp.Buf != nil {
-			result := tp.Buf.Command.GetRawResult(loopContext, ctx)
+		if tp.Buf.Command != nil {
+			result := tp.Buf.Command.GetRawResult()
 			displayResult = fmt.Sprintf("buf %q saved: %s", tp.Buf.Name, strings.TrimRight(result, "\n"))
 		} else {
 			displayResult = fmt.Sprintf("buf %q saved", tp.Buf.Name)
@@ -414,12 +406,38 @@ func (tp *TaskPipeline) GetDryResult(task *Task, ctx *ExecutionContext) (display
 	} else if tp.Stash != nil {
 		isStash = true
 		if tp.Stash.Command != nil {
-			result := tp.Stash.Command.GetRawResult(loopContext, ctx)
+			result := tp.Stash.Command.GetRawResult()
 			displayResult = fmt.Sprintf("stash %q saved: %s", tp.Stash.Name, strings.TrimRight(result, "\n"))
 		} else {
 			displayResult = fmt.Sprintf("stash %q saved", tp.Stash.Name)
 		}
 		shouldPrint = ctx.Config.Verbose
+
+	} else if tp.Condition != nil {
+		// Dry run for IfCondition — show which branch would execute
+		if tp.Condition.IfCondition != nil {
+			for _, branch := range tp.Condition.IfCondition.Branches {
+				if branch.Expression == nil || branch.Expression.IsTrue() {
+					if len(branch.Pipelines) > 0 {
+						var dryOutputs []string
+						for _, pipe := range branch.Pipelines {
+							out, print, trig, stash, buf, printFn := pipe.GetDryResult(task, ctx)
+							if print {
+								dryOutputs = append(dryOutputs, out)
+							}
+							// bubble up flags if needed
+							isTrigger = isTrigger || trig
+							isStash = isStash || stash
+							isBuf = isBuf || buf
+							isPrint = isPrint || printFn
+						}
+						displayResult = strings.Join(dryOutputs, "\n")
+						shouldPrint = shouldPrint || ctx.Config.Verbose
+					}
+					break
+				}
+			}
+		}
 
 	} else if tp.Function != nil {
 		result, err := tp.Function.Call()
@@ -449,7 +467,7 @@ func (tp *TaskPipeline) GetDryResult(task *Task, ctx *ExecutionContext) (display
 		}
 
 	} else if tp.Command != nil {
-		displayResult = tp.Command.GetRawResult(loopContext, ctx)
+		displayResult = tp.Command.GetRawResult()
 		if strings.TrimSpace(displayResult) != "" {
 			shouldPrint = true
 		}

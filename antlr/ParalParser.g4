@@ -25,9 +25,9 @@ task_directive
     ;
 
 pipeline_block
-    : PIPELINE_START NEWLINE* pipeline_content (PIPELINE_NEWLINE | EOF | BLOCK_END)?
+    : PIPELINE_START NEWLINE* pipeline_content (NEWLINE | EOF | BLOCK_END)?
     ;
-
+    
 pipeline_content
     : pipeline_item*
     ;
@@ -60,7 +60,19 @@ condition
     ;
 
 if_condition
-    : PIPELINE_IF_CALL_START expression IF_CONDITION_END NEWLINE* BLOCK_START NEWLINE* pipeline_block* NEWLINE* BLOCK_END
+    : PIPELINE_IF_CALL_START expression IF_CONDITION_END
+      NEWLINE* BLOCK_START NEWLINE* pipeline_block* NEWLINE* BLOCK_END
+      (NEWLINE* elseif_condition)* (NEWLINE* else_condition)?
+    ;
+
+elseif_condition
+    : PIPELINE_ELSEIF_CALL_START expression IF_CONDITION_END
+      NEWLINE* BLOCK_START NEWLINE* pipeline_block* NEWLINE* BLOCK_END
+    ;
+
+else_condition
+    : PIPELINE_ELSE_CALL
+      NEWLINE* BLOCK_START NEWLINE* pipeline_block* NEWLINE* BLOCK_END
     ;
 
 function

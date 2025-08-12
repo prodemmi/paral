@@ -8,33 +8,27 @@ import (
 	"strconv"
 )
 
-func (p *Parser) parseExpression(ctx parser.IExpressionContext) *runtime.Expression {
+func (p *Parser) parseExpression(task *runtime.Task, ctx parser.IExpressionContext) *runtime.Expression {
 	rawText := ctx.GetText()
 	var result interface{}
 	switch {
 	case ctx.Loop_variable() != nil:
 		// Handle LOOP_KEY (@key) or LOOP_VALUE (@value)
-		loopVar := ctx.Loop_variable()
-		result = loopVar.GetText()
-
+		result = ctx.Loop_variable().GetText()
 	case ctx.Function() != nil:
 		// Handle function or nested function
 		fnCtx := ctx.Function()
-		if fnCtx.PIPELINE_FUNCTION_CALL_START() != nil || fnCtx.FUNCTION_START() != nil {
-			// Parse function call`
-			fnName := fnCtx.GetStart().GetText()[1:] // Remove @ prefix
-			args := p.parseArgumentList(fnCtx.Argument_list())
-			result = map[string]interface{}{
-				"type": "function",
-				"name": fnName,
-				"args": args,
-			}
+		if fnCtx.FUNCTION_START() != nil || fnCtx.EXPRESSION_FUNCTION_CALL_START() != nil || fnCtx.PIPELINE_FUNCTION_CALL_START() != nil {
+			result = p.parseFunction(task, fnCtx)
 		}
-
+	case ctx.Nested_function() != nil:
+		// Handle function or nested function
+		nestedFnCtx := ctx.Nested_function()
+		if nestedFnCtx.NESTED_FUNCTION_START() != nil {
+			result = p.parseNestedFunction(task, nestedFnCtx)
+		}
 	case ctx.URL() != nil:
-		// Handle URL
 		result = ctx.URL().GetText()
-
 	case ctx.Number_expr() != nil:
 		// Handle FLOAT or NUMBER
 		numCtx := ctx.Number_expr()
@@ -55,12 +49,10 @@ func (p *Parser) parseExpression(ctx parser.IExpressionContext) *runtime.Express
 		}
 
 	case ctx.String_expr() != nil:
-		// Handle STRING or SINGLE_QUOTE_STRING
 		strCtx := ctx.String_expr()
 		strText := strCtx.GetText()
 		result = core.TrimQuotes(strText)
 	case ctx.Boolean_expr() != nil:
-		// Handle BOOLEAN (true/false) or ZERO_ONE (0/1)
 		boolCtx := ctx.Boolean_expr()
 		if boolCtx.BOOLEAN() != nil {
 			b, err := strconv.ParseBool(boolCtx.GetText())
@@ -72,9 +64,7 @@ func (p *Parser) parseExpression(ctx parser.IExpressionContext) *runtime.Express
 		} else if boolCtx.ZERO_ONE() != nil {
 			result = boolCtx.GetText() == "1"
 		}
-
 	case ctx.Duration_expr() != nil:
-		// Handle DURATION or number_expr
 		durCtx := ctx.Duration_expr()
 		if durCtx.DURATION() != nil {
 			result = durCtx.GetText()
@@ -98,21 +88,17 @@ func (p *Parser) parseExpression(ctx parser.IExpressionContext) *runtime.Express
 		}
 
 	case ctx.Matrix_expr() != nil:
-		// Handle matrix_expr (list_expr :: list_expr ...)
 		matrixCtx := ctx.Matrix_expr()
 		lists := matrixCtx.AllList_expr()
 		matrix := make([][]interface{}, 0)
 		for _, listCtx := range lists {
-			matrix = append(matrix, p.parseListExpr(listCtx))
+			matrix = append(matrix, p.parseListExpr(task, listCtx))
 		}
 		result = matrix
 
 	case ctx.List_expr() != nil:
-		// Handle list_expr
-		result = p.parseListExpr(ctx.List_expr())
-
+		result = p.parseListExpr(task, ctx.List_expr())
 	case ctx.IDENTIFIER() != nil:
-		// Handle IDENTIFIER
 		variableName := ctx.IDENTIFIER().GetText()
 		variableValue := p.Runtime.GetVariable(variableName)
 		if variableValue == nil {
@@ -123,35 +109,22 @@ func (p *Parser) parseExpression(ctx parser.IExpressionContext) *runtime.Express
 	default:
 		result = rawText
 	}
+
 	return &runtime.Expression{
 		Result:  result,
 		RawText: rawText,
 	}
 }
 
-// Helper function to parse argument lists
-func (p *Parser) parseArgumentList(ctx parser.IArgument_listContext) []interface{} {
-	if ctx == nil {
-		return nil
-	}
-
-	args := make([]interface{}, 0)
-	for _, exprCtx := range ctx.AllExpression() {
-		expr := p.parseExpression(exprCtx)
-		args = append(args, expr.Result)
-	}
-	return args
-}
-
 // Helper function to parse list expressions
-func (p *Parser) parseListExpr(ctx parser.IList_exprContext) []interface{} {
+func (p *Parser) parseListExpr(task *runtime.Task, ctx parser.IList_exprContext) []interface{} {
 	if ctx == nil {
 		return nil
 	}
 
 	list := make([]interface{}, 0)
 	for _, exprCtx := range ctx.AllExpression() {
-		expr := p.parseExpression(exprCtx)
+		expr := p.parseExpression(task, exprCtx)
 		list = append(list, expr.Result)
 	}
 	return list

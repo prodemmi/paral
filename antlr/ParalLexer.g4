@@ -44,16 +44,18 @@ WS: [ \t]+ -> skip;
 
 // ---------------------- PIPELINE Mode ----------------------
 mode PIPELINE;
-PIPELINE_NEWLINE: ('\r'? '\n') -> popMode;
+PIPELINE_NEWLINE: ('\r'? '\n') -> type(NEWLINE);  // Stay in pipeline mode
 PIPELINE_BUF: AT 'buf[' -> pushMode(BUF_MODE);
 PIPELINE_STASH: AT 'stash[' -> pushMode(STASH_MODE);
 PIPELINE_IF_CALL_START: AT 'if(' -> pushMode(EXPRESSION) ;
+PIPELINE_ELSEIF_CALL_START : AT 'elseif(' -> pushMode(EXPRESSION) ;
+PIPELINE_ELSE_CALL         : AT 'else' ;
 PIPELINE_FUNCTION_CALL_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
 
 PIPELINE_LOOP_KEY: AT 'key' -> type(LOOP_KEY);
 PIPELINE_LOOP_VALUE: AT 'value' -> type(LOOP_VALUE);
-PIPELINE_BLOCK_START: '{' -> type(BLOCK_START), popMode ;
-PIPELINE_BLOCK_END: '}' -> type(BLOCK_END), popMode ; // Add this line
+PIPELINE_BLOCK_START: '{' -> type(BLOCK_START);
+PIPELINE_BLOCK_END: '}' -> type(BLOCK_END);
 PIPELINE_LBRACK: '[' -> type(LBRACK);
 PIPELINE_RBRACK: ']' -> type(RBRACK);
 NESTED_PIPELINE_START: '->' -> type(PIPELINE_START) ;

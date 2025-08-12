@@ -47,6 +47,12 @@ type ParalParserListener interface {
 	// EnterIf_condition is called when entering the if_condition production.
 	EnterIf_condition(c *If_conditionContext)
 
+	// EnterElseif_condition is called when entering the elseif_condition production.
+	EnterElseif_condition(c *Elseif_conditionContext)
+
+	// EnterElse_condition is called when entering the else_condition production.
+	EnterElse_condition(c *Else_conditionContext)
+
 	// EnterFunction is called when entering the function production.
 	EnterFunction(c *FunctionContext)
 
@@ -118,6 +124,12 @@ type ParalParserListener interface {
 
 	// ExitIf_condition is called when exiting the if_condition production.
 	ExitIf_condition(c *If_conditionContext)
+
+	// ExitElseif_condition is called when exiting the elseif_condition production.
+	ExitElseif_condition(c *Elseif_conditionContext)
+
+	// ExitElse_condition is called when exiting the else_condition production.
+	ExitElse_condition(c *Else_conditionContext)
 
 	// ExitFunction is called when exiting the function production.
 	ExitFunction(c *FunctionContext)

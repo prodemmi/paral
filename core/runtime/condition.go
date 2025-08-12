@@ -1,54 +1,40 @@
 package runtime
 
-type IfCondition struct {
-	Type          string
-	Expression    *Expression
-	ThenPipelines []*TaskPipeline
-	ElsePipelines []*TaskPipeline
+// Condition is a wrapper for different condition types in your DSL.
+type Condition struct {
+	IfCondition    *IfCondition
+	MatchCondition *MatchCondition
+	RawText        string
 }
 
-func (i *IfCondition) IsTrue() bool {
-	if i.Expression == nil || i.Expression.Result == nil {
-		return false
-	}
+// ConditionalBranch represents one branch in an if/elif/else chain.
+// Expression == nil means it's the `else` branch.
+type ConditionalBranch struct {
+	Expression *Expression
+	Pipelines  []*TaskPipeline
+	RawText    string
+}
 
-	switch v := i.Expression.Result.(type) {
-	case bool:
-		// Direct boolean value (from BOOLEAN or ZERO_ONE)
-		return v
+// IfCondition represents an if-elif-else chain.
+type IfCondition struct {
+	Branches []ConditionalBranch
+	RawText  string
+}
 
-	case string:
-		if v == "true" || v == "false" {
-			return v == "true"
+// MatchCondition represents a match/case structure.
+type MatchCondition struct {
+	Expression *Expression
+	Pipelines  map[*Expression][]*TaskPipeline
+}
+
+func (i *IfCondition) Execute(ctx *ExecutionContext, task *Task, cmdExecutor *CommandExecutor) (success bool, displayResult string, shouldPrint bool) {
+	for _, branch := range i.Branches {
+		if branch.Expression == nil || branch.Expression.IsTrue() {
+			for _, pipeline := range branch.Pipelines {
+				return pipeline.GetResult(ctx, task, cmdExecutor)
+			}
+			break
 		}
-
-		// Handle string_expr, URL, IDENTIFIER, LOOP_KEY, LOOP_VALUE, or DURATION
-		// Consider non-empty strings as true
-		return len(v) > 0
-
-	case int:
-		// Handle NUMBER from number_expr or duration_expr
-		return v != 0
-
-	case float64:
-		// Handle FLOAT from number_expr or duration_expr
-		return v != 0.0
-
-	case []interface{}:
-		// Handle list_expr
-		return len(v) > 0
-
-	case [][]interface{}:
-		// Handle matrix_expr
-		return len(v) > 0
-
-	case map[string]interface{}:
-		// Handle function or nested_function
-		// Consider any function call as true (since it exists)
-		return true
-
-	default:
-		// Fallback: consider non-nil values as true
-		return true
 	}
+	return false, "", true
 }

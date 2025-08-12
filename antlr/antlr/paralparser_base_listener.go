@@ -99,6 +99,18 @@ func (s *BaseParalParserListener) EnterIf_condition(ctx *If_conditionContext) {}
 // ExitIf_condition is called when production if_condition is exited.
 func (s *BaseParalParserListener) ExitIf_condition(ctx *If_conditionContext) {}
 
+// EnterElseif_condition is called when production elseif_condition is entered.
+func (s *BaseParalParserListener) EnterElseif_condition(ctx *Elseif_conditionContext) {}
+
+// ExitElseif_condition is called when production elseif_condition is exited.
+func (s *BaseParalParserListener) ExitElseif_condition(ctx *Elseif_conditionContext) {}
+
+// EnterElse_condition is called when production else_condition is entered.
+func (s *BaseParalParserListener) EnterElse_condition(ctx *Else_conditionContext) {}
+
+// ExitElse_condition is called when production else_condition is exited.
+func (s *BaseParalParserListener) ExitElse_condition(ctx *Else_conditionContext) {}
+
 // EnterFunction is called when production function is entered.
 func (s *BaseParalParserListener) EnterFunction(ctx *FunctionContext) {}
 

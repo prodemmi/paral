@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"paral/antlr/antlr"
+	parser "paral/antlr/antlr"
 	"paral/core/runtime"
 )
 
@@ -16,8 +16,11 @@ func (p *Parser) parsePipelineContent(task *runtime.Task, ctx parser.IPipeline_c
 			if ifCtx := condCtx.If_condition(); ifCtx != nil {
 				ifCondition := p.parseIfCondition(task, ifCtx)
 				return &runtime.TaskPipeline{
-					IfCondition: ifCondition,
-					Block:       blockIndex,
+					Condition: &runtime.Condition{
+						IfCondition: ifCondition,
+						RawText:     ifCtx.GetText(),
+					},
+					Block: blockIndex,
 				}
 			}
 		}
