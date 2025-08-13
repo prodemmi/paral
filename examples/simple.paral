@@ -3,8 +3,6 @@ run = true
 @if run
 task run_tests {
     -> @try {
-        -> python3 script.py
-       } @catch {
-        -> @print(@error)
+        -> python3 script1.py
        }
 }

@@ -64,9 +64,10 @@ func (tc *TryCatch) Execute(ctx *ExecutionContext, task *Task, cmdExecutor *Comm
 			cmdExecutor.Runtime.ClearTryCatchError()
 		} else {
 			// No catch block, so include the failed try results
-			successes = append(successes, trySuccesses...)
-			outputs = append(outputs, tryOutputs...)
-			prints = append(prints, tryPrints...)
+			// successes = append(successes, trySuccesses...)
+			// outputs = append(outputs, tryOutputs...)
+			// prints = append(prints, tryPrints...)
+			return nil, nil, nil
 		}
 	}
 
