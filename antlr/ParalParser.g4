@@ -36,6 +36,7 @@ pipeline_item
     : buf
     | stash
     | condition
+    | try_catch
     | function
     | unknown_command
     ;
@@ -78,6 +79,18 @@ else_condition
       NEWLINE* BLOCK_START NEWLINE* pipeline_block* NEWLINE* BLOCK_END
     ;
 
+try_catch
+    : TRY NEWLINE* BLOCK_START  NEWLINE*try_block  NEWLINE*BLOCK_END (CATCH NEWLINE* BLOCK_START  NEWLINE*catch_block NEWLINE* BLOCK_END)?
+    ;
+
+try_block
+    : pipeline_block*
+    ;
+
+catch_block
+    : pipeline_block*
+    ;
+
 function
     : PIPELINE_FUNCTION_CALL_START argument_list? FUNCTION_END
     | FUNCTION_START argument_list? FUNCTION_END
@@ -96,6 +109,7 @@ argument_list
 // Expression can be a value or a nested function
 expression
     : loop_variable
+    | error_variable
     | function
     | nested_function
     | URL
@@ -140,4 +154,8 @@ list_expr
 loop_variable
     : LOOP_KEY
     | LOOP_VALUE
+    ;
+
+error_variable
+    : ERROR
     ;

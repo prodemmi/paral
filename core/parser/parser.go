@@ -17,7 +17,7 @@ func (p *Parser) ExitVariable_assignment(ctx *parser.Variable_assignmentContext)
 }
 
 func (p *Parser) ExitTask_definition(ctx *parser.Task_definitionContext) {
-	if task := p.parseTask(ctx); task != nil {
+	if task := p.parseTask(ctx, nil); task != nil {
 		p.Runtime.AddTask(task)
 	}
 }

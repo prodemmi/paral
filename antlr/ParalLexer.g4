@@ -39,8 +39,11 @@ FUNCTION_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
 
 PIPELINE_START: '->' -> pushMode(PIPELINE) ;
 
+ERROR: AT 'error' ;
 LOOP_KEY: AT 'key' ;
 LOOP_VALUE: AT 'value' ;
+TRY: AT 'try' ;
+CATCH: AT 'catch' ;
 
 // IMPORTANT: IDENTIFIER must come after TASK to avoid conflicts
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
@@ -62,8 +65,11 @@ PIPELINE_ELSEIF_CALL_START: AT 'elseif(' -> pushMode(EXPRESSION);
 PIPELINE_ELSE_CALL: AT 'else';
 PIPELINE_FUNCTION_CALL_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
 
+PIPELINE_ERROR: AT 'error' -> type(ERROR);
 PIPELINE_LOOP_KEY: AT 'key' -> type(LOOP_KEY);
 PIPELINE_LOOP_VALUE: AT 'value' -> type(LOOP_VALUE);
+PIPELINE_TRY_CALL: AT 'try' -> type(TRY);
+PIPELINE_CATCH_CALL: AT 'catch' -> type(CATCH);
 PIPELINE_BLOCK_START: '{' -> type(BLOCK_START);
 PIPELINE_BLOCK_END: '}' -> type(BLOCK_END), popMode; // Exit pipeline mode when block ends
 PIPELINE_LBRACK: '[' -> type(LBRACK);
@@ -121,6 +127,7 @@ IF_CONDITION_END: ')' -> popMode;
 // Add function call support in EXPRESSION mode
 EXPRESSION_FUNCTION_CALL_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
 
+EXPRESSION_ERROR: AT 'error' -> type(ERROR);
 EXPRESSION_LOOP_KEY: AT 'key' -> type(LOOP_KEY);
 EXPRESSION_LOOP_VALUE: AT 'value' -> type(LOOP_VALUE);
 EXPRESSION_LBRACK: '[' -> type(LBRACK);
@@ -142,6 +149,7 @@ mode FUNCTION;
 NESTED_FUNCTION_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
 FUNCTION_END: ')' -> popMode;
 
+FUNCTION_ERROR: AT 'error' -> type(ERROR);
 FUNCTION_LOOP_KEY: AT 'key' -> type(LOOP_KEY);
 FUNCTION_LOOP_VALUE: AT 'value' -> type(LOOP_VALUE);
 FUNCTION_LBRACK: '[' -> type(LBRACK);

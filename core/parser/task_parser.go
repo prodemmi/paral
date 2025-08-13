@@ -8,7 +8,7 @@ import (
 	"paral/core/runtime"
 )
 
-func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
+func (p *Parser) parseTask(ctx parser.ITask_definitionContext, parent *runtime.TaskPipeline) *runtime.Task {
 	filename := ctx.GetStop().GetInputStream().GetSourceName()
 	line := ctx.GetStop().GetLine()
 	column := ctx.GetStop().GetColumn()
@@ -54,7 +54,7 @@ func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
 
 	// Process pipeline blocks
 	for _, pipelineBlock := range ctx.AllPipeline_block() {
-		if pipeline := p.parsePipeline(task, pipelineBlock); pipeline != nil {
+		if pipeline := p.parsePipeline(task, pipelineBlock, parent); pipeline != nil {
 			task.AddTaskPipeline(pipeline)
 		}
 	}

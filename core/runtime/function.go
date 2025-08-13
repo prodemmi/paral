@@ -187,9 +187,16 @@ func (f *Function) CallArgs(args ...interface{}) ([]interface{}, error) {
 }
 
 func (f *Function) ResolveValue(arg interface{}) (interface{}, error) {
+	switch arg.(*Expression).RawText {
+	case "@error":
+		return f.Runtime.currentTryCatchError, nil
+	}
+
 	loopContext := f.GetActiveLoopContext()
 	switch v := arg.(*Expression).Result.(type) {
 	case string:
+		if v == "@error" {
+		}
 		if loopContext != nil {
 			if v == "@value" {
 				return loopContext.Value, nil
@@ -197,6 +204,13 @@ func (f *Function) ResolveValue(arg interface{}) (interface{}, error) {
 			if v == "@key" {
 				return loopContext.Key, nil
 			}
+		}
+		// Handle @error
+		if v == "@error" {
+			if f.Runtime.HasTryCatchError() {
+				return f.Runtime.GetTryCatchError(), nil
+			}
+			return "", nil // Return empty string if no error context
 		}
 		return core.TrimQuotes(v), nil
 	case variable.Variable:

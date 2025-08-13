@@ -1,7 +1,10 @@
-run = @getenv("TEST_VAR")
+run = true
 
 @if run
 task run_tests {
-    -> @printf("x2")
-    -> python3 script.py
+    -> @try {
+        -> python3 script.py
+       } @catch {
+        -> @print(@error)
+       }
 }

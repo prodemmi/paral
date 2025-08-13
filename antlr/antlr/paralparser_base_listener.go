@@ -117,6 +117,24 @@ func (s *BaseParalParserListener) EnterElse_condition(ctx *Else_conditionContext
 // ExitElse_condition is called when production else_condition is exited.
 func (s *BaseParalParserListener) ExitElse_condition(ctx *Else_conditionContext) {}
 
+// EnterTry_catch is called when production try_catch is entered.
+func (s *BaseParalParserListener) EnterTry_catch(ctx *Try_catchContext) {}
+
+// ExitTry_catch is called when production try_catch is exited.
+func (s *BaseParalParserListener) ExitTry_catch(ctx *Try_catchContext) {}
+
+// EnterTry_block is called when production try_block is entered.
+func (s *BaseParalParserListener) EnterTry_block(ctx *Try_blockContext) {}
+
+// ExitTry_block is called when production try_block is exited.
+func (s *BaseParalParserListener) ExitTry_block(ctx *Try_blockContext) {}
+
+// EnterCatch_block is called when production catch_block is entered.
+func (s *BaseParalParserListener) EnterCatch_block(ctx *Catch_blockContext) {}
+
+// ExitCatch_block is called when production catch_block is exited.
+func (s *BaseParalParserListener) ExitCatch_block(ctx *Catch_blockContext) {}
+
 // EnterFunction is called when production function is entered.
 func (s *BaseParalParserListener) EnterFunction(ctx *FunctionContext) {}
 
@@ -182,3 +200,9 @@ func (s *BaseParalParserListener) EnterLoop_variable(ctx *Loop_variableContext) 
 
 // ExitLoop_variable is called when production loop_variable is exited.
 func (s *BaseParalParserListener) ExitLoop_variable(ctx *Loop_variableContext) {}
+
+// EnterError_variable is called when production error_variable is entered.
+func (s *BaseParalParserListener) EnterError_variable(ctx *Error_variableContext) {}
+
+// ExitError_variable is called when production error_variable is exited.
+func (s *BaseParalParserListener) ExitError_variable(ctx *Error_variableContext) {}

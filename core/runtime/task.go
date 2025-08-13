@@ -31,11 +31,13 @@ type Task struct {
 }
 
 type TaskPipeline struct {
+	Parent    *TaskPipeline
 	Buf       *Buf
 	Stash     *Stash
 	Command   *Command
 	Function  *Function
 	Condition *Condition
+	TryCatch  *TryCatch
 	Block     int
 }
 
@@ -343,7 +345,7 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 			displayResult = fmt.Sprintf("%s ▶ buf %q saved: %s", indent, tp.Buf.Name, strings.TrimRight(result, "\n"))
 		} else {
 			success = false
-			displayResult = fmt.Sprintf("%s ❌ buf %q failed", indent, tp.Buf.Name)
+			displayResult = ""
 			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("buf %q failed", tp.Buf.Name), &tp.Buf.Metadata)
 		}
 		shouldPrint = ctx.Config.Verbose
@@ -355,8 +357,8 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 			displayResult = fmt.Sprintf("%s ▶ stash %q saved: %s", indent, tp.Stash.Name, strings.TrimRight(result, "\n"))
 		} else {
 			success = false
-			displayResult = fmt.Sprintf("%s ❌ stash %q failed", indent, tp.Stash.Name)
-			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("Stash %q failed", tp.Stash.Name), &tp.Stash.Metadata)
+			displayResult = ""
+			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("stash %q failed", tp.Stash.Name), &tp.Stash.Metadata)
 		}
 		shouldPrint = ctx.Config.Verbose
 
@@ -386,8 +388,7 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 		functionResult, err := tp.Function.Call()
 		if err != nil {
 			success = false
-			displayResult = fmt.Sprintf("%s❌ %s (%v)", indent, tp.Function.Type, err)
-			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("Function %q failed: %v", tp.Function.Type, err), &tp.Function.Metadata)
+			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("function %q failed: %v", tp.Function.Type, err), &tp.Function.Metadata)
 		} else {
 			result := fmt.Sprint(functionResult)
 			if strings.TrimSpace(result) != "" {
@@ -416,8 +417,35 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 				shouldPrint = true
 			} else {
 				success = false
-				displayResult = fmt.Sprintf("%s❌ %s (%v)", indent, strings.TrimRight(result, "\n"), err)
-				cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("Command failed: %v", err), &task.Metadata)
+				displayResult = fmt.Sprintf("%s ▶ %s (%v)", indent, strings.TrimRight(result, "\n"), err)
+				if !tp.IsInTryCatch() {
+					cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("command failed: %v", err), &task.Metadata)
+				}
+				shouldPrint = true
+			}
+		}
+	} else if tp.TryCatch != nil {
+		successes, outputs, prints := tp.TryCatch.Execute(ctx, task, cmdExecutor)
+
+		success = true
+		displayParts := []string{}
+		shouldPrint = false
+
+		for i, s := range successes {
+			if !s {
+				success = false
+			}
+			if prints[i] && strings.TrimSpace(outputs[i]) != "" {
+				displayParts = append(displayParts, outputs[i])
+				shouldPrint = true
+			}
+		}
+
+		if len(displayParts) > 0 {
+			displayResult = strings.Join(displayParts, "\n")
+		} else {
+			displayResult = fmt.Sprintf("%s ▶ try-catch executed, no output", indent)
+			if ctx.Config.Verbose {
 				shouldPrint = true
 			}
 		}
@@ -504,4 +532,15 @@ func (tp *TaskPipeline) GetDryResult(task *Task, ctx *ExecutionContext) (display
 	}
 
 	return
+}
+
+func (tp *TaskPipeline) IsInTryCatch() bool {
+	current := tp
+	for current != nil {
+		if current.TryCatch != nil {
+			return true
+		}
+		current = current.Parent
+	}
+	return false
 }

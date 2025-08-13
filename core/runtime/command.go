@@ -40,6 +40,25 @@ func (c *Command) GetResult(ctx *ExecutionContext, task *Task, executor *Command
 	loopContext := task.GetActiveLoopContext()
 	resolvedCmd := c.GetRawResult()
 
+	// Check if there are unresolved functions (indicated by @ symbols that weren't replaced)
+	if strings.Contains(resolvedCmd, "@") {
+		// Check for common unresolved function patterns
+		if strings.Contains(resolvedCmd, "@value") && task.GetActiveLoopContext() == nil {
+			return "", false, fmt.Errorf("@value can only be used within a @for directive")
+		}
+		if strings.Contains(resolvedCmd, "@key") && task.GetActiveLoopContext() == nil {
+			return "", false, fmt.Errorf("@key can only be used within a @for directive")
+		}
+		// Add more specific error checks for other context-dependent functions as needed
+
+		// Generic check for any remaining @ symbols (potential unresolved functions)
+		for _, part := range strings.Fields(resolvedCmd) {
+			if strings.HasPrefix(part, "@") && !strings.HasPrefix(part, "@@") { // @@ might be escaped
+				return "", false, fmt.Errorf("unresolved function or variable: %s", part)
+			}
+		}
+	}
+
 	// If the resolved command doesn't start with '@', execute it as a shell command
 	if !strings.HasPrefix(resolvedCmd, "@") {
 		if loopContext == nil {
@@ -47,7 +66,10 @@ func (c *Command) GetResult(ctx *ExecutionContext, task *Task, executor *Command
 		}
 		output, cmdSuccess := executor.ExecuteShellCommand(resolvedCmd, loopContext.Value, ctx)
 		if !cmdSuccess {
-			return string(output), false, fmt.Errorf("\n\t\t\t%s", output)
+			errorMsg := string(output)
+			// Clean up the error message - remove leading/trailing whitespace and newlines
+			errorMsg = strings.TrimSpace(errorMsg)
+			return errorMsg, false, fmt.Errorf("\n\t\t\t%s", errorMsg)
 		}
 		return strings.TrimRight(string(output), "\n"), true, nil
 	}

@@ -56,6 +56,15 @@ type ParalParserListener interface {
 	// EnterElse_condition is called when entering the else_condition production.
 	EnterElse_condition(c *Else_conditionContext)
 
+	// EnterTry_catch is called when entering the try_catch production.
+	EnterTry_catch(c *Try_catchContext)
+
+	// EnterTry_block is called when entering the try_block production.
+	EnterTry_block(c *Try_blockContext)
+
+	// EnterCatch_block is called when entering the catch_block production.
+	EnterCatch_block(c *Catch_blockContext)
+
 	// EnterFunction is called when entering the function production.
 	EnterFunction(c *FunctionContext)
 
@@ -88,6 +97,9 @@ type ParalParserListener interface {
 
 	// EnterLoop_variable is called when entering the loop_variable production.
 	EnterLoop_variable(c *Loop_variableContext)
+
+	// EnterError_variable is called when entering the error_variable production.
+	EnterError_variable(c *Error_variableContext)
 
 	// ExitProgram is called when exiting the program production.
 	ExitProgram(c *ProgramContext)
@@ -137,6 +149,15 @@ type ParalParserListener interface {
 	// ExitElse_condition is called when exiting the else_condition production.
 	ExitElse_condition(c *Else_conditionContext)
 
+	// ExitTry_catch is called when exiting the try_catch production.
+	ExitTry_catch(c *Try_catchContext)
+
+	// ExitTry_block is called when exiting the try_block production.
+	ExitTry_block(c *Try_blockContext)
+
+	// ExitCatch_block is called when exiting the catch_block production.
+	ExitCatch_block(c *Catch_blockContext)
+
 	// ExitFunction is called when exiting the function production.
 	ExitFunction(c *FunctionContext)
 
@@ -169,4 +190,7 @@ type ParalParserListener interface {
 
 	// ExitLoop_variable is called when exiting the loop_variable production.
 	ExitLoop_variable(c *Loop_variableContext)
+
+	// ExitError_variable is called when exiting the error_variable production.
+	ExitError_variable(c *Error_variableContext)
 }

@@ -145,30 +145,30 @@ func (t *ThreadSafeWriter) Write(p []byte) (n int, err error) {
 	return t.writer.Write(p)
 }
 
-func (ce *CommandExecutor) ExecuteShellCommand(pipeline string, forValue interface{}, ctx *ExecutionContext) ([]byte, bool) {
+func (ce *CommandExecutor) ExecuteShellCommand(command string, forValue interface{}, ctx *ExecutionContext) ([]byte, bool) {
 	for _, v := range ce.Runtime.Vars {
 		placeholder := fmt.Sprintf("$%s", v.Name)
 		switch val := v.Value.(type) {
 		case variable.StringValue:
-			pipeline = strings.ReplaceAll(pipeline, placeholder, val.Value)
+			command = strings.ReplaceAll(command, placeholder, val.Value)
 		case variable.ListValue:
 			strValues := make([]string, len(val.Value))
 			for i, item := range val.Value {
 				strValues[i] = fmt.Sprint(item)
 			}
-			pipeline = strings.ReplaceAll(pipeline, placeholder, strings.Join(strValues, " "))
+			command = strings.ReplaceAll(command, placeholder, strings.Join(strValues, " "))
 		default:
-			pipeline = strings.ReplaceAll(pipeline, placeholder, fmt.Sprint(val))
+			command = strings.ReplaceAll(command, placeholder, fmt.Sprint(val))
 		}
 	}
 	valueStr := fmt.Sprint(forValue)
-	pipeline = strings.ReplaceAll(pipeline, "@value", valueStr)
+	command = strings.ReplaceAll(command, "@value", valueStr)
 
 	var cmd *exec.Cmd
 	if ctx.Config.Timeout > 0 {
-		cmd = exec.Command("timeout", fmt.Sprintf("%d", ctx.Config.Timeout), "sh", "-c", pipeline)
+		cmd = exec.Command("timeout", fmt.Sprintf("%d", ctx.Config.Timeout), "sh", "-c", command)
 	} else {
-		cmd = exec.Command("sh", "-c", pipeline)
+		cmd = exec.Command("sh", "-c", command)
 	}
 
 	cmd.Dir = filepath.Dir(ce.Runtime.Metadata.Filename)
@@ -569,35 +569,6 @@ func (c *TaskExecutor) createColorScheme(noColor bool) *ColorScheme {
 		Magenta: color.New(color.FgMagenta),
 		Gray:    color.New(color.FgHiBlack),
 		White:   color.New(color.FgWhite),
-	}
-}
-
-func (c *TaskExecutor) executeParallel(ctx *ExecutionContext) {
-	independentTasks, deferTasks, err := c.Runtime.GetExecutionOrder()
-	if err != nil {
-		c.Reporter.ThrowRuntimeError(err.Error(), c.Runtime.Metadata)
-		return
-	}
-	outputChan := make(chan TaskOutput, len(independentTasks)+len(deferTasks))
-	var printWg sync.WaitGroup
-	if !ctx.Config.Silent {
-		printWg.Add(1)
-		go func() {
-			defer printWg.Done()
-			c.processOutput(outputChan, ctx)
-		}()
-	}
-	if onlyIndependentTasksWithoutDeps(independentTasks) {
-		c.executeTasksInParallel(independentTasks, ctx, outputChan)
-	} else {
-		c.executeTasksWithDependencies(independentTasks, ctx, outputChan)
-	}
-	if len(deferTasks) > 0 {
-		c.executeTasksInParallel(deferTasks, ctx, outputChan)
-	}
-	close(outputChan)
-	if !ctx.Config.Silent {
-		printWg.Wait()
 	}
 }
 

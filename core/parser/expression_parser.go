@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 	parser "paral/antlr/antlr"
-	"paral/core"
 	"paral/core/metadata"
 	"paral/core/runtime"
 	"strconv"
@@ -22,6 +21,9 @@ func (p *Parser) parseExpression(task *runtime.Task, ctx parser.IExpressionConte
 	case ctx.Loop_variable() != nil:
 		// Handle LOOP_KEY (@key) or LOOP_VALUE (@value)
 		result = ctx.Loop_variable().GetText()
+	case ctx.Error_variable() != nil:
+		// Handle ERROR (@error)
+		result = p.Runtime.GetTryCatchError()
 	case ctx.Function() != nil:
 		// Handle function or nested function
 		fnCtx := ctx.Function()
@@ -58,7 +60,7 @@ func (p *Parser) parseExpression(task *runtime.Task, ctx parser.IExpressionConte
 	case ctx.String_expr() != nil:
 		strCtx := ctx.String_expr()
 		strText := strCtx.GetText()
-		result = core.TrimQuotes(strText)
+		result = strText
 	case ctx.Boolean_expr() != nil:
 		boolCtx := ctx.Boolean_expr()
 		if boolCtx.BOOLEAN() != nil {
@@ -107,14 +109,25 @@ func (p *Parser) parseExpression(task *runtime.Task, ctx parser.IExpressionConte
 		result = p.parseListExpr(task, ctx.List_expr())
 	case ctx.IDENTIFIER() != nil:
 		variableName := ctx.IDENTIFIER().GetText()
-		variableValue := p.Runtime.GetVariable(variableName)
-		if variableValue == nil {
-			p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("Undefined variable: %s", variableName), &mt)
+		// Check if it's @error first
+		if variableName == "@error" {
+			result = "@error"
+			rawText = "@error"
+		} else {
+			variableValue := p.Runtime.GetVariable(variableName)
+			if variableValue == nil {
+				p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("Undefined variable: %s", variableName), &mt)
+			}
+			_, result = variableValue.Format()
+			rawText = variableName
 		}
-		_, result = variableValue.Format()
-		rawText = variableName
 	default:
-		result = rawText
+		// Check if the raw text is @error
+		if rawText == "@error" {
+			result = "@error"
+		} else {
+			result = rawText
+		}
 	}
 
 	return &runtime.Expression{
@@ -124,7 +137,6 @@ func (p *Parser) parseExpression(task *runtime.Task, ctx parser.IExpressionConte
 	}
 }
 
-// Helper function to parse list expressions
 func (p *Parser) parseListExpr(task *runtime.Task, ctx parser.IList_exprContext) []interface{} {
 	if ctx == nil {
 		return nil

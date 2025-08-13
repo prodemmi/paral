@@ -1,6 +1,8 @@
 package runtime
 
-import "paral/core/metadata"
+import (
+	"paral/core/metadata"
+)
 
 type Expression struct {
 	Result   interface{}

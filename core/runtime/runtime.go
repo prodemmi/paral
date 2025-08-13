@@ -15,6 +15,8 @@ type Runtime struct {
 
 	BufStack   [][]*BufContext
 	StashStack [][]*StashContext
+
+	currentTryCatchError string
 }
 
 type StashContext struct {
@@ -272,4 +274,26 @@ func (r *Runtime) topologicalSort(tasks []*Task) ([]*Task, error) {
 	}
 
 	return result, nil
+}
+
+// Add these methods to your Runtime struct
+
+func (r *Runtime) SetTryCatchError(errorMsg string) {
+	// Store the current try-catch error
+	r.currentTryCatchError = errorMsg
+}
+
+func (r *Runtime) ClearTryCatchError() {
+	// Clear the current try-catch error
+	r.currentTryCatchError = ""
+}
+
+func (r *Runtime) GetTryCatchError() string {
+	// Get the current try-catch error
+	return r.currentTryCatchError
+}
+
+func (r *Runtime) HasTryCatchError() bool {
+	// Check if there's a current try-catch error
+	return r.currentTryCatchError != ""
 }
