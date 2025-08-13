@@ -45,7 +45,7 @@ unknown_command: (IDENTIFIER | UNKNOWN_TEXT | PATH | URL)+ (expression)*;
 // ----------------- task directive -------------
 
 directive
-    : AT IDENTIFIER expression*
+    : AT IDENTIFIER expression?
     ;
 
 // ----------------- functions and conditions -------------

@@ -98,14 +98,9 @@ func (t *Task) AddTaskDirective(directive *Directive) error {
 			return fmt.Errorf("@%s requires a string value, got %v", name, args[0])
 		}
 		dirValue = args
-	case "args", "depend":
+	case "if", "args", "depend":
 		if len(args) == 0 {
 			return require_error(name)
-		}
-		for i, arg := range args {
-			if _, ok := arg.(string); !ok {
-				return fmt.Errorf("@%s requires string arguments, got %v at index %d", name, arg, i)
-			}
 		}
 		dirValue = args
 	case "defer":
@@ -162,6 +157,34 @@ func (t *Task) IsScheduled() bool {
 		}
 	}
 	return false
+}
+
+func (t *Task) HasIf() bool {
+	for _, directive := range t.Directives {
+		if directive.Type == "if" {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *Task) IfResult() bool {
+	for _, directive := range t.Directives {
+		if directive.Type == "if" {
+			if len(directive.Params) == 1 {
+				if expr, ok := directive.Params[0].(*Expression); ok && expr != nil {
+					return expr.IsTrue()
+				}
+			} else {
+				t.Runtime.Reporter.ThrowRuntimeError(
+					"@if directive must have exactly one parameter",
+					&directive.Metadata,
+				)
+			}
+			return false
+		}
+	}
+	return true
 }
 
 func (t *Task) PushLoopStack(key int, value interface{}) {
@@ -301,7 +324,10 @@ func (t *Task) GetScheduleDirective() *Directive {
 }
 
 func (t *Task) GetTaskId() string {
-	return t.Name
+	if t != nil {
+		return t.Name
+	}
+	return ""
 }
 
 func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor *CommandExecutor) (bool, string, bool) {

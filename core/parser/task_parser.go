@@ -3,9 +3,9 @@ package parser
 import (
 	"fmt"
 	parser "paral/antlr/antlr"
+	"paral/core"
 	"paral/core/metadata"
 	"paral/core/runtime"
-	"strings"
 )
 
 func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
@@ -18,16 +18,10 @@ func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
 
 	description := ""
 
-	// Process directives to override name with @id if present
 	for _, directiveExpr := range ctx.AllTask_directive() {
 		if dcr := directiveExpr.Directive(); dcr != nil && dcr.IDENTIFIER().GetText() == "description" {
-			if len(dcr.AllExpression()) > 0 {
-				descCandidate := dcr.AllExpression()[0].GetText()
-				if strings.HasPrefix(descCandidate, "\"") && strings.HasSuffix(descCandidate, "\"") {
-					descCandidate = strings.Trim(descCandidate, "\"")
-				}
-				description = descCandidate
-			}
+			descCandidate := dcr.Expression().GetText()
+			description = core.TrimQuotes(descCandidate)
 		}
 	}
 
@@ -51,7 +45,7 @@ func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
 
 	// Process directives
 	for _, directiveExpr := range ctx.AllTask_directive() {
-		if directive := p.parseTaskDirective(directiveExpr); directive != nil {
+		if directive := p.parseTaskDirective(task, directiveExpr); directive != nil {
 			if err := task.AddTaskDirective(directive); err != nil {
 				p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("\nInvalid directive: %v", err), &directive.Metadata)
 			}
@@ -68,14 +62,12 @@ func (p *Parser) parseTask(ctx parser.ITask_definitionContext) *runtime.Task {
 	return task
 }
 
-func (p *Parser) parseTaskDirective(ctx parser.ITask_directiveContext) *runtime.Directive {
+func (p *Parser) parseTaskDirective(task *runtime.Task, ctx parser.ITask_directiveContext) *runtime.Directive {
 	directive := runtime.NewTaskDirective()
 	if dcr := ctx.Directive(); dcr != nil {
 		directive.Type = dcr.IDENTIFIER().GetText()
-		for _, dcrParam := range dcr.AllExpression() {
-			text := dcrParam.GetText()
-			directive.Params = append(directive.Params, text)
-		}
+		expression := p.parseExpression(task, dcr.Expression())
+		directive.Params = append(directive.Params, expression)
 	}
 	directive.Metadata = metadata.Metadata{
 		Content: ctx.GetText(),

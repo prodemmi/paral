@@ -4,12 +4,19 @@ import (
 	"fmt"
 	parser "paral/antlr/antlr"
 	"paral/core"
+	"paral/core/metadata"
 	"paral/core/runtime"
 	"strconv"
 )
 
 func (p *Parser) parseExpression(task *runtime.Task, ctx parser.IExpressionContext) *runtime.Expression {
 	rawText := ctx.GetText()
+	mt := metadata.Metadata{
+		Content: ctx.GetText(),
+		Line:    ctx.GetStop().GetLine(),
+		Column:  ctx.GetStop().GetColumn(),
+	}
+
 	var result interface{}
 	switch {
 	case ctx.Loop_variable() != nil:
@@ -102,7 +109,7 @@ func (p *Parser) parseExpression(task *runtime.Task, ctx parser.IExpressionConte
 		variableName := ctx.IDENTIFIER().GetText()
 		variableValue := p.Runtime.GetVariable(variableName)
 		if variableValue == nil {
-			p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("Undefined variable: %s", variableValue), variableValue.Metadata)
+			p.Runtime.Reporter.ThrowSyntaxError(fmt.Sprintf("Undefined variable: %s", variableName), &mt)
 		}
 		_, result = variableValue.Format()
 		rawText = variableName
@@ -111,8 +118,9 @@ func (p *Parser) parseExpression(task *runtime.Task, ctx parser.IExpressionConte
 	}
 
 	return &runtime.Expression{
-		Result:  result,
-		RawText: rawText,
+		Result:   result,
+		RawText:  rawText,
+		Metadata: &mt,
 	}
 }
 

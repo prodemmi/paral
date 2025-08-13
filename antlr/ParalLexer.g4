@@ -42,15 +42,19 @@ PIPELINE_START: '->' -> pushMode(PIPELINE) ;
 LOOP_KEY: AT 'key' ;
 LOOP_VALUE: AT 'value' ;
 
+// IMPORTANT: IDENTIFIER must come after TASK to avoid conflicts
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 
 NEWLINE: ('\r'? '\n');
 WS: [ \t]+ -> skip;
 
+// Add a catch-all for debugging
+UNKNOWN_DEFAULT: . -> channel(HIDDEN);
+
 // ---------------------- PIPELINE Mode ----------------------
 mode PIPELINE;
 
-PIPELINE_NEWLINE: ('\r'? '\n') -> type(NEWLINE);  
+PIPELINE_NEWLINE: ('\r'? '\n') -> type(NEWLINE), popMode;  // Auto-exit pipeline mode on newline
 PIPELINE_BUF: AT 'buf[' -> pushMode(BUF_MODE);
 PIPELINE_STASH: AT 'stash[' -> pushMode(STASH_MODE);
 PIPELINE_IF_CALL_START: AT 'if(' -> pushMode(EXPRESSION);
@@ -61,7 +65,7 @@ PIPELINE_FUNCTION_CALL_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
 PIPELINE_LOOP_KEY: AT 'key' -> type(LOOP_KEY);
 PIPELINE_LOOP_VALUE: AT 'value' -> type(LOOP_VALUE);
 PIPELINE_BLOCK_START: '{' -> type(BLOCK_START);
-PIPELINE_BLOCK_END: '}' -> type(BLOCK_END);
+PIPELINE_BLOCK_END: '}' -> type(BLOCK_END), popMode; // Exit pipeline mode when block ends
 PIPELINE_LBRACK: '[' -> type(LBRACK);
 PIPELINE_RBRACK: ']' -> type(RBRACK);
 NESTED_PIPELINE_START: '->' -> type(PIPELINE_START);

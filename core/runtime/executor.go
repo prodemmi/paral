@@ -841,11 +841,16 @@ func (c *TaskExecutor) executeTasksInParallel(tasks []*Task, ctx *ExecutionConte
 
 func (c *TaskExecutor) executeJob(task *Task, ctx *ExecutionContext) (JobStats, *TaskOutput) {
 	startTime := time.Now()
+	stats := JobStats{}
 	output := &TaskOutput{
 		TaskName:    task.Name,
 		Description: task.Description,
 		OutputLines: []string{},
 		IsVerbose:   ctx.Config.Verbose,
+	}
+
+	if task.HasIf() && !task.IfResult() {
+		return stats, output
 	}
 
 	dependencies := c.Runtime.GetTaskDependencies(task)
@@ -869,8 +874,6 @@ func (c *TaskExecutor) executeJob(task *Task, ctx *ExecutionContext) (JobStats, 
 	} else if !ctx.Config.Silent && !ctx.Config.Short {
 		output.OutputLines = append(output.OutputLines, taskPrefix)
 	}
-
-	stats := JobStats{}
 
 	taskForDirectiveContext := task.GetTaskForDirectiveContext()
 	taskScheduleDirectiveContext := task.GetTaskScheduleDirectiveContext()

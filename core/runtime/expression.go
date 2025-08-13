@@ -1,8 +1,11 @@
 package runtime
 
+import "paral/core/metadata"
+
 type Expression struct {
-	Result  interface{}
-	RawText string
+	Result   interface{}
+	RawText  string
+	Metadata *metadata.Metadata
 }
 
 func (e *Expression) IsTrue() bool {
@@ -34,6 +37,9 @@ func resolveBoolean(input interface{}) bool {
 		return v
 
 	case string:
+		if v == "1" || v == "0" {
+			return v == "1"
+		}
 		if v == "true" || v == "false" {
 			return v == "true"
 		}

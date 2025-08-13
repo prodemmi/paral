@@ -1,9 +1,7 @@
-files = ["document.txt", "image.png", "notes.txt", "script.py", "readme.txt"]
+run = @getenv("TEST_VAR")
 
-@for files
-task process_files {
-    -> @if(@contains(@value, ".py")) {
-        -> @stash["python_file"] << @sprintf(@value)
-        -> python3 @stash("python_file")
-    }
+@if run
+task run_tests {
+    -> @printf("x2")
+    -> python3 script.py
 }
