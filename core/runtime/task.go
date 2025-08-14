@@ -38,6 +38,7 @@ type TaskPipeline struct {
 	Function  *Function
 	Condition *Condition
 	TryCatch  *TryCatch
+	Match     *Match
 	Block     int
 }
 
@@ -418,9 +419,9 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 			} else {
 				success = false
 				displayResult = fmt.Sprintf("%s ▶ %s (%v)", indent, strings.TrimRight(result, "\n"), err)
-				if !tp.IsInTryCatch() {
-					cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("command failed: %v", err), &task.Metadata)
-				}
+				// if !tp.IsInTryCatch() {
+				// 	cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("command failed: %v", err), &task.Metadata)
+				// }
 				shouldPrint = true
 			}
 		}
@@ -449,6 +450,11 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 				shouldPrint = true
 			}
 		}
+	} else if tp.Match != nil {
+		successResult, output, print := tp.Match.Execute(ctx, task, cmdExecutor)
+		success = successResult
+		displayResult = output
+		shouldPrint = print
 	}
 
 	return success, displayResult, shouldPrint

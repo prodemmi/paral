@@ -45,6 +45,8 @@ LOOP_VALUE: AT 'value' ;
 TRY: AT 'try' ;
 CATCH: AT 'catch' ;
 
+UNDERSCORE: '_' ;
+
 // IMPORTANT: IDENTIFIER must come after TASK to avoid conflicts
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 
@@ -60,16 +62,21 @@ mode PIPELINE;
 PIPELINE_NEWLINE: ('\r'? '\n') -> type(NEWLINE), popMode;  // Auto-exit pipeline mode on newline
 PIPELINE_BUF: AT 'buf[' -> pushMode(BUF_MODE);
 PIPELINE_STASH: AT 'stash[' -> pushMode(STASH_MODE);
-PIPELINE_IF_CALL_START: AT 'if(' -> pushMode(EXPRESSION);
-PIPELINE_ELSEIF_CALL_START: AT 'elseif(' -> pushMode(EXPRESSION);
+PIPELINE_IF_CALL_START: AT 'if' LRBRACK -> pushMode(EXPRESSION);
+PIPELINE_ELSEIF_CALL_START: AT 'elseif' LRBRACK -> pushMode(EXPRESSION);
+PIPELINE_MATCH_CALL: AT 'match' LRBRACK -> pushMode(EXPRESSION);
 PIPELINE_ELSE_CALL: AT 'else';
-PIPELINE_FUNCTION_CALL_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
+PIPELINE_FUNCTION_CALL_START: AT IDENTIFIER LRBRACK -> pushMode(FUNCTION);
 
 PIPELINE_ERROR: AT 'error' -> type(ERROR);
 PIPELINE_LOOP_KEY: AT 'key' -> type(LOOP_KEY);
 PIPELINE_LOOP_VALUE: AT 'value' -> type(LOOP_VALUE);
 PIPELINE_TRY_CALL: AT 'try' -> type(TRY);
 PIPELINE_CATCH_CALL: AT 'catch' -> type(CATCH);
+
+PIPELINE_LRBRACK: '(' -> type(LRBRACK);
+PIPELINE_RRBRACK: ')' -> type(RRBRACK);
+
 PIPELINE_BLOCK_START: '{' -> type(BLOCK_START);
 PIPELINE_BLOCK_END: '}' -> type(BLOCK_END), popMode; // Exit pipeline mode when block ends
 PIPELINE_LBRACK: '[' -> type(LBRACK);
@@ -122,14 +129,16 @@ STASH_WS: [ \t]+ -> skip;
 // ---------------------- EXPRESSION Mode ----------------------
 mode EXPRESSION;
 
-IF_CONDITION_END: ')' -> popMode;
-
 // Add function call support in EXPRESSION mode
 EXPRESSION_FUNCTION_CALL_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
 
 EXPRESSION_ERROR: AT 'error' -> type(ERROR);
 EXPRESSION_LOOP_KEY: AT 'key' -> type(LOOP_KEY);
 EXPRESSION_LOOP_VALUE: AT 'value' -> type(LOOP_VALUE);
+
+EXPRESSION_LRBRACK: '(' -> type(LRBRACK);
+EXPRESSION_RRBRACK: ')' -> type(RRBRACK), popMode;
+
 EXPRESSION_LBRACK: '[' -> type(LBRACK);
 EXPRESSION_RBRACK: ']' -> type(RBRACK);
 EXPRESSION_STRING: '"' ( '\\' . | ~["\\\r\n] )* '"' -> type(STRING);
@@ -147,13 +156,17 @@ EXPRESSION_NEWLINE: ('\r'? '\n') -> type(NEWLINE);
 // ---------------------- FUNCTION Mode ----------------------
 mode FUNCTION;
 NESTED_FUNCTION_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
-FUNCTION_END: ')' -> popMode;
 
 FUNCTION_ERROR: AT 'error' -> type(ERROR);
 FUNCTION_LOOP_KEY: AT 'key' -> type(LOOP_KEY);
 FUNCTION_LOOP_VALUE: AT 'value' -> type(LOOP_VALUE);
+
+FUNCTION_LRBRACK: '(' -> type(LRBRACK);
+FUNCTION_RRBRACK: ')' -> type(RRBRACK), popMode;
+
 FUNCTION_LBRACK: '[' -> type(LBRACK);
 FUNCTION_RBRACK: ']' -> type(RBRACK);
+
 FUNCTION_STRING: '"' ( '\\' . | ~["\\\r\n] )* '"' -> type(STRING);
 FUNCTION_SINGLE_QUOTE_STRING: '\'' ( '\\' . | ~['\\\r\n] )* '\'' -> type(SINGLE_QUOTE_STRING);
 FUNCTION_FLOAT: [0-9]+ '.' [0-9]* -> type(FLOAT);

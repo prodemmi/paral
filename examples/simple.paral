@@ -1,8 +1,8 @@
-run = true
+route = 1
 
-@if run
 task run_tests {
-    -> @try {
-        -> python3 script1.py
-       }
+    -> @match(route) {
+        0 -> python3 script.py
+        1 -> python3 script1.py
+    }
 }

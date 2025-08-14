@@ -10,6 +10,18 @@ type Expression struct {
 	Metadata *metadata.Metadata
 }
 
+func NewLiteralExpression(literal string, mt *metadata.Metadata) *Expression {
+	return &Expression{
+		Result:   literal,
+		RawText:  literal,
+		Metadata: mt,
+	}
+}
+
+func (e *Expression) IsLiteral(literal string) bool {
+	return e.RawText == literal || e.Result == literal
+}
+
 func (e *Expression) IsTrue() bool {
 	if e == nil || e.Result == nil {
 		return false

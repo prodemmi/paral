@@ -1,4 +1,4 @@
-// Code generated from antlr/ParalParser.g4 by ANTLR 4.13.2. DO NOT EDIT.
+// Code generated from antlr/ParalParser.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser // ParalParser
 
@@ -134,6 +134,24 @@ func (s *BaseParalParserListener) EnterCatch_block(ctx *Catch_blockContext) {}
 
 // ExitCatch_block is called when production catch_block is exited.
 func (s *BaseParalParserListener) ExitCatch_block(ctx *Catch_blockContext) {}
+
+// EnterMatch_statement is called when production match_statement is entered.
+func (s *BaseParalParserListener) EnterMatch_statement(ctx *Match_statementContext) {}
+
+// ExitMatch_statement is called when production match_statement is exited.
+func (s *BaseParalParserListener) ExitMatch_statement(ctx *Match_statementContext) {}
+
+// EnterMatch_block is called when production match_block is entered.
+func (s *BaseParalParserListener) EnterMatch_block(ctx *Match_blockContext) {}
+
+// ExitMatch_block is called when production match_block is exited.
+func (s *BaseParalParserListener) ExitMatch_block(ctx *Match_blockContext) {}
+
+// EnterMatch_expression is called when production match_expression is entered.
+func (s *BaseParalParserListener) EnterMatch_expression(ctx *Match_expressionContext) {}
+
+// ExitMatch_expression is called when production match_expression is exited.
+func (s *BaseParalParserListener) ExitMatch_expression(ctx *Match_expressionContext) {}
 
 // EnterFunction is called when production function is entered.
 func (s *BaseParalParserListener) EnterFunction(ctx *FunctionContext) {}

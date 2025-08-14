@@ -1,4 +1,4 @@
-// Code generated from antlr/ParalParser.g4 by ANTLR 4.13.2. DO NOT EDIT.
+// Code generated from antlr/ParalParser.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser // ParalParser
 
@@ -64,6 +64,15 @@ type ParalParserListener interface {
 
 	// EnterCatch_block is called when entering the catch_block production.
 	EnterCatch_block(c *Catch_blockContext)
+
+	// EnterMatch_statement is called when entering the match_statement production.
+	EnterMatch_statement(c *Match_statementContext)
+
+	// EnterMatch_block is called when entering the match_block production.
+	EnterMatch_block(c *Match_blockContext)
+
+	// EnterMatch_expression is called when entering the match_expression production.
+	EnterMatch_expression(c *Match_expressionContext)
 
 	// EnterFunction is called when entering the function production.
 	EnterFunction(c *FunctionContext)
@@ -157,6 +166,15 @@ type ParalParserListener interface {
 
 	// ExitCatch_block is called when exiting the catch_block production.
 	ExitCatch_block(c *Catch_blockContext)
+
+	// ExitMatch_statement is called when exiting the match_statement production.
+	ExitMatch_statement(c *Match_statementContext)
+
+	// ExitMatch_block is called when exiting the match_block production.
+	ExitMatch_block(c *Match_blockContext)
+
+	// ExitMatch_expression is called when exiting the match_expression production.
+	ExitMatch_expression(c *Match_expressionContext)
 
 	// ExitFunction is called when exiting the function production.
 	ExitFunction(c *FunctionContext)

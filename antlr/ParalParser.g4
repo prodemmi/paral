@@ -37,6 +37,7 @@ pipeline_item
     | stash
     | condition
     | try_catch
+    | match_statement
     | function
     | unknown_command
     ;
@@ -64,13 +65,13 @@ condition
     ;
 
 if_condition
-    : PIPELINE_IF_CALL_START expression IF_CONDITION_END
+    : PIPELINE_IF_CALL_START expression RRBRACK
       NEWLINE* BLOCK_START NEWLINE* pipeline_block* NEWLINE* BLOCK_END
       (NEWLINE* elseif_condition)* (NEWLINE* else_condition)?
     ;
 
 elseif_condition
-    : PIPELINE_ELSEIF_CALL_START expression IF_CONDITION_END
+    : PIPELINE_ELSEIF_CALL_START expression RRBRACK
       NEWLINE* BLOCK_START NEWLINE* pipeline_block* NEWLINE* BLOCK_END
     ;
 
@@ -80,7 +81,7 @@ else_condition
     ;
 
 try_catch
-    : TRY NEWLINE* BLOCK_START  NEWLINE*try_block  NEWLINE*BLOCK_END (CATCH NEWLINE* BLOCK_START  NEWLINE*catch_block NEWLINE* BLOCK_END)?
+    : TRY NEWLINE* BLOCK_START NEWLINE* try_block NEWLINE* BLOCK_END (CATCH NEWLINE* BLOCK_START NEWLINE* catch_block NEWLINE* BLOCK_END)?
     ;
 
 try_block
@@ -91,14 +92,28 @@ catch_block
     : pipeline_block*
     ;
 
+match_statement
+    : PIPELINE_MATCH_CALL expression RRBRACK
+      NEWLINE* BLOCK_START NEWLINE* match_block* NEWLINE* BLOCK_END
+    ;
+
+match_block
+    : match_expression pipeline_block
+    ;
+
+match_expression
+    : expression 
+    | UNDERSCORE
+    ;
+
 function
-    : PIPELINE_FUNCTION_CALL_START argument_list? FUNCTION_END
-    | FUNCTION_START argument_list? FUNCTION_END
-    | EXPRESSION_FUNCTION_CALL_START argument_list? FUNCTION_END
+    : PIPELINE_FUNCTION_CALL_START argument_list? RRBRACK
+    | FUNCTION_START argument_list? RRBRACK
+    | EXPRESSION_FUNCTION_CALL_START argument_list? RRBRACK
     ;
 
 nested_function
-    : NESTED_FUNCTION_START argument_list? FUNCTION_END
+    : NESTED_FUNCTION_START argument_list? RRBRACK
     ;
 
 // Argument list for functions

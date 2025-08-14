@@ -34,6 +34,15 @@ func (p *Parser) parsePipelineContent(task *runtime.Task, ctx parser.IPipeline_c
 			}
 		}
 
+		if matchCtx := item.Match_statement(); matchCtx != nil {
+			match := p.parseMatch(task, matchCtx, parent)
+			return &runtime.TaskPipeline{
+				Parent: parent,
+				Match:  match,
+				Block:  blockIndex,
+			}
+		}
+
 		if tryCatchCtx := item.Try_catch(); tryCatchCtx != nil {
 			// Create the try-catch pipeline first
 			tryCatchPipeline := &runtime.TaskPipeline{
