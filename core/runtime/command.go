@@ -10,13 +10,12 @@ type Command struct {
 	RawText   string
 }
 
-func (c *Command) GetRawResult() string {
+func (c *Command) GetRawResult() (string, error) {
 	cmd := c.RawText
 	for _, function := range c.Functions {
 		result, err := function.Call()
 		if err != nil {
-			// Log error but continue to allow partial resolution
-			continue
+			return "", err
 		}
 		funcRaw := function.RawText
 		switch res := result.(type) {
@@ -32,21 +31,24 @@ func (c *Command) GetRawResult() string {
 			cmd = strings.ReplaceAll(cmd, funcRaw, fmt.Sprintf("%v", res))
 		}
 	}
-	return strings.TrimSpace(cmd)
+	return strings.TrimSpace(cmd), nil
 }
 
 func (c *Command) GetResult(ctx *ExecutionContext, task *Task, executor *CommandExecutor) (string, bool, error) {
 	// Resolve all function calls in RawText
 	loopContext := task.GetActiveLoopContext()
-	resolvedCmd := c.GetRawResult()
+	resolvedCmd, err := c.GetRawResult()
+	if err != nil {
+		return "", false, err
+	}
 
 	// Check if there are unresolved functions (indicated by @ symbols that weren't replaced)
 	if strings.Contains(resolvedCmd, "@") {
 		// Check for common unresolved function patterns
-		if strings.Contains(resolvedCmd, "@value") && task.GetActiveLoopContext() == nil {
+		if strings.Contains(resolvedCmd, "@value") && loopContext == nil {
 			return "", false, fmt.Errorf("@value can only be used within a @for directive")
 		}
-		if strings.Contains(resolvedCmd, "@key") && task.GetActiveLoopContext() == nil {
+		if strings.Contains(resolvedCmd, "@key") && loopContext == nil {
 			return "", false, fmt.Errorf("@key can only be used within a @for directive")
 		}
 		// Add more specific error checks for other context-dependent functions as needed
@@ -61,10 +63,7 @@ func (c *Command) GetResult(ctx *ExecutionContext, task *Task, executor *Command
 
 	// If the resolved command doesn't start with '@', execute it as a shell command
 	if !strings.HasPrefix(resolvedCmd, "@") {
-		if loopContext == nil {
-			loopContext = &TaskLoopContext{}
-		}
-		output, cmdSuccess := executor.ExecuteShellCommand(resolvedCmd, loopContext.Value, ctx)
+		output, cmdSuccess := executor.ExecuteShellCommand(resolvedCmd, ctx)
 		if !cmdSuccess {
 			errorMsg := string(output)
 			// Clean up the error message - remove leading/trailing whitespace and newlines

@@ -86,6 +86,15 @@ func (p *Parser) parsePipelineContent(task *runtime.Task, ctx parser.IPipeline_c
 			}
 		}
 
+		if exprCtx := item.Expression(); exprCtx != nil {
+			expr := p.parseExpression(task, exprCtx)
+			return &runtime.TaskPipeline{
+				Parent:     parent,
+				Expression: expr,
+				Block:      blockIndex,
+			}
+		}
+
 		if unknownCtx := item.Unknown_command(); unknownCtx != nil {
 			command := p.parseUnknownCommand(task, unknownCtx)
 			return &runtime.TaskPipeline{

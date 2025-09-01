@@ -7,7 +7,7 @@ import (
 
 func Getenv(args ...interface{}) (interface{}, error) {
 	if len(args) < 1 || len(args) > 2 {
-		return nil, fmt.Errorf("@getenv() expects 1 or 2 arguments, got %d", len(args))
+		return nil, fmt.Errorf("expects 1 or 2 arguments, got %d", len(args))
 	}
 
 	envName, ok := args[0].(string)

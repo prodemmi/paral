@@ -2,7 +2,6 @@ package runtime
 
 import (
 	"fmt"
-	"paral/core"
 	"paral/core/functions"
 	"paral/core/metadata"
 	"paral/core/variable"
@@ -43,11 +42,13 @@ func NewTestFunction(name string, args ...interface{}) *Function {
 }
 
 func (f *Function) Call() (interface{}, error) {
-	args, err := f.CallArgs(f.Args...)
+	pureArgs := f.Args
+	args, err := f.CallArgs(pureArgs...)
 	// TODO: fix get raw to return original raw text
 	// f.RawText = f.GetRaw()
 
 	if err != nil {
+		f.Runtime.Reporter.ThrowRuntimeError(fmt.Sprintf("failed to call function @%s. reason:\n\t\t%s", f.Type, err), &f.Metadata)
 		return nil, err
 	}
 
@@ -87,7 +88,29 @@ func (f *Function) Call() (interface{}, error) {
 	case "split":
 		return functions.Split(args...)
 	case "append":
+		varExpr, ok := pureArgs[0].(*Expression)
+		if ok {
+			v := f.Runtime.GetVariable(varExpr.RawText)
+			if v == nil {
+				f.Runtime.Reporter.ThrowRuntimeError(fmt.Sprintf("variable %q is not defined", v.Name), &f.Metadata)
+			}
+			switch t := v.Value.(type) {
+			case variable.ListValue:
+				args[0] = t.Value
+			case variable.StringValue:
+				args[0] = t.Value
+			case variable.MatrixValue:
+				args[0] = t.Value
+			}
+			value, err := functions.Append(args...)
+			if err == nil {
+				f.Runtime.SetVariable(varExpr.RawText, value)
+			}
+			return value, err
+		}
 		return functions.Append(args...)
+	case "array":
+		return functions.Array(args...)
 	case "regex":
 		return functions.Regex(args...)
 	case "slice":
@@ -108,8 +131,18 @@ func (f *Function) Call() (interface{}, error) {
 		return functions.Sum(args...)
 	case "trigger":
 		return functions.Trigger(args...)
+	case "setvar":
+		varExpr, ok := pureArgs[0].(*Expression)
+		if ok {
+			newVar, err := functions.Setvar(f.Runtime.Vars, varExpr.RawText, args[1:])
+			if err == nil {
+				f.Runtime.SetVariable(newVar.Name, newVar.Value)
+			}
+			return newVar, err
+		}
+		return nil, fmt.Errorf("failed to set variable %q", varExpr.RawText)
 	case "getvar":
-		return functions.Getvar(args...)
+		return functions.Getvar(f.Runtime.Vars, args...)
 	case "stash":
 		stashName := args[0].(string)
 		stashValue := f.GetActiveStashValue(stashName)
@@ -122,9 +155,12 @@ func (f *Function) Call() (interface{}, error) {
 		return functions.Getenv(args...)
 	case "setenv":
 		return functions.Setenv(args...)
+	case "is":
+		return functions.Is(args...)
+	case "isnot":
+		return functions.IsNot(args...)
 	}
-
-	return nil, fmt.Errorf("@%s: unknown function", f.Type)
+	return nil, fmt.Errorf("unknown function @%s", f.Type)
 }
 
 func (f *Function) GetRaw() string {
@@ -187,79 +223,40 @@ func (f *Function) CallArgs(args ...interface{}) ([]interface{}, error) {
 }
 
 func (f *Function) ResolveValue(arg interface{}) (interface{}, error) {
-	switch arg.(*Expression).RawText {
-	case "@error":
-		return f.Runtime.currentTryCatchError, nil
+	if v, ok := arg.(variable.Variable); ok {
+		return v, nil
 	}
 
-	loopContext := f.GetActiveLoopContext()
-	switch v := arg.(*Expression).Result.(type) {
-	case string:
-		if v == "@error" {
-		}
-		if loopContext != nil {
-			if v == "@value" {
-				return loopContext.Value, nil
-			}
-			if v == "@key" {
-				return loopContext.Key, nil
-			}
-		}
-		// Handle @error
-		if v == "@error" {
+	if v, ok := arg.(*variable.Variable); ok {
+		return v, nil
+	}
+
+	if v, ok := arg.(string); ok {
+		switch v {
+		case "hich", "HICH":
+			return nil, nil
+		case "@error":
 			if f.Runtime.HasTryCatchError() {
 				return f.Runtime.GetTryCatchError(), nil
 			}
-			return "", nil // Return empty string if no error context
-		}
-		return core.TrimQuotes(v), nil
-	case variable.Variable:
-		switch val := v.Value.(type) {
-		case variable.StringValue:
-			return val.Value, nil
-		case variable.IntValue:
-			return val.Value, nil
-		case variable.FloatValue:
-			return val.Value, nil
-		case variable.BoolValue:
-			return val.Value, nil
-		case variable.ListValue:
-			return val.Value, nil
-		case variable.MatrixValue:
-			return val.Value, nil
-		default:
-			return val, nil
-		}
-	case Function:
-		return v.Call()
-	case *Function:
-		return v.Call()
-	case []interface{}:
-		resolved := make([]interface{}, len(v))
-		for i, item := range v {
-			val, err := f.ResolveValue(item)
-			if err != nil {
-				return nil, err
+			return "", nil
+		case "@value":
+			loopContext := f.GetActiveLoopContext()
+			if loopContext != nil {
+				return loopContext.Value, nil
 			}
-			resolved[i] = val
-		}
-		return resolved, nil
-	case [][]interface{}:
-		resolved := make([][]interface{}, len(v))
-		for i, inner := range v {
-			resolved[i] = make([]interface{}, len(inner))
-			for j, item := range inner {
-				val, err := f.ResolveValue(item)
-				if err != nil {
-					return nil, err
-				}
-				resolved[i][j] = val
+			return nil, fmt.Errorf("failed to find loop context %q", f.RawText)
+		case "@key":
+			loopContext := f.GetActiveLoopContext()
+			if loopContext != nil {
+				return loopContext.Key, nil
 			}
+			return nil, fmt.Errorf("failed to find loop context %q", f.RawText)
 		}
-		return resolved, nil
-	default:
 		return v, nil
 	}
+
+	return arg.(*Expression).EvaluateValue(f.GetActiveLoopContext())
 }
 
 func (f *Function) GetActiveStashValue(stashName string) interface{} {

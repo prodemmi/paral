@@ -3,8 +3,9 @@ databases = ["main_db", "analytics_db"]
 @id "notify_db"
 @manual
 @args db_name
-notify_db:
-    > @try curl -H "Content-Type: application/json" -d '{"db": @arg("db_name"),"status":"migration_complete"}' "https://hooks.example.com/db-status"
+task notify_db {
+ -> @try curl -H "Content-Type: application/json" -d '{"db": @arg("db_name"),"status":"migration_complete"}' "https://hooks.example.com/db-status"
+}
 
 @id "backup"
 @for databases

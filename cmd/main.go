@@ -8,6 +8,7 @@ import (
 	"paral/core/metadata"
 	parser "paral/core/parser"
 	"paral/core/runtime"
+	"paral/server"
 	"path/filepath"
 	"time"
 
@@ -250,7 +251,7 @@ func main() {
 
 	// Execute based on options
 	if opts.Graph {
-		//server.NewGraphServer(paralRuntime)
+		server.NewGraphServer(paralRuntime)
 	} else if opts.Describe {
 		// TODO: implement new describer.go
 		//coreInstance.Describe()

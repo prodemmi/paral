@@ -7,7 +7,7 @@ import (
 
 func Replace(args ...interface{}) (interface{}, error) {
 	if len(args) < 3 {
-		return "", fmt.Errorf("replace: requires 3 arguments")
+		return "", fmt.Errorf("requires 3 arguments")
 	}
 
 	str := fmt.Sprint(args[0])

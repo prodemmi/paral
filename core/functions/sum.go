@@ -6,7 +6,7 @@ import (
 
 func Sum(args ...interface{}) (interface{}, error) {
 	if len(args) != 1 {
-		return nil, fmt.Errorf("sum: requires exactly 1 argument (list or matrix)")
+		return nil, fmt.Errorf("requires exactly 1 argument (list or matrix)")
 	}
 
 	switch v := args[0].(type) {
@@ -16,12 +16,12 @@ func Sum(args ...interface{}) (interface{}, error) {
 		}
 		sumVal, err := ToFloat64(v[0])
 		if err != nil {
-			return nil, fmt.Errorf("sum: list elements must be numbers, got %v", v[0])
+			return nil, fmt.Errorf("list elements must be numbers, got %v", v[0])
 		}
 		for _, item := range v[1:] {
 			val, err := ToFloat64(item)
 			if err != nil {
-				return nil, fmt.Errorf("sum: list elements must be numbers, got %v", item)
+				return nil, fmt.Errorf("list elements must be numbers, got %v", item)
 			}
 			sumVal += val
 		}
@@ -35,13 +35,13 @@ func Sum(args ...interface{}) (interface{}, error) {
 		}
 		sumVal, err := ToFloat64(v[0][0])
 		if err != nil {
-			return nil, fmt.Errorf("sum: matrix elements must be numbers, got %v", v[0][0])
+			return nil, fmt.Errorf("matrix elements must be numbers, got %v", v[0][0])
 		}
 		for _, row := range v {
 			for _, item := range row {
 				val, err := ToFloat64(item)
 				if err != nil {
-					return nil, fmt.Errorf("sum: matrix elements must be numbers, got %v", item)
+					return nil, fmt.Errorf("matrix elements must be numbers, got %v", item)
 				}
 				sumVal += val
 			}
@@ -51,6 +51,6 @@ func Sum(args ...interface{}) (interface{}, error) {
 		}
 		return sumVal, nil
 	default:
-		return nil, fmt.Errorf("sum: argument must be a list or matrix")
+		return nil, fmt.Errorf("argument must be a list or matrix")
 	}
 }

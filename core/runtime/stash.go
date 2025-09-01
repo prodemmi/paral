@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"fmt"
 	"paral/core/metadata"
 )
 
@@ -22,30 +23,43 @@ func NewStash(name, taskID, rawText string, metadata metadata.Metadata, pipeline
 	}
 }
 
-func (s *Stash) GetValue(ctx *ExecutionContext, task *Task, cmdExecutor *CommandExecutor) (string, bool) {
+func (s *Stash) GetValue(ctx *ExecutionContext, task *Task, cmdExecutor *CommandExecutor) (interface{}, error) {
 	if s.Pipeline.Command != nil {
-		result, ok, _ := s.Pipeline.Command.GetResult(ctx, task, cmdExecutor)
-		return result, ok
+		result, _, err := s.Pipeline.Command.GetResult(ctx, task, cmdExecutor)
+		return result, err
 	}
 
 	if s.Pipeline.Function != nil {
 		result, err := s.Pipeline.Function.Call()
-		return result.(string), err == nil
+		return result, err
 	}
 
-	return "", false
+	if s.Pipeline.Expression != nil {
+		result, err := s.Pipeline.Expression.EvaluateValue(task.GetActiveLoopContext())
+		return result, err
+	}
+
+	return "", fmt.Errorf("failed to evaluate stash")
 }
 
-func (s *Stash) GetRawValue() (string, bool) {
+func (s *Stash) GetRawValue() (string, bool, error) {
 	if s.Pipeline.Command != nil {
-		result := s.Pipeline.Command.GetRawResult()
-		return result, true
+		result, err := s.Pipeline.Command.GetRawResult()
+		if err != nil {
+			return "", false, err
+		}
+		return result, true, nil
 	}
 
-	if s.Pipeline.Command != nil {
+	if s.Pipeline.Function != nil {
 		result, ok := s.Pipeline.Function.Call()
-		return result.(string), ok != nil
+		return result.(string), ok != nil, nil
 	}
 
-	return "", false
+	if s.Pipeline.Expression != nil {
+		result := s.Pipeline.Expression.RawText
+		return result, true, nil
+	}
+
+	return "", false, nil
 }

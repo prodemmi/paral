@@ -7,7 +7,7 @@ import (
 
 func Setenv(args ...interface{}) (interface{}, error) {
 	if len(args) != 2 {
-		return nil, fmt.Errorf("@setenv() expects exactly 2 arguments (key, value), got %d", len(args))
+		return nil, fmt.Errorf("expects exactly 2 arguments (key, value), got %d", len(args))
 	}
 
 	key, ok := args[0].(string)

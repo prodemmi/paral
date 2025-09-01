@@ -177,6 +177,12 @@ func (s *BaseParalParserListener) EnterExpression(ctx *ExpressionContext) {}
 // ExitExpression is called when production expression is exited.
 func (s *BaseParalParserListener) ExitExpression(ctx *ExpressionContext) {}
 
+// EnterHich_expr is called when production hich_expr is entered.
+func (s *BaseParalParserListener) EnterHich_expr(ctx *Hich_exprContext) {}
+
+// ExitHich_expr is called when production hich_expr is exited.
+func (s *BaseParalParserListener) ExitHich_expr(ctx *Hich_exprContext) {}
+
 // EnterNumber_expr is called when production number_expr is entered.
 func (s *BaseParalParserListener) EnterNumber_expr(ctx *Number_exprContext) {}
 

@@ -18,7 +18,7 @@ type MatchPipeline struct {
 
 func (m *Match) Execute(ctx *ExecutionContext, task *Task, cmdExecutor *CommandExecutor) (bool, string, bool) {
 	// evaluate the main match expression
-	matchVal := m.Expression.Result
+	matchVal := m.Expression.Value
 
 	for _, arm := range m.MatchPipelines {
 		// check if this arm matches
@@ -28,7 +28,7 @@ func (m *Match) Execute(ctx *ExecutionContext, task *Task, cmdExecutor *CommandE
 			if arm.Expression.IsLiteral("_") { // default case
 				armMatches = true
 			} else {
-				armVal := arm.Expression.Result
+				armVal := arm.Expression.Value
 				if fmt.Sprint(armVal) == fmt.Sprint(matchVal) {
 					armMatches = true
 				}

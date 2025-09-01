@@ -31,30 +31,26 @@ type Task struct {
 }
 
 type TaskPipeline struct {
-	Parent    *TaskPipeline
-	Buf       *Buf
-	Stash     *Stash
-	Command   *Command
-	Function  *Function
-	Condition *Condition
-	TryCatch  *TryCatch
-	Match     *Match
-	Block     int
+	Parent     *TaskPipeline
+	Buf        *Buf
+	Stash      *Stash
+	Command    *Command
+	Expression *Expression
+	Function   *Function
+	Condition  *Condition
+	TryCatch   *TryCatch
+	Match      *Match
+	Block      int
 }
 
 type TaskLoopContext struct {
-	Value interface{}
-	Key   int
-}
-
-type TaskForDirectiveContext struct {
 	Value    interface{}
-	Key      int
+	Key      interface{}
 	IsMatrix bool
 }
 
 type TaskScheduleDirectiveContext struct {
-	Value            string
+	Value            interface{}
 	IsLinuxFormat    bool
 	IsDurationFormat bool
 }
@@ -93,7 +89,7 @@ func (t *Task) AddTaskDirective(directive *Directive) error {
 	var dirValue []interface{}
 
 	switch name {
-	case "description", "envfile", "for", "schedule":
+	case "description", "envfile", "schedule":
 		if len(args) != 1 {
 			return fmt.Errorf("@%s requires exactly one string value, got %d arguments", name, len(args))
 		}
@@ -101,7 +97,7 @@ func (t *Task) AddTaskDirective(directive *Directive) error {
 			return fmt.Errorf("@%s requires a string value, got %v", name, args[0])
 		}
 		dirValue = args
-	case "if", "args", "depend":
+	case "if", "for", "args", "depend":
 		if len(args) == 0 {
 			return require_error(name)
 		}
@@ -111,6 +107,11 @@ func (t *Task) AddTaskDirective(directive *Directive) error {
 			return fmt.Errorf("@defer does not accept arguments, got %v", args)
 		}
 		dirValue = nil
+	case "wait":
+		if len(args) != 1 {
+			return fmt.Errorf("@%s requires an expression value, got %v", name, args[0])
+		}
+		dirValue = args
 	case "manual":
 		if len(args) > 1 {
 			return fmt.Errorf("@manual accepts at most one boolean value, got %d arguments", len(args))
@@ -126,7 +127,7 @@ func (t *Task) AddTaskDirective(directive *Directive) error {
 		}
 		dirValue = []interface{}{dirValue[0].(bool)}
 	default:
-		t.Runtime.Reporter.ThrowRuntimeError(fmt.Sprintf("Unknown task directive @%s", name), &directive.Metadata)
+		t.Runtime.Reporter.ThrowRuntimeError(fmt.Sprintf("unknown task directive @%s", name), &directive.Metadata)
 		dirValue = args
 	}
 
@@ -171,12 +172,12 @@ func (t *Task) HasIf() bool {
 	return false
 }
 
-func (t *Task) IfResult() bool {
+func (t *Task) IfResult() (bool, error) {
 	for _, directive := range t.Directives {
 		if directive.Type == "if" {
 			if len(directive.Params) == 1 {
 				if expr, ok := directive.Params[0].(*Expression); ok && expr != nil {
-					return expr.IsTrue()
+					return expr.IsTrue(t.GetActiveLoopContext())
 				}
 			} else {
 				t.Runtime.Reporter.ThrowRuntimeError(
@@ -184,10 +185,10 @@ func (t *Task) IfResult() bool {
 					&directive.Metadata,
 				)
 			}
-			return false
+			return false, nil
 		}
 	}
-	return true
+	return true, nil
 }
 
 func (t *Task) PushLoopStack(key int, value interface{}) {
@@ -241,30 +242,33 @@ func (t *Task) SetTaskIsFinished() {
 	t.isFinished = true
 }
 
-func (t *Task) GetTaskForDirectiveContext() *TaskForDirectiveContext {
+func (t *Task) GetTaskForDirectiveContext() (*TaskLoopContext, error) {
 	for _, directive := range t.Directives {
 		if directive.Type == "for" && len(directive.Params) > 0 {
-			varName := fmt.Sprint(directive.Params[0])
-			for _, v := range t.Runtime.Vars {
-				if v.Name == varName {
-					if listVal, ok := v.Value.(variable.ListValue); ok {
-						return &TaskForDirectiveContext{
-							Value:    listVal.Value,
-							IsMatrix: false,
-						}
-					}
-					if _, ok := v.Value.(variable.MatrixValue); ok {
-						value, _ := v.GetMatrixCombinations()
-						return &TaskForDirectiveContext{
-							Value:    value,
-							IsMatrix: true,
-						}
-					}
-				}
+			varExpr, ok := directive.Params[0].(*Expression)
+			if !ok {
+				return nil, nil
 			}
+
+			evaluatedValue, err := varExpr.EvaluateValue(t.GetActiveLoopContext())
+			if err != nil {
+				return nil, err
+			}
+			if evaluatedValue == nil {
+				return nil, nil
+			}
+
+			isMatrix := false
+			if _, ok := varExpr.Value.(variable.MatrixValue); ok {
+				isMatrix = true
+			}
+			return &TaskLoopContext{
+				Value:    evaluatedValue,
+				IsMatrix: isMatrix,
+			}, nil
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (t *Task) GetTaskScheduleDirectiveContext() *TaskScheduleDirectiveContext {
@@ -340,31 +344,34 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 	shouldPrint := false
 
 	if tp.Buf != nil {
-		result, ok := tp.Buf.GetValue(ctx, task, cmdExecutor)
-		if ok {
+		result, err := tp.Buf.GetValue(ctx, task, cmdExecutor)
+		if err == nil {
 			cmdExecutor.Runtime.PushBufStack(tp.Buf.Name, task.GetTaskId(), result, tp.Buf)
-			displayResult = fmt.Sprintf("%s ▶ buf %q saved: %s", indent, tp.Buf.Name, strings.TrimRight(result, "\n"))
+			displayResult = fmt.Sprintf("%s ▶ buf %q saved: %s", indent, tp.Buf.Name, strings.TrimRight(fmt.Sprint(result), "\n"))
 		} else {
 			success = false
 			displayResult = ""
-			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("buf %q failed", tp.Buf.Name), &tp.Buf.Metadata)
+			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("buf %q failed. reason:\n\t\t%s", tp.Buf.Name, err), &tp.Buf.Metadata)
 		}
 		shouldPrint = ctx.Config.Verbose
 
 	} else if tp.Stash != nil {
-		result, ok := tp.Stash.GetValue(ctx, task, cmdExecutor)
-		if ok {
+		result, err := tp.Stash.GetValue(ctx, task, cmdExecutor)
+		if err == nil {
 			cmdExecutor.Runtime.PushStashStack(tp.Stash.Name, task.GetTaskId(), result, tp.Stash)
-			displayResult = fmt.Sprintf("%s ▶ stash %q saved: %s", indent, tp.Stash.Name, strings.TrimRight(result, "\n"))
+			displayResult = fmt.Sprintf("%s ▶ stash %q saved: %s", indent, tp.Stash.Name, strings.TrimRight(fmt.Sprint(result), "\n"))
 		} else {
 			success = false
 			displayResult = ""
-			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("stash %q failed", tp.Stash.Name), &tp.Stash.Metadata)
+			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("stash %q failed. reason:\n\t\t%s", tp.Stash.Name, err), &tp.Stash.Metadata)
 		}
 		shouldPrint = ctx.Config.Verbose
-
 	} else if tp.Condition != nil && tp.Condition.IfCondition != nil {
-		successes, outputs, prints := tp.Condition.IfCondition.Execute(ctx, task, cmdExecutor)
+		successes, outputs, prints, err := tp.Condition.IfCondition.Execute(ctx, task, cmdExecutor)
+		if err != nil {
+			success = false
+			cmdExecutor.Reporter.ThrowRuntimeError(fmt.Sprintf("error %s", err), nil)
+		}
 		for _, s := range successes {
 			if !s {
 				success = false
@@ -460,28 +467,50 @@ func (tp *TaskPipeline) GetResult(ctx *ExecutionContext, task *Task, cmdExecutor
 	return success, displayResult, shouldPrint
 }
 
-func (tp *TaskPipeline) GetDryResult(task *Task, ctx *ExecutionContext) (displayResult string, shouldPrint bool, isTrigger bool, isStash bool, isBuf bool, isPrint bool) {
+func (tp *TaskPipeline) GetDryResult(task *Task, ctx *ExecutionContext) (
+	displayResult string,
+	shouldPrint bool,
+	isTrigger bool,
+	isStash bool,
+	isBuf bool,
+	isPrint bool,
+) {
 	if tp.Buf != nil {
 		isBuf = true
-		if tp.Buf.Command != nil {
-			result := tp.Buf.Command.GetRawResult()
-			displayResult = fmt.Sprintf("buf %q saved: %s", tp.Buf.Name, strings.TrimRight(result, "\n"))
+		result, ok, err := tp.Buf.GetRawValue()
+		if err != nil {
+			displayResult = fmt.Sprintf("buf %q error: %v", tp.Buf.Name, err)
 		} else {
-			displayResult = fmt.Sprintf("buf %q saved", tp.Buf.Name)
+			if ok {
+				displayResult = fmt.Sprintf("buf %q saved: %s", tp.Buf.Name, strings.TrimRight(result, "\n"))
+			} else {
+				displayResult = fmt.Sprintf("buf %q has no value", tp.Buf.Name)
+			}
 		}
 		shouldPrint = ctx.Config.Verbose
-
 	} else if tp.Stash != nil {
 		isStash = true
-		result, _ := tp.Stash.GetRawValue()
-		displayResult = fmt.Sprintf("stash %q saved: %s", tp.Stash.Name, strings.TrimRight(result, "\n"))
+		result, ok, err := tp.Stash.GetRawValue()
+		if err != nil {
+			displayResult = fmt.Sprintf("stash %q error: %v", tp.Stash.Name, err)
+		} else {
+			if ok {
+				displayResult = fmt.Sprintf("stash %q saved: %s", tp.Stash.Name, strings.TrimRight(result, "\n"))
+			} else {
+				displayResult = fmt.Sprintf("stash %q has no value", tp.Stash.Name)
+			}
+		}
 		shouldPrint = ctx.Config.Verbose
-
 	} else if tp.Condition != nil {
 		// Dry run for IfCondition — show which branch would execute
 		if tp.Condition.IfCondition != nil {
 			for _, branch := range tp.Condition.IfCondition.Branches {
-				if branch.Expression == nil || branch.Expression.IsTrue() {
+				isTrue, err := branch.Expression.IsTrue(task.GetActiveLoopContext())
+				if err != nil {
+
+					break
+				}
+				if branch.Expression == nil || isTrue {
 					if len(branch.Pipelines) > 0 {
 						var dryOutputs []string
 						for _, pipe := range branch.Pipelines {
@@ -531,8 +560,11 @@ func (tp *TaskPipeline) GetDryResult(task *Task, ctx *ExecutionContext) (display
 		}
 
 	} else if tp.Command != nil {
-		displayResult = tp.Command.GetRawResult()
-		if strings.TrimSpace(displayResult) != "" {
+		var err error
+		displayResult, err = tp.Command.GetRawResult()
+		if err != nil {
+			displayResult = fmt.Sprintf("command error: %v", err)
+		} else if strings.TrimSpace(displayResult) != "" {
 			shouldPrint = true
 		}
 	}
@@ -549,4 +581,46 @@ func (tp *TaskPipeline) IsInTryCatch() bool {
 		current = current.Parent
 	}
 	return false
+}
+
+func (t *Task) HasWaitDirective() bool {
+	for _, directive := range t.Directives {
+		if directive.Type == "wait" {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *Task) Wait() bool {
+	if !t.HasWaitDirective() {
+		return false
+	}
+	for {
+		d := t.GetTaskDirective("wait")
+		if len(d.Params) == 0 {
+			return false
+		}
+		if v, ok := d.Params[0].(*Expression); ok {
+			vv, err := v.EvaluateValue(t.GetActiveLoopContext())
+			if err != nil {
+				t.Runtime.Reporter.ThrowRuntimeError(err.Error(), v.Metadata)
+				return false
+			}
+			if vv.(bool) {
+				return true
+			}
+		}
+		// Add polling delay to prevent CPU spinning
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+func (t *Task) GetTaskDirective(directiveName string) *Directive {
+	for _, tt := range t.Directives {
+		if strings.Trim(tt.Type, "@") == strings.Trim(directiveName, "@") {
+			return tt
+		}
+	}
+	return nil
 }

@@ -30,6 +30,6 @@ func (p *Parser) parseBuf(task *runtime.Task, ctx parser.IBufContext, parent *ru
 	// Parse the pipeline content with the buf pipeline as parent
 	contentPipeline := p.parsePipelineContent(task, ctx.Pipeline_content(), bufPipeline)
 
-	buf := runtime.NewBuf(name, task.GetTaskId(), ctx.GetText(), bufMetadata, contentPipeline.Command)
+	buf := runtime.NewBuf(name, task.GetTaskId(), ctx.GetText(), bufMetadata, contentPipeline)
 	return buf
 }

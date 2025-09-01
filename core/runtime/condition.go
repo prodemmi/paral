@@ -27,13 +27,17 @@ type MatchCondition struct {
 	Pipelines  map[*Expression][]*TaskPipeline
 }
 
-func (i *IfCondition) Execute(ctx *ExecutionContext, task *Task, cmdExecutor *CommandExecutor) ([]bool, []string, []bool) {
+func (i *IfCondition) Execute(ctx *ExecutionContext, task *Task, cmdExecutor *CommandExecutor) ([]bool, []string, []bool, error) {
 	var successResults []bool
 	var displayResults []string
 	var shouldPrintResults []bool
 
 	for _, branch := range i.Branches {
-		if branch.Expression == nil || branch.Expression.IsTrue() {
+		isTrue, err := branch.Expression.IsTrue(task.GetActiveLoopContext())
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		if branch.Expression == nil || isTrue {
 			successResults = make([]bool, len(branch.Pipelines))
 			displayResults = make([]string, len(branch.Pipelines))
 			shouldPrintResults = make([]bool, len(branch.Pipelines))
@@ -46,5 +50,5 @@ func (i *IfCondition) Execute(ctx *ExecutionContext, task *Task, cmdExecutor *Co
 		}
 	}
 
-	return successResults, displayResults, shouldPrintResults
+	return successResults, displayResults, shouldPrintResults, nil
 }

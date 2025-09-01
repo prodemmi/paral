@@ -11,7 +11,7 @@ func Sprintf(args ...interface{}) (interface{}, error) {
 
 	format, ok := args[0].(string)
 	if !ok {
-		return "", fmt.Errorf("sprintf: first argument must be string")
+		return "", fmt.Errorf("first argument must be string")
 	}
 
 	return fmt.Sprintf(format, args[1:]...), nil

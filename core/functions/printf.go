@@ -11,7 +11,7 @@ func Printf(args ...interface{}) (interface{}, error) {
 	}
 	format, ok := args[0].(string)
 	if !ok {
-		return "", fmt.Errorf("printf: first argument must be string")
+		return "", fmt.Errorf("first argument must be string")
 	}
 	if unescaped, err := strconv.Unquote(`"` + format + `"`); err == nil {
 		format = unescaped

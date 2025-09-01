@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"paral/core/metadata"
 	"paral/core/variable"
+	"sync"
 )
 
 type Runtime struct {
@@ -17,6 +18,8 @@ type Runtime struct {
 	StashStack [][]*StashContext
 
 	currentTryCatchError string
+
+	mu sync.Mutex
 }
 
 type StashContext struct {
@@ -93,7 +96,11 @@ func (r *Runtime) GetTaskDependencies(task *Task) []string {
 	for _, directive := range task.Directives {
 		if directive.Type == "depend" {
 			for _, param := range directive.Params {
-				dependencies = append(dependencies, fmt.Sprint(param))
+				if taskExpr, ok := param.(*Expression); ok {
+					if taskId, err := taskExpr.EvaluateValue(task.GetActiveLoopContext()); err == nil {
+						dependencies = append(dependencies, fmt.Sprint(taskId))
+					}
+				}
 			}
 		}
 	}
@@ -110,7 +117,7 @@ func (r *Runtime) IsTaskDependent(taskID string, dependTaskID string) bool {
 	}
 	for _, directive := range currentTask.Directives {
 		if directive.Type == "depend" {
-			targetTask := r.GetTaskByID(directive.Params[0].(string))
+			targetTask := r.GetTaskByID(directive.Params[0].(*Expression).RawText)
 			targetTaskID := targetTask.GetTaskId()
 			if targetTaskID == dependTaskID {
 				return true
@@ -296,4 +303,16 @@ func (r *Runtime) GetTryCatchError() string {
 func (r *Runtime) HasTryCatchError() bool {
 	// Check if there's a current try-catch error
 	return r.currentTryCatchError != ""
+}
+
+func (r *Runtime) SetVariable(name string, value interface{}) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, v := range r.Vars {
+		if v.Name == name {
+			v.Value = value
+			return
+		}
+	}
 }

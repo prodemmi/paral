@@ -66,8 +66,10 @@ func (p *Parser) parseTaskDirective(task *runtime.Task, ctx parser.ITask_directi
 	directive := runtime.NewTaskDirective()
 	if dcr := ctx.Directive(); dcr != nil {
 		directive.Type = dcr.IDENTIFIER().GetText()
-		expression := p.parseExpression(task, dcr.Expression())
-		directive.Params = append(directive.Params, expression)
+		if dcr.Expression() != nil {
+			expression := p.parseExpression(task, dcr.Expression())
+			directive.Params = append(directive.Params, expression)
+		}
 	}
 	directive.Metadata = metadata.Metadata{
 		Content: ctx.GetText(),

@@ -1,603 +1,360 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Graph Visualization</title>
-    <script src="https://cdn.jsdelivr.net/npm/gojs/release/go.js"></script>
-    <link rel="stylesheet" href="assets/graph.css" />
-  </head>
-  <body>
-    <div id="sidebar">
-      <div id="sidebar-header">
-        <h2>  Project Navigator</h2>
-        <button id="sidebar-close" onclick="toggleSidebar()">×</button>
-      </div>
-      <div id="sidebar-content">
-        <div class="sidebar-section">
-          <div class="section-header" onclick="toggleSection('file-info')">
-            <span class="toggle-icon expanded">▶</span>
-            <span>📄 File Information</span>
-          </div>
-          <div class="section-content" id="file-info">
-            <div style="margin-bottom: 10px">
-              <strong>Filename:</strong> <span id="filename">example.txt</span>
-            </div>
-            <div id="file-content-container" style="margin-top: 10px">
-              <div id="file-content">Sample file content here...</div>
-            </div>
-          </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Navigator</title>
+  <link rel="stylesheet" href="assets/graph.css">
+  <script src="https://cdn.jsdelivr.net/npm/gojs/release/go.js"></script>
+</head>
+<body>
+  <button id="sidebar-toggle">☰</button>
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <h2>Project Navigator</h2>
+      <button id="sidebar-close">×</button>
+    </div>
+    <div id="sidebar-content">
+      <div class="sidebar-section">
+        <div class="section-header" data-section="file-info">
+          <span class="toggle-icon">▶</span>
+          <span>📄 File Information</span>
         </div>
-
-        <div class="sidebar-section">
-          <div class="section-header" onclick="toggleSection('node-tree')">
-            <span class="toggle-icon expanded">▶</span>
-            <span>🌳 Node Tree</span>
-          </div>
-          <div class="section-content" id="node-tree">
-            <ul id="nodeList" class="node-tree"></ul>
-          </div>
-        </div>
-
-        <div class="sidebar-section">
-          <div class="section-header" onclick="toggleSection('node-list')">
-            <span class="toggle-icon expanded">▶</span>
-            <span>📋 All Nodes</span>
-          </div>
-          <div class="section-content" id="node-list">
-            <div id="allNodesList"></div>
-          </div>
+        <div class="section-content collapsed" id="file-info">
+          <p><strong>Filename:</strong> <span id="file-name"></span></p>
+          <p><strong>Content:</strong></p>
+          <pre id="file-content"></pre>
         </div>
       </div>
-      <div class="resize-handle"></div>
-    </div>
-
-    <div id="main">
-      <div id="header">
-        <span>🔍 Graph Visualization</span>
+      <div class="sidebar-section">
+        <div class="section-header" data-section="node-tree">
+          <span class="toggle-icon">▶</span>
+          <span>🌳 Node Tree</span>
+        </div>
+        <div class="section-content collapsed" id="node-tree">
+          <!-- Populated dynamically -->
+        </div>
       </div>
-      <div id="myDiagramDiv"></div>
-      <div id="zoomControls">
-        <button onclick="zoomIn()">🔍+ Zoom In</button>
-        <button onclick="zoomOut()">🔍- Zoom Out</button>
-        <button onclick="fitView()">📐 Fit View</button>
+      <div class="sidebar-section">
+        <div class="section-header" data-section="all-nodes">
+          <span class="toggle-icon">▶</span>
+          <span>📋 All Nodes</span>
+        </div>
+        <div class="section-content collapsed" id="all-nodes">
+          <!-- Populated dynamically -->
+        </div>
       </div>
     </div>
-
-    <div id="node-details">
-      <button class="close-btn" onclick="hideNodeDetails()">×</button>
-      <div class="node-title" id="detail-title"></div>
-      <div class="node-type" id="detail-type"></div>
-      <div class="node-content" id="detail-content"></div>
+    <div class="resize-handle"></div>
+  </div>
+  <div id="graph-container">
+    <h2>🔍 Graph Visualization</h2>
+    <div id="myDiagramDiv"></div>
+    <div id="zoomControls">
+      <button id="zoom-in">🔍+ Zoom In</button>
+      <button id="zoom-out">🔍- Zoom Out</button>
+      <button id="fit-view">📐 Fit View</button>
     </div>
+  </div>
+  <div id="node-details">
+    <button class="close-btn">×</button>
+    <div class="node-title"></div>
+    <div class="node-type"></div>
+    <div class="node-content"></div>
+  </div>
 
-    <script>
-      const dagData = JSON.parse({{ .graph }});
-        const filename = {{ .filename }};
-        const fileContent = {{ .content }};
-        let diagram;
-        let selectedNode = null;
-        let sidebarVisible = true;
+  <script>
+    // Initialize GoJS diagram
+    function initDiagram() {
+      const $ = go.GraphObject.make;
+      const diagram = $(go.Diagram, "myDiagramDiv", {
+        layout: $(go.LayeredDigraphLayout, {
+          direction: 90, // Top-to-bottom
+          layerSpacing: 50,
+          columnSpacing: 20
+        }),
+        "undoManager.isEnabled": true
+      });
 
-        // Sidebar functionality
-        function toggleSidebar() {
-          const sidebar = document.getElementById('sidebar');
-          const main = document.getElementById('main');
-
-          sidebarVisible = !sidebarVisible;
-
-          if (sidebarVisible) {
-            sidebar.classList.remove('hidden');
-            main.classList.remove('sidebar-hidden');
-          } else {
-            sidebar.classList.add('hidden');
-            main.classList.add('sidebar-hidden');
-          }
-        }
-
-        // Zoom controls
-        function zoomIn() {
-          if (diagram) {
-            diagram.pipelineHandler.increaseZoom();
-          }
-        }
-
-        function zoomOut() {
-          if (diagram) {
-            diagram.pipelineHandler.decreaseZoom();
-          }
-        }
-
-        function fitView() {
-          if (diagram) {
-            diagram.zoomToFit();
-          }
-        }
-
-        // Node details functionality
-        function showNodeDetails(nodeId) {
-          const node = dagData.nodes.find(n => n.id === nodeId);
-          if (node) {
-            document.getElementById('detail-title').innerHTML = `
-              <div class="node-type-indicator ${node.type}"></div>
-              ${node.label}
-            `;
-            document.getElementById('detail-type').textContent = node.type;
-            document.getElementById('detail-content').textContent = node.label;
-            document.getElementById('node-details').style.display = 'block';
-            // Remove overlay display since we don't want blur
-          }
-        }
-
-        function hideNodeDetails() {
-          document.getElementById('node-details').style.display = 'none';
-          // Remove overlay hiding since we don't use it
-
-          // Deselect all nodes
-          if (diagram) {
-            diagram.clearSelection();
-          }
-          selectedNode = null;
-        }
-
-        // Sidebar resizing
-        let isResizing = false;
-        const sidebar = document.getElementById('sidebar');
-        const resizeHandle = document.querySelector('.resize-handle');
-
-        resizeHandle.addEventListener('mousedown', function(e) {
-          isResizing = true;
-          document.addEventListener('mousemove', handleMouseMove);
-          document.addEventListener('mouseup', handleMouseUp);
-          resizeHandle.classList.add('resizing');
-        });
-
-        function handleMouseMove(e) {
-          if (!isResizing) return;
-          const newWidth = e.clientX;
-          if (newWidth >= 250 && newWidth <= 600) {
-            sidebar.style.width = newWidth + 'px';
-          }
-        }
-
-        function handleMouseUp() {
-          isResizing = false;
-          document.removeEventListener('mousemove', handleMouseMove);
-          document.removeEventListener('mouseup', handleMouseUp);
-          resizeHandle.classList.remove('resizing');
-        }
-
-        // Section toggle
-        function toggleSection(sectionId) {
-          const section = document.getElementById(sectionId);
-          const header = section.previousElementSibling;
-          const icon = header.querySelector('.toggle-icon');
-
-          if (section.classList.contains('collapsed')) {
-            section.classList.remove('collapsed');
-            icon.classList.add('expanded');
-          } else {
-            section.classList.add('collapsed');
-            icon.classList.remove('expanded');
-          }
-        }
-
-        // Focus node with enhanced animation
-        function focusNode(id, showDetails = false) {
-          if (diagram) {
-            const node = diagram.findNodeForKey(id);
-            if (node) {
-              // Center and select the node
-              diagram.centerRect(node.actualBounds);
-              diagram.select(node);
-              selectedNode = id;
-
-              // Only show details if explicitly requested (not for tree clicks)
-              if (showDetails) {
-                showNodeDetails(id);
-              }
-
-              // Enhanced animation
-              const originalStroke = node.findObject("SHAPE").stroke;
-              const originalStrokeWidth = node.findObject("SHAPE").strokeWidth;
-
-              // Pulse animation
-              const pulseAnimation = () => {
-                node.findObject("SHAPE").stroke = "#ff4757";
-                node.findObject("SHAPE").strokeWidth = 4;
-
-                setTimeout(() => {
-                  node.findObject("SHAPE").stroke = "#2196f3";
-                  node.findObject("SHAPE").strokeWidth = 3;
-
-                  setTimeout(() => {
-                    node.findObject("SHAPE").stroke = originalStroke;
-                    node.findObject("SHAPE").strokeWidth = originalStrokeWidth;
-                  }, 300);
-                }, 300);
-              };
-
-              pulseAnimation();
-
-              // Add a temporary glow effect
-              const shape = node.findObject("SHAPE");
-              if (shape) {
-                shape.shadowVisible = true;
-
-                setTimeout(() => {
-                  shape.shadowVisible = false;
-                }, 1500);
-              }
-            }
-          }
-        }
-
-        // Build tree structure
-        function buildTreeStructure(parentId, edgesBySource, processedNodes = new Set()) {
-          if (processedNodes.has(parentId)) return [];
-
-          processedNodes.add(parentId);
-          const children = edgesBySource[parentId] || [];
-          const result = [];
-
-          children.forEach(childId => {
-            const childNode = dagData.nodes.find(n => n.id === childId);
-            if (childNode) {
-              const childrenOfChild = buildTreeStructure(childId, edgesBySource, new Set(processedNodes));
-              result.push({
-                node: childNode,
-                children: childrenOfChild
-              });
-            }
-          });
-
-          return result;
-        }
-
-        // Render tree with improved styling
-        function renderTreeNode(treeNode, container, level = 0) {
-          const li = document.createElement("li");
-
-          const hasChildren = treeNode.children && treeNode.children.length > 0;
-          const nodeTypeClass = treeNode.node.type || 'default';
-
-          li.innerHTML = `
-            <div class="tree-node" onclick="${hasChildren ? 'toggleTree(this)' : 'focusNode(\"' + treeNode.node.id + '\", false)'}" style="cursor: pointer;">
-              <div class="node-type-indicator ${nodeTypeClass}"></div>
-              ${hasChildren ? '<span class="toggle-icon">▶</span>' : ''}
-              <span>${treeNode.node.label}</span>
-            </div>
-            ${hasChildren ? '<ul style="display: none;" id="child-' + treeNode.node.id + '"></ul>' : ''}
-          `;
-
-          container.appendChild(li);
-
-          if (hasChildren) {
-            const ulChild = li.querySelector(`#child-${treeNode.node.id}`);
-            treeNode.children.forEach(child => {
-              renderTreeNode(child, ulChild, level + 1);
-            });
-          }
-        }
-
-        // Tree toggle
-        function toggleTree(element) {
-          const ul = element.parentElement.querySelector("ul");
-          const icon = element.querySelector('.toggle-icon');
-
-          if (ul && icon) {
-            const isVisible = ul.style.display === "block";
-            ul.style.display = isVisible ? "none" : "block";
-            icon.textContent = isVisible ? "▶" : "▼";
-          }
-        }
-
-        // Initialize and render the diagram
-        async function paint() {
-          try {
-            document.getElementById("filename").textContent = filename;
-            document.getElementById("file-content").textContent = fileContent;
-
-            const $ = go.GraphObject.make;
-
-            diagram = $(go.Diagram, "myDiagramDiv", {
-              initialAutoScale: go.AutoScale.Uniform,
-              contentAlignment: go.Spot.Center,
-              "undoManager.isEnabled": true,
-              layout: $(go.LayeredDigraphLayout, {
-                direction: 90,
-                layerSpacing: 60,
-                columnSpacing: 40,
-                packOption: go.LayeredDigraphLayout.PackStraighten,
-                setsPortSpots: false
-              }),
-              "grid.visible": true,
-              "grid.gridCellSize": new go.Size(20, 20),
-              "draggingTool.isGridSnapEnabled": true,
-              "resizingTool.isGridSnapEnabled": true,
-              "rotatingTool.snapAngleMultiple": 90,
-              "rotatingTool.snapAngleEpsilon": 45
-            });
-
-            // Enhanced node template
-            diagram.nodeTemplate =
-              $(go.Node, "Auto",
-                {
-                  selectionAdornmentTemplate:
-                    $(go.Adornment, "Auto",
-                      $(go.Shape, "RoundedRectangle",
-                        { fill: null, stroke: "#2196f3", strokeWidth: 3, strokeDashArray: [4, 2] }),
-                      $(go.Placeholder)
-                    )
-                },
-                $(go.Shape, "RoundedRectangle",
-                  {
-                    name: "SHAPE",
-                    fill: "lightblue",
-                    strokeWidth: 2,
-                    stroke: "#2f3542",
-                    shadowVisible: false,
-                  },
-                  new go.Binding("fill", "type", t => {
-                    switch(t) {
-                      case "task": return "#667eea";
-                      case "pipeline": return "#ff9f43";
-                      default: return "#74b9ff";
-                    }
-                  })
-                ),
-                $(go.TextBlock,
-                  {
-                    margin: 12,
-                    font: "bold 13px Segoe UI",
-                    stroke: "white",
-                    wrap: go.TextBlock.WrapFit,
-                    width: 140,
-                    textAlign: "center"
-                  },
-                  new go.Binding("text", "label")
-                ),
-                {
-                    click: function(e, node) {
-                        const nodeId = node.key;
-                        selectedNode = nodeId;
-                        showNodeDetails(nodeId); // Show details for direct node clicks
-                    },
-                    mouseEnter: function(e, node) {
-                        const shape = node.findObject("SHAPE");
-                        if (shape) {
-                            shape.shadowVisible = true;
-                    }
-                    },
-                    mouseLeave: function(e, node) {
-                        const shape = node.findObject("SHAPE");
-                        if (shape && selectedNode !== node.key) {
-                            shape.shadowVisible = false;
-                        }
-                    }
-                }
-              );
-
-            // Enhanced link template with workflow effects
-            diagram.linkTemplate =
-              $(go.Link,
-                {
-                  routing: go.Link.AvoidsNodes,
-                  corner: 10,
-                  selectable: true,
-                  shadowVisible: false
-                },
-                $(go.Shape,
-                  {
-                    stroke: "#4a90e2",
-                    strokeWidth: 2,
-                    strokeDashArray: [0, 0]
-                  },
-                  new go.Binding("stroke", "status", status => {
-                    switch(status) {
-                      case "completed": return "#2ecc71";
-                      case "running": return "#f39c12";
-                      case "failed": return "#e74c3c";
-                      default: return "#4a90e2";
-                    }
-                  }),
-                  new go.Binding("strokeDashArray", "status", status => {
-                    return status === "running" ? [4, 4] : [0, 0];
-                  })
-                ),
-                $(go.Shape,
-                  {
-                    toArrow: "Standard",
-                    fill: "#4a90e2",
-                    stroke: "#4a90e2",
-                    strokeWidth: 0
-                  },
-                  new go.Binding("fill", "status", status => {
-                    switch(status) {
-                      case "completed": return "#2ecc71";
-                      case "running": return "#f39c12";
-                      case "failed": return "#e74c3c";
-                      default: return "#4a90e2";
-                    }
-                  })
-                ),
-                $(go.TextBlock,
-                  {
-                    segmentOffset: new go.Point(0, -12),
-                    font: "11px Segoe UI",
-                    stroke: "#333",
-                    background: "rgba(255,255,255,0.8)",
-                    margin: 2
-                  },
-                  new go.Binding("text", "label")
-                ),
-                {
-                  mouseEnter: function(e, link) {
-                    const shape = link.findObject();
-                    if (shape) {
-                      shape.shadowVisible = true;
-                    }
-                  },
-                  mouseLeave: function(e, link) {
-                    const shape = link.findObject();
-                    if (shape) {
-                      shape.shadowVisible = false;
-                    }
-                  }
-                }
-              );
-
-            // Load data into the diagram
-            diagram.model = new go.GraphLinksModel(
-              dagData.nodes.map(n => ({
-                key: n.id,
-                label: n.label,
-                type: n.type,
-                manual: n.metadata?.manual || false
-              })),
-              dagData.edges.map(e => ({
-                from: e.source,
-                to: e.target,
-                label: e.label || "",
-                status: e.status || "pending"
-              }))
-            );
-
-            // Build sidebar content
-            buildSidebarContent();
-
-            // Add workflow animation
-            startWorkflowAnimation();
-
-          } catch (e) {
-            console.error("Error loading GoJS diagram:", e);
-          }
-        }
-
-        // Build sidebar content
-        function buildSidebarContent() {
-          // Build node tree
-          const edgesBySource = {};
-          dagData.edges.forEach(edge => {
-            if (!edgesBySource[edge.source]) {
-              edgesBySource[edge.source] = [];
-            }
-            edgesBySource[edge.source].push(edge.target);
-          });
-
-          const rootNodes = dagData.nodes.filter(node =>
-            !dagData.edges.some(edge => edge.target === node.id)
-          );
-
-          const nodeList = document.getElementById('nodeList');
-          nodeList.innerHTML = '';
-
-          rootNodes.forEach(rootNode => {
-            const treeStructure = {
-              node: rootNode,
-              children: buildTreeStructure(rootNode.id, edgesBySource)
+      // Node template
+      diagram.nodeTemplate = $(go.Node, "Auto",
+        { selectable: true, cursor: "pointer" },
+        $(go.Shape, "Rectangle",
+          {
+            fill: "#007bff",
+            stroke: "#0056b3",
+            strokeWidth: 1,
+            width: 100,
+            height: 40
+          },
+          new go.Binding("fill", "type", type => {
+            const colors = {
+              task: "#28a745",
+              function: "#6f42c1",
+              command: "#17a2b8",
+              stash: "#dc3545",
+              buf: "#ffc107",
+              condition: "#fd7e14",
+              trycatch: "#e83e8c",
+              match: "#20c997"
             };
-            renderTreeNode(treeStructure, nodeList);
-          });
+            return colors[type] || "#007bff";
+          }),
+          new go.Binding("stroke", "type", type => {
+            const borders = {
+              task: "#1e7e34",
+              function: "#5a32a3",
+              command: "#117a8b",
+              stash: "#b02a37",
+              buf: "#d39e00",
+              condition: "#c65d07",
+              trycatch: "#bb2d6b",
+              match: "#179874"
+            };
+            return borders[type] || "#0056b3";
+          })
+        ),
+        $(go.TextBlock,
+          {
+            margin: 5,
+            font: "12px Segoe UI",
+            stroke: "#fff",
+            textAlign: "center"
+          },
+          new go.Binding("text", "label"))
+      );
 
-          // Build all nodes list - only focus, no details
-          const allNodesList = document.getElementById('allNodesList');
-          allNodesList.innerHTML = '';
+      // Link template
+      diagram.linkTemplate = $(go.Link,
+        {
+          routing: go.Link.Orthogonal,
+          corner: 5,
+          selectable: true
+        },
+        $(go.Shape, { stroke: "#6c757d", strokeWidth: 2 }),
+        $(go.Shape, { toArrow: "Standard", stroke: null, fill: "#6c757d" }),
+        $(go.TextBlock,
+          { segmentOffset: new go.Point(0, -10), font: "10px Segoe UI" },
+          new go.Binding("text", "label"))
+      );
 
-          dagData.nodes.forEach(node => {
-            const nodeItem = document.createElement('div');
-            nodeItem.className = `node-item ${node.type}`;
-            nodeItem.innerHTML = `
-              <div class="node-type-indicator ${node.type}"></div>
-              <span>${node.label}</span>
-            `;
-            nodeItem.onclick = () => focusNode(node.id, false);
-            allNodesList.appendChild(nodeItem);
-          });
+      return diagram;
+    }
+
+    // Toggle sidebar
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebarClose = document.getElementById('sidebar-close');
+
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      sidebarToggle.style.display = sidebar.classList.contains('hidden') ? 'block' : 'none';
+    });
+
+    sidebarClose.addEventListener('click', () => {
+      sidebar.classList.add('hidden');
+      sidebarToggle.style.display = 'block';
+    });
+
+    // Toggle section collapse
+    document.querySelectorAll('.section-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const section = header.dataset.section;
+        const content = document.getElementById(section);
+        const icon = header.querySelector('.toggle-icon');
+        content.classList.toggle('collapsed');
+        icon.classList.toggle('expanded');
+      });
+    });
+
+    // Sidebar resize
+    const resizeHandle = document.querySelector('.resize-handle');
+    let isResizing = false;
+
+    resizeHandle.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      resizeHandle.classList.add('resizing');
+      document.addEventListener('mousemove', resizeSidebar);
+      document.addEventListener('mouseup', stopResize);
+    });
+
+    function resizeSidebar(e) {
+      if (!isResizing) return;
+      const newWidth = Math.max(250, Math.min(600, e.clientX));
+      sidebar.style.width = `${newWidth}px`;
+    }
+
+    function stopResize() {
+      isResizing = false;
+      resizeHandle.classList.remove('resizing');
+      document.removeEventListener('mousemove', resizeSidebar);
+      document.removeEventListener('mouseup', stopResize);
+    }
+
+    // Fetch and render DAG data
+    async function fetchDAG() {
+      try {
+        const response = await fetch('/api/dag');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const dag = await response.json();
+        renderDAG(dag);
+        renderFileInfo();
+      } catch (error) {
+        console.error('Error fetching DAG:', error);
+        document.getElementById('graph-container').innerHTML += '<p style="color: red;">Failed to load DAG. Please check the server.</p>';
+      }
+    }
 
-        // Workflow animation for running edges
-        function startWorkflowAnimation() {
-          const animateRunningEdges = () => {
-            if (diagram) {
-              diagram.links.each(link => {
-                if (link.data.status === "running") {
-                  const shape = link.findObject();
-                  if (shape) {
-                    // Animate dash offset for running effect
-                    let offset = 0;
-                    const animate = () => {
-                      offset += 0.5;
-                      shape.strokeDashOffset = offset;
-                      if (offset > 8) offset = 0;
-                    };
-                    animate();
-                  }
-                }
-              });
-            }
-          };
+    function renderFileInfo() {
+      document.getElementById('file-name').textContent = 'simple.paral';
+      document.getElementById('file-content').textContent = `items = [1, 1, 2]
 
-          setInterval(animateRunningEdges, 100);
-        }
+@for items
+task run_tests {
+    -> @printf("Hi %d", @value)
+}`;
+    }
 
-        // Add pulse effect to nodes
-        function addNodePulseEffect(nodeId, color = "#2196f3") {
-          if (diagram) {
-            const node = diagram.findNodeForKey(nodeId);
-            if (node) {
-              const shape = node.findObject("SHAPE");
-              if (shape) {
-                let scale = 1;
-                let growing = true;
+    function renderDAG(dag) {
+      const diagram = initDiagram();
+      const nodeDataArray = dag.nodes.map(node => ({
+        key: node.id,
+        label: node.label,
+        type: node.type,
+        metadata: node.metadata
+      }));
+      const linkDataArray = dag.edges.map(edge => ({
+        from: edge.source,
+        to: edge.target,
+        label: edge.label
+      }));
 
-                const pulse = () => {
-                  if (growing) {
-                    scale += 0.02;
-                    if (scale >= 1.1) growing = false;
-                  } else {
-                    scale -= 0.02;
-                    if (scale <= 1) growing = true;
-                  }
+      diagram.model = new go.GraphLinksModel({
+        nodeDataArray: nodeDataArray,
+        linkDataArray: linkDataArray
+      });
 
-                  node.scale = scale;
-                  shape.stroke = color;
-                  shape.strokeWidth = 3;
-                };
+      // Node click handler
+      diagram.addDiagramListener("ObjectSingleClicked", e => {
+        const part = e.subject.part;
+        if (!(part instanceof go.Node)) return;
+        const details = document.getElementById('node-details');
+        const title = details.querySelector('.node-title');
+        const type = details.querySelector('.node-type');
+        const content = details.querySelector('.node-content');
 
-                const interval = setInterval(pulse, 50);
+        title.textContent = part.data.label;
+        type.textContent = part.data.type;
+        content.innerHTML = Object.entries(part.data.metadata || {})
+          .map(([key, value]) => `<strong>${key}:</strong> ${JSON.stringify(value)}`)
+          .join('<br>');
 
-                setTimeout(() => {
-                  clearInterval(interval);
-                  node.scale = 1;
-                  shape.stroke = "#2f3542";
-                  shape.strokeWidth = 2;
-                }, 2000);
-              }
-            }
-          }
-        }
+        details.style.display = 'block';
+      });
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape') {
-            hideNodeDetails();
-          }
-          if (e.key === 'f' && e.ctrlKey) {
-            e.preventDefault();
-            fitView();
-          }
-          if (e.key === 'r' && e.ctrlKey) {
-            e.preventDefault();
-          }
-          if (e.key === 's' && e.ctrlKey) {
-            e.preventDefault();
-            toggleSidebar();
+      // Close node details
+      document.querySelector('#node-details .close-btn').addEventListener('click', () => {
+        document.getElementById('node-details').style.display = 'none';
+      });
+
+      // Zoom controls
+      document.getElementById('zoom-in').addEventListener('click', () => {
+        diagram.commandHandler.increaseZoom();
+      });
+
+      document.getElementById('zoom-out').addEventListener('click', () => {
+        diagram.commandHandler.decreaseZoom();
+      });
+
+      document.getElementById('fit-view').addEventListener('click', () => {
+        diagram.commandHandler.zoomToFit();
+      });
+
+      // Render node tree
+      const nodeTree = document.getElementById('node-tree');
+      nodeTree.innerHTML = buildNodeTree(dag);
+
+      // Render all nodes
+      const allNodes = document.getElementById('all-nodes');
+      allNodes.innerHTML = dag.nodes.map(node => `
+        <div class="node-item ${node.type}" data-node-id="${node.id}">
+          <span class="node-icon">${getNodeIcon(node.type)}</span>
+          ${node.label} (${node.type})
+        </div>
+      `).join('');
+
+      // Node item click handler
+      allNodes.querySelectorAll('.node-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const nodeId = item.dataset.nodeId;
+          const node = diagram.findNodeForKey(nodeId);
+          if (node) {
+            diagram.centerRect(node.actualBounds);
+            diagram.select(node);
+            const event = new go.InputEvent();
+            event.subject = { part: node };
+            diagram.raiseDiagramEvent("ObjectSingleClicked", event);
           }
         });
+      });
+    }
 
-        // Initialize the application
-        paint();
-    </script>
-  </body>
+    function getNodeIcon(type) {
+      const icons = {
+        task: '📋',
+        function: '⚙️',
+        command: '💻',
+        stash: '📦',
+        buf: '🗂️',
+        condition: '🔀',
+        trycatch: '🛡️',
+        match: '🔎'
+      };
+      return icons[type] || '🔘';
+    }
+
+    function buildNodeTree(dag) {
+      const tree = {};
+      dag.nodes.forEach(node => {
+        if (node.type === 'task') {
+          tree[node.id] = { node, children: [] };
+        }
+      });
+
+      dag.edges.forEach(edge => {
+        if (edge.label === 'pipeline') {
+          const parent = tree[edge.source];
+          if (parent) {
+            const childNode = dag.nodes.find(n => n.id === edge.target);
+            if (childNode) {
+              parent.children.push({ node: childNode, children: [] });
+            }
+          }
+        }
+      });
+
+      return Object.values(tree).map(parent => `
+        <div class="node-item ${parent.node.type}" data-node-id="${parent.node.id}">
+          <span class="node-icon">${getNodeIcon(parent.node.type)}</span>
+          ${parent.node.label}
+          ${parent.children.length > 0 ? `
+            <div class="node-children">
+              ${parent.children.map(child => `
+                <div class="node-item ${child.node.type}" data-node-id="${child.node.id}">
+                  <span class="node-icon">${getNodeIcon(child.node.type)}</span>
+                  ${child.node.label}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+
+    // Initialize
+    fetchDAG();
+  </script>
+</body>
 </html>

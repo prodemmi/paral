@@ -8,19 +8,19 @@ import (
 
 func Writefile(args ...interface{}) (interface{}, error) {
 	if len(args) != 2 {
-		return nil, fmt.Errorf("@writefile() requires exactly 2 arguments (filename string, data string)")
+		return nil, fmt.Errorf("requires exactly 2 arguments (filename string, data string)")
 	}
 
 	filenameVal := args[0]
 	filename, ok := filenameVal.(string)
 	if !ok || strings.TrimSpace(filename) == "" {
-		return nil, fmt.Errorf("@writefile(): first argument must be a non-empty string (filename)")
+		return nil, fmt.Errorf("first argument must be a non-empty string (filename)")
 	}
 
 	dataVal := args[1]
 	data, ok := dataVal.(*string)
 	if data != nil && !ok {
-		return nil, fmt.Errorf("@writefile(): second argument must be a string (data to write)")
+		return nil, fmt.Errorf("second argument must be a string (data to write)")
 	}
 
 	var content []byte

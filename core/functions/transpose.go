@@ -6,12 +6,12 @@ import (
 
 func Transpose(args ...interface{}) (interface{}, error) {
 	if len(args) != 1 {
-		return nil, fmt.Errorf("transpose: requires exactly 1 argument (matrix)")
+		return nil, fmt.Errorf("requires exactly 1 argument (matrix)")
 	}
 
 	matrix, ok := args[0].([][]interface{})
 	if !ok {
-		return nil, fmt.Errorf("transpose: argument must be a matrix")
+		return nil, fmt.Errorf("argument must be a matrix")
 	}
 	if len(matrix) == 0 || len(matrix[0]) == 0 {
 		return [][]interface{}{}, nil
@@ -19,7 +19,7 @@ func Transpose(args ...interface{}) (interface{}, error) {
 	cols := len(matrix[0])
 	for _, row := range matrix[1:] {
 		if len(row) != cols {
-			return nil, fmt.Errorf("transpose: matrix rows must have equal length")
+			return nil, fmt.Errorf("matrix rows must have equal length")
 		}
 	}
 	rows := len(matrix)

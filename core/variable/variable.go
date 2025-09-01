@@ -16,41 +16,6 @@ type Variable struct {
 	Metadata *metadata.Metadata
 }
 
-type MatrixValue struct {
-	VarBase
-	Value [][]interface{}
-}
-
-type ListValue struct {
-	VarBase
-	Value []interface{}
-}
-
-type IntValue struct {
-	VarBase
-	Value int
-}
-
-type FloatValue struct {
-	VarBase
-	Value float64
-}
-
-type StringValue struct {
-	VarBase
-	Value string
-}
-
-type BoolValue struct {
-	VarBase
-	Value bool
-}
-
-type DurationValue struct {
-	VarBase
-	Value string
-}
-
 func (v *Variable) AsMatrix() (*MatrixValue, bool) {
 	if mv, ok := v.Value.(MatrixValue); ok {
 		return &mv, true
@@ -138,7 +103,7 @@ func (v *Variable) Format() (typeStr string, valueStr string) {
 	case BoolValue:
 		return "bool", fmt.Sprintf("%t", val.Value)
 	case DurationValue:
-		return "duration", val.Value
+		return "duration", fmt.Sprint(val.Value)
 	case ListValue:
 		return "list", fmt.Sprintf("%v", val.Value)
 	case MatrixValue:

@@ -7,6 +7,7 @@ ASSIGN: '=';
 
 STRING: '"' ( '\\' . | ~["\\\r\n] )* '"';
 SINGLE_QUOTE_STRING: '\'' ( '\\' . | ~['\\\r\n] )* '\'';
+HICH: 'hich' | 'HICH' ;
 FLOAT: [0-9]+ '.' [0-9]+;
 NUMBER: [0-9]+;
 BOOLEAN: 'true' | 'false';
@@ -95,6 +96,7 @@ PIPELINE_PATH: (([a-zA-Z] ':')? [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+
 
 PIPELINE_STRING: '"' ( '\\' . | ~["\\\r\n] )* '"' -> type(STRING);
 PIPELINE_SINGLE_QUOTE_STRING: '\'' ( '\\' . | ~['\\\r\n] )* '\'' -> type(SINGLE_QUOTE_STRING);
+PIPELINE_HICH: ('hich' | 'HICH') -> type(HICH);
 PIPELINE_FLOAT: [0-9]+ '.' [0-9]* -> type(FLOAT);
 PIPELINE_NUMBER: [0-9]+ -> type(NUMBER);
 PIPELINE_BOOLEAN: ('true' | 'false') -> type(BOOLEAN);
@@ -105,7 +107,7 @@ PIPELINE_COMMA: ',' -> type(COMMA);
 PIPELINE_WS: [ \t]+ -> skip;
 
 UNKNOWN_TEXT
-    : ~[ \r\n{}@\-]+ [ \t]* // Capture trailing whitespace
+    : ~[ \r\n{}@\-]+ [ \t]*
     ;
 
 // ---------------------- BUF Mode ----------------------
@@ -143,6 +145,7 @@ EXPRESSION_LBRACK: '[' -> type(LBRACK);
 EXPRESSION_RBRACK: ']' -> type(RBRACK);
 EXPRESSION_STRING: '"' ( '\\' . | ~["\\\r\n] )* '"' -> type(STRING);
 EXPRESSION_SINGLE_QUOTE_STRING: '\'' ( '\\' . | ~['\\\r\n] )* '\'' -> type(SINGLE_QUOTE_STRING);
+EXPRESSION_HICH: ('hich' | 'HICH') -> type(HICH);
 EXPRESSION_FLOAT: [0-9]+ '.' [0-9]* -> type(FLOAT);
 EXPRESSION_NUMBER: [0-9]+ -> type(NUMBER);
 EXPRESSION_BOOLEAN: ('true' | 'false') -> type(BOOLEAN);
@@ -169,6 +172,7 @@ FUNCTION_RBRACK: ']' -> type(RBRACK);
 
 FUNCTION_STRING: '"' ( '\\' . | ~["\\\r\n] )* '"' -> type(STRING);
 FUNCTION_SINGLE_QUOTE_STRING: '\'' ( '\\' . | ~['\\\r\n] )* '\'' -> type(SINGLE_QUOTE_STRING);
+FUNCTION_HICH: ('hich' | 'HICH') -> type(HICH);
 FUNCTION_FLOAT: [0-9]+ '.' [0-9]* -> type(FLOAT);
 FUNCTION_NUMBER: [0-9]+ -> type(NUMBER);
 FUNCTION_BOOLEAN: ('true' | 'false') -> type(BOOLEAN);

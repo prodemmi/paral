@@ -33,12 +33,13 @@ pipeline_content
     ;
 
 pipeline_item
-    : buf
+    : function
+    | expression
     | stash
+    | buf
     | condition
     | try_catch
     | match_statement
-    | function
     | unknown_command
     ;
 
@@ -123,7 +124,8 @@ argument_list
 
 // Expression can be a value or a nested function
 expression
-    : loop_variable
+    : hich_expr
+    | loop_variable
     | error_variable
     | function
     | nested_function
@@ -136,6 +138,10 @@ expression
     | matrix_expr
     | list_expr
     | IDENTIFIER
+    ;
+
+hich_expr
+    : HICH
     ;
 
 number_expr

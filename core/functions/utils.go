@@ -3,6 +3,8 @@ package functions
 import (
 	"fmt"
 	"math"
+	"paral/core/variable"
+	"strconv"
 )
 
 func IsInt(val float64) bool {
@@ -58,4 +60,57 @@ func ToFloat64(val interface{}) (float64, error) {
 	default:
 		return 0, fmt.Errorf("unsupported type: %T", v)
 	}
+}
+
+func ExtractPureValue(value interface{}) interface{} {
+	switch v := value.(type) {
+	case variable.IntValue:
+		return v.Value
+	case variable.FloatValue:
+		return v.Value
+	case variable.StringValue:
+		return v.Value
+	case variable.BoolValue:
+		return v.Value
+	case variable.DurationValue:
+		return v.Value
+	case variable.ListValue:
+		return v.Value
+	case variable.MatrixValue:
+		return v.Value
+	case *variable.IntValue:
+		return v.Value
+	case *variable.FloatValue:
+		return v.Value
+	case *variable.StringValue:
+		return v.Value
+	case *variable.BoolValue:
+		return v.Value
+	case *variable.DurationValue:
+		return v.Value
+	case *variable.ListValue:
+		return v.Value
+	case *variable.MatrixValue:
+		return v.Value
+	default:
+		return value
+	}
+}
+
+func toFloat(v interface{}) (float64, bool) {
+	switch n := v.(type) {
+	case int:
+		return float64(n), true
+	case int64:
+		return float64(n), true
+	case float32:
+		return float64(n), true
+	case float64:
+		return n, true
+	case string:
+		if f, err := strconv.ParseFloat(n, 64); err == nil {
+			return f, true
+		}
+	}
+	return 0, false
 }

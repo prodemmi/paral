@@ -7,7 +7,7 @@ import (
 
 func Contains(args ...interface{}) (interface{}, error) {
 	if len(args) < 2 {
-		return false, fmt.Errorf("contains: requires 2 arguments")
+		return false, fmt.Errorf("requires 2 arguments")
 	}
 
 	str := fmt.Sprint(args[0])

@@ -6,18 +6,18 @@ import (
 
 func Det(args ...interface{}) (interface{}, error) {
 	if len(args) != 1 {
-		return nil, fmt.Errorf("det: requires exactly 1 argument (matrix)")
+		return nil, fmt.Errorf("requires exactly 1 argument (matrix)")
 	}
 
 	matrix, ok := args[0].([][]interface{})
 	if !ok {
-		return nil, fmt.Errorf("det: argument must be a matrix")
+		return nil, fmt.Errorf("argument must be a matrix")
 	}
 	if len(matrix) == 0 {
-		return nil, fmt.Errorf("det: empty matrix")
+		return nil, fmt.Errorf("empty matrix")
 	}
 	if len(matrix) != len(matrix[0]) {
-		return nil, fmt.Errorf("det: matrix must be square")
+		return nil, fmt.Errorf("matrix must be square")
 	}
 	n := len(matrix)
 	m := make([][]float64, n)
@@ -26,7 +26,7 @@ func Det(args ...interface{}) (interface{}, error) {
 		for j, val := range row {
 			fVal, err := ToFloat64(val)
 			if err != nil {
-				return nil, fmt.Errorf("det: matrix elements must be numbers, got %v", val)
+				return nil, fmt.Errorf("matrix elements must be numbers, got %v", val)
 			}
 			m[i][j] = fVal
 		}

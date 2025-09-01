@@ -86,6 +86,9 @@ type ParalParserListener interface {
 	// EnterExpression is called when entering the expression production.
 	EnterExpression(c *ExpressionContext)
 
+	// EnterHich_expr is called when entering the hich_expr production.
+	EnterHich_expr(c *Hich_exprContext)
+
 	// EnterNumber_expr is called when entering the number_expr production.
 	EnterNumber_expr(c *Number_exprContext)
 
@@ -187,6 +190,9 @@ type ParalParserListener interface {
 
 	// ExitExpression is called when exiting the expression production.
 	ExitExpression(c *ExpressionContext)
+
+	// ExitHich_expr is called when exiting the hich_expr production.
+	ExitHich_expr(c *Hich_exprContext)
 
 	// ExitNumber_expr is called when exiting the number_expr production.
 	ExitNumber_expr(c *Number_exprContext)

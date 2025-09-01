@@ -145,7 +145,7 @@ func (t *ThreadSafeWriter) Write(p []byte) (n int, err error) {
 	return t.writer.Write(p)
 }
 
-func (ce *CommandExecutor) ExecuteShellCommand(command string, forValue interface{}, ctx *ExecutionContext) ([]byte, bool) {
+func (ce *CommandExecutor) ExecuteShellCommand(command string, ctx *ExecutionContext) ([]byte, bool) {
 	for _, v := range ce.Runtime.Vars {
 		placeholder := fmt.Sprintf("$%s", v.Name)
 		switch val := v.Value.(type) {
@@ -161,8 +161,6 @@ func (ce *CommandExecutor) ExecuteShellCommand(command string, forValue interfac
 			command = strings.ReplaceAll(command, placeholder, fmt.Sprint(val))
 		}
 	}
-	valueStr := fmt.Sprint(forValue)
-	command = strings.ReplaceAll(command, "@value", valueStr)
 
 	var cmd *exec.Cmd
 	if ctx.Config.Timeout > 0 {
@@ -315,11 +313,11 @@ func (c *TaskExecutor) setupScheduledTasks(ctx *ExecutionContext, outputChan cha
 		var cronSpec string
 
 		if taskScheduleDirectiveContext.IsLinuxFormat {
-			cronSpec = value
+			cronSpec = value.(string)
 		} else if taskScheduleDirectiveContext.IsDurationFormat {
-			cronSpec = "@every " + value
+			cronSpec = "@every " + value.(string)
 		} else {
-			cronSpec = value
+			cronSpec = value.(string)
 		}
 
 		entryID, err := c.scheduler.AddFunc(cronSpec, taskFunc)
@@ -820,24 +818,20 @@ func (c *TaskExecutor) executeJob(task *Task, ctx *ExecutionContext) (JobStats, 
 		IsVerbose:   ctx.Config.Verbose,
 	}
 
-	if task.HasIf() && !task.IfResult() {
-		return stats, output
-	}
-
-	dependencies := c.Runtime.GetTaskDependencies(task)
-	if ctx.Config.Verbose && len(dependencies) > 0 {
-		taskDirectivesPrefix := ctx.Colors.Gray.Sprintf("\n  @depends on: %v", dependencies)
-		output.OutputLines = append(output.OutputLines, taskDirectivesPrefix)
-	}
-
 	// Add timestamp only for scheduled tasks
 	var taskPrefix string
 	if task.IsScheduled() {
 		timestamp := startTime.Format("15:04:05")
 		taskPrefix = ctx.Colors.Magenta.Sprintf("  Task %q [%s]:", task.Name, timestamp)
 	} else {
-		taskPrefix = ctx.Colors.Magenta.Sprintf("  Task %q", task.Name)
+		taskPrefix = ctx.Colors.Magenta.Sprintf("  Task %q:", task.Name)
+	}
 
+	// Show task start info immediately, before any waiting
+	dependencies := c.Runtime.GetTaskDependencies(task)
+	if ctx.Config.Verbose && len(dependencies) > 0 {
+		taskDirectivesPrefix := ctx.Colors.Gray.Sprintf("\n  @depends on: %v", dependencies)
+		output.OutputLines = append(output.OutputLines, taskDirectivesPrefix)
 	}
 
 	if ctx.Config.Verbose && len(task.Description) > 0 {
@@ -846,7 +840,36 @@ func (c *TaskExecutor) executeJob(task *Task, ctx *ExecutionContext) (JobStats, 
 		output.OutputLines = append(output.OutputLines, taskPrefix)
 	}
 
-	taskForDirectiveContext := task.GetTaskForDirectiveContext()
+	// Note: Initial output will be included in the final output
+	// The caller (executeTasksWithDependencies/executeTasksInParallel)
+	// will handle sending to outputChan after this function returns
+
+	// Now handle waiting - user already knows task started
+	if task.HasWaitDirective() {
+		if ctx.Config.Verbose {
+			waitLine := "    ⏳ waiting for condition..."
+			output.OutputLines = append(output.OutputLines, waitLine)
+		}
+		task.Wait()
+	}
+
+	if task.HasIf() {
+		ifResult, err := task.IfResult()
+		if err != nil {
+			conditionError := ctx.Colors.Red.Sprintf("condition error: %s", err)
+			output.OutputLines = append(output.OutputLines, conditionError)
+			return stats, output
+		}
+		if !ifResult {
+			return stats, output
+		}
+	}
+
+	taskForDirectiveContext, err := task.GetTaskForDirectiveContext()
+	if err != nil {
+		errorMessage := ctx.Colors.Red.Sprintf("failed to get for directive context: %s", err)
+		output.OutputLines = append(output.OutputLines, errorMessage)
+	}
 	taskScheduleDirectiveContext := task.GetTaskScheduleDirectiveContext()
 
 	if taskForDirectiveContext != nil {

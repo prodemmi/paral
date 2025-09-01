@@ -38,5 +38,5 @@ func Middle(args ...interface{}) (interface{}, error) {
 		}
 		return v[midIndex], nil
 	}
-	return nil, fmt.Errorf("middle: first argument must be a string, list, or matrix")
+	return nil, fmt.Errorf("first argument must be a string, list, or matrix")
 }

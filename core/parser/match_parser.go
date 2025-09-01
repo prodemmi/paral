@@ -18,7 +18,7 @@ func (p *Parser) parseMatch(task *runtime.Task, ctx parser.IMatch_statementConte
 		var expr *runtime.Expression
 		if underscore := mb.Match_expression().UNDERSCORE(); underscore != nil {
 			// create an expression representing the default `_`
-			expr = runtime.NewLiteralExpression("_", &metadata.Metadata{
+			expr = runtime.NewLiteralExpression("_", p.Runtime, &metadata.Metadata{
 				Content: underscore.GetText(),
 				Line:    underscore.GetSymbol().GetLine(),
 				Column:  underscore.GetSymbol().GetColumn(),

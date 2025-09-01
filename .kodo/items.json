@@ -1,0 +1,177 @@
+{
+  "project_path": "/mnt/projects/Projects/Programming/paral",
+  "last_scan_at": "2025-09-01T19:06:09.157996243Z",
+  "git_branch": "main",
+  "git_commit": "962b7b50f959e17a988cc3e6bb485bc9f1d20443",
+  "git_commit_short": "962b7b5",
+  "total_items": 5,
+  "items_by_status": {
+    "todo": 5
+  },
+  "items_by_type": {
+    "TODO": 5
+  },
+  "items_by_file": {
+    "antlr/antlr/paral_lexer.go": 2,
+    "cmd/main.go": 1,
+    "core/runtime/executor.go": 1,
+    "core/runtime/function.go": 1
+  },
+  "current_items": [
+    {
+      "id": 1,
+      "type": "TODO",
+      "title": "EOF string",
+      "file": "antlr/antlr/paral_lexer.go",
+      "line": 21,
+      "status": "todo",
+      "priority": "LOW",
+      "is_done": false,
+      "done_at": null,
+      "done_by": null,
+      "hash": "-1b4ec2677b838b9"
+    },
+    {
+      "id": 2,
+      "type": "TODO",
+      "title": "l.EOF = antlr.TokenEOF",
+      "file": "antlr/antlr/paral_lexer.go",
+      "line": 715,
+      "status": "todo",
+      "priority": "LOW",
+      "is_done": false,
+      "done_at": null,
+      "done_by": null,
+      "hash": "-3e7eefba6f3aee37"
+    },
+    {
+      "id": 3,
+      "type": "TODO",
+      "title": "implement new describer.go",
+      "file": "cmd/main.go",
+      "line": 256,
+      "status": "todo",
+      "priority": "LOW",
+      "is_done": false,
+      "done_at": null,
+      "done_by": null,
+      "hash": "30214e7150cf0e87"
+    },
+    {
+      "id": 4,
+      "type": "TODO",
+      "title": "check this line",
+      "file": "core/runtime/executor.go",
+      "line": 176,
+      "status": "todo",
+      "priority": "LOW",
+      "is_done": false,
+      "done_at": null,
+      "done_by": null,
+      "hash": "518dea9531458252"
+    },
+    {
+      "id": 5,
+      "type": "TODO",
+      "title": "fix get raw to return original raw text",
+      "file": "core/runtime/function.go",
+      "line": 47,
+      "status": "todo",
+      "priority": "LOW",
+      "is_done": false,
+      "done_at": null,
+      "done_by": null,
+      "hash": "-322b08121786c524"
+    }
+  ],
+  "branch_history": [
+    {
+      "branch": "main",
+      "commit": "962b7b50f959e17a988cc3e6bb485bc9f1d20443",
+      "commit_short": "962b7b5",
+      "commit_message": "implement match",
+      "timestamp": "2025-09-01T19:06:09.164674107Z",
+      "history": {
+        "total": 5,
+        "by_status": {
+          "todo": 5
+        },
+        "by_type": {
+          "TODO": 5
+        },
+        "by_priority": {
+          "LOW": 5
+        },
+        "items": [
+          {
+            "id": 1,
+            "type": "TODO",
+            "title": "EOF string",
+            "file": "antlr/antlr/paral_lexer.go",
+            "line": 21,
+            "status": "todo",
+            "priority": "LOW",
+            "is_done": false,
+            "done_at": null,
+            "done_by": null,
+            "hash": "-1b4ec2677b838b9"
+          },
+          {
+            "id": 2,
+            "type": "TODO",
+            "title": "l.EOF = antlr.TokenEOF",
+            "file": "antlr/antlr/paral_lexer.go",
+            "line": 715,
+            "status": "todo",
+            "priority": "LOW",
+            "is_done": false,
+            "done_at": null,
+            "done_by": null,
+            "hash": "-3e7eefba6f3aee37"
+          },
+          {
+            "id": 3,
+            "type": "TODO",
+            "title": "implement new describer.go",
+            "file": "cmd/main.go",
+            "line": 256,
+            "status": "todo",
+            "priority": "LOW",
+            "is_done": false,
+            "done_at": null,
+            "done_by": null,
+            "hash": "30214e7150cf0e87"
+          },
+          {
+            "id": 4,
+            "type": "TODO",
+            "title": "check this line",
+            "file": "core/runtime/executor.go",
+            "line": 176,
+            "status": "todo",
+            "priority": "LOW",
+            "is_done": false,
+            "done_at": null,
+            "done_by": null,
+            "hash": "518dea9531458252"
+          },
+          {
+            "id": 5,
+            "type": "TODO",
+            "title": "fix get raw to return original raw text",
+            "file": "core/runtime/function.go",
+            "line": 47,
+            "status": "todo",
+            "priority": "LOW",
+            "is_done": false,
+            "done_at": null,
+            "done_by": null,
+            "hash": "-322b08121786c524"
+          }
+        ]
+      }
+    }
+  ],
+  "created_at": "2025-09-01T19:06:09.15802174Z",
+  "updated_at": "2025-09-01T19:06:09.165121662Z"
+}

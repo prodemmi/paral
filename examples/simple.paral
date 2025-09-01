@@ -1,8 +1,17 @@
-route = 1
+x = @sprintf("Hi")
 
-task run_tests {
-    -> @match(route) {
-        0 -> python3 script.py
-        1 -> python3 script1.py
-    }
+task add_row {
+    -> sleep 5
+    -> @stash["x"] << cat simple.txt | grep email
+    -> @buf["x"] << x
+}
+
+@wait @isnot(@buf("x"), hich)
+task show_matrix {
+    -> @print(@buf("x"))
+}
+
+@depend add_row
+task depended_task {
+    -> @print(@stash("x"))
 }

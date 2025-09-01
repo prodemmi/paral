@@ -1,13 +1,20 @@
 package server
 
 import (
+	"fmt"
+	"github.com/gin-contrib/cors"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
+	d "paral/core/dag"
+	"paral/core/runtime"
+	"path"
 	"syscall"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/gin-gonic/gin"
 )
 
 func watchAndRestartIfChanged(filename string) {
@@ -50,39 +57,44 @@ func watchAndRestartIfChanged(filename string) {
 	}
 }
 
-//func NewGraphServer(runtime *core.Runtime) {
-//	dag := d.NewDAG(runtime)
-//	graph, err := dag.ToJSON()
-//	if err != nil {
-//		runtime.Reporter.ThrowRuntimeError(fmt.Sprintf("failed to generate DAG: %s", err), nil)
-//		return
-//	}
-//
-//	go watchAndRestartIfChanged(runtime.Metadata.Filename)
-//
-//	gin.SetMode(gin.ReleaseMode)
-//	r := gin.New()
-//
-//	r.Use(gin.Recovery())
-//	r.Use(cors.Default())
-//
-//	// Static files (serve any files in /public/, fallback to directory)
-//	r.Static("/assets", "./public")
-//
-//	// Template files
-//	r.LoadHTMLGlob("public/*.tmpl")
-//
-//	r.GET("/graph", func(ctx *gin.Context) {
-//		ctx.HTML(http.StatusOK, "graph.tmpl", gin.H{
-//			"title":    "Paral Graph Viewer",
-//			"filename": path.Base(runtime.Metadata.Filename),
-//			"graph":    graph,
-//			"content":  runtime.Metadata.Content,
-//		})
-//	})
-//
-//	log.Println("🚀 Paral Graph Server is running at: http://localhost:8091/graph")
-//	if err := r.Run(":8091"); err != nil {
-//		log.Fatalf("❌ Failed to start server: %v", err)
-//	}
-//}
+func NewGraphServer(runtime *runtime.Runtime) {
+	dag := d.NewDAG(runtime)
+	dag = dag.GenerateDAG()
+	graph, err := dag.MarshalJSON()
+	if err != nil {
+		runtime.Reporter.ThrowRuntimeError(fmt.Sprintf("failed to generate DAG: %s", err), nil)
+		return
+	}
+
+	go watchAndRestartIfChanged(runtime.Metadata.Filename)
+
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.New()
+
+	r.Use(gin.Recovery())
+	r.Use(cors.Default())
+
+	// Static files (serve any files in /public/, fallback to directory)
+	r.Static("/assets", "./public")
+
+	// Template files
+	r.LoadHTMLGlob("public/*.tmpl")
+
+	r.GET("/graph", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "graph.tmpl", gin.H{
+			"title":    "Paral Graph Viewer",
+			"filename": path.Base(runtime.Metadata.Filename),
+			"graph":    graph,
+			"content":  runtime.Metadata.Content,
+		})
+	})
+
+	r.GET("/api/dag", func(ctx *gin.Context) {
+		ctx.Data(http.StatusOK, "application/json", graph)
+	})
+
+	log.Println("🚀 Paral Graph Server is running at: http://localhost:8091/graph")
+	if err := r.Run(":8091"); err != nil {
+		log.Fatalf("❌ Failed to start server: %v", err)
+	}
+}
