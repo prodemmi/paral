@@ -36,8 +36,8 @@ func ParseFlags() *ExecutionOptions {
 	opts := &ExecutionOptions{}
 
 	// Existing flags
-	flag.BoolVar(&opts.Graph, "graph", false, "show file graph")
-	flag.BoolVar(&opts.Describe, "describe", false, "describe the paral file")
+	// flag.BoolVar(&opts.Graph, "graph", false, "show file graph")
+	// flag.BoolVar(&opts.Describe, "describe", false, "describe the paral file")
 
 	// Output control flags
 	flag.BoolVar(&opts.Summary, "s", false, "only show execution summary")
@@ -76,7 +76,7 @@ func ParseFlags() *ExecutionOptions {
 }
 
 func ShowVersion() {
-	fmt.Println("Paral v1.0.0")
+	fmt.Println("Paral v0.1.0")
 	fmt.Println("A task execution tool")
 }
 
@@ -87,8 +87,8 @@ func ShowHelp() {
 	fmt.Println()
 	fmt.Println("Options:")
 	fmt.Println("  File Operations:")
-	fmt.Println("    --graph              Show file dependency graph")
-	fmt.Println("    --describe           Describe the paral file structure")
+	// fmt.Println("    --graph              Show file dependency graph")
+	// fmt.Println("    --describe           Describe the paral file structure")
 	fmt.Println()
 	fmt.Println("  Output Control:")
 	fmt.Println("    -s, --summary        Only show execution summary")
