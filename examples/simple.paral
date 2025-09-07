@@ -1,17 +1,22 @@
-x = @sprintf("Hi")
+done_msg = "All tasks finished!"
 
-task add_row {
-    -> sleep 5
-    -> @stash["x"] << cat simple.txt | grep email
-    -> @buf["x"] << x
+task first_task {
+    -> @stash["messages"] << "Hello from stash"
+    -> sleep 1
+    -> @buf["messages"] << "Hello from buffer"
 }
 
-@wait @isnot(@buf("x"), hich)
-task show_matrix {
-    -> @print(@buf("x"))
+@depend first_task
+task second_task {
+    -> @print(@stash("messages"))
 }
 
-@depend add_row
-task depended_task {
-    -> @print(@stash("x"))
+@wait @isnot(@buf("messages"), hich)
+task third_task {
+    -> @print(@buf("messages"))
+}
+
+@defer
+task print_done {
+    -> @print(done_msg)
 }
