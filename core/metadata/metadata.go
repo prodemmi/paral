@@ -5,4 +5,5 @@ type Metadata struct {
 	Content  string
 	Line     int
 	Column   int
+	TaskID   *string
 }
