@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"github.com/gin-contrib/cors"
 	"log"
 	"net/http"
 	"os"
@@ -13,6 +12,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/cors"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/gin-gonic/gin"
 )
@@ -20,12 +21,12 @@ import (
 func watchAndRestartIfChanged(filename string) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatalf("❌ Failed to create file watcher: %v", err)
+		log.Fatalf("failed to create file watcher: %v", err)
 	}
 	defer watcher.Close()
 
 	if err := watcher.Add(filename); err != nil {
-		log.Fatalf("❌ Failed to watch file: %v", err)
+		log.Fatalf("failed to watch file: %v", err)
 	}
 
 	for {
@@ -35,16 +36,16 @@ func watchAndRestartIfChanged(filename string) {
 				return
 			}
 			if event.Op&fsnotify.Write == fsnotify.Write {
-				log.Printf("🔁 File changed: %s. Restarting server...", event.Name)
+				log.Printf("file changed: %s. Restarting server...", event.Name)
 				time.Sleep(500 * time.Millisecond)
 
 				binary, err := exec.LookPath(os.Args[0])
 				if err != nil {
-					log.Fatalf("❌ Failed to find binary: %v", err)
+					log.Fatalf("failed to find binary: %v", err)
 				}
 
 				if err := syscall.Exec(binary, os.Args, os.Environ()); err != nil {
-					log.Fatalf("❌ Failed to exec: %v", err)
+					log.Fatalf("failed to exec: %v", err)
 				}
 			}
 
@@ -52,7 +53,7 @@ func watchAndRestartIfChanged(filename string) {
 			if !ok {
 				return
 			}
-			log.Printf("Watcher error: %v", err)
+			log.Printf("watcher error: %v", err)
 		}
 	}
 }
@@ -95,6 +96,6 @@ func NewGraphServer(runtime *runtime.Runtime) {
 
 	log.Println("🚀 Paral Graph Server is running at: http://localhost:8091/graph")
 	if err := r.Run(":8091"); err != nil {
-		log.Fatalf("❌ Failed to start server: %v", err)
+		log.Fatalf("failed to start server: %v", err)
 	}
 }
