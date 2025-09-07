@@ -14,10 +14,8 @@ BOOLEAN: 'true' | 'false';
 ZERO_ONE: [01];
 DURATION: NUMBER [smhd];
 
-// Fixed URL pattern - more robust and handles edge cases
 URL: ('http' 's'? '://' | 'localhost:' [0-9]+) [a-zA-Z0-9._~:/?#[\]@!$&'()*+,;=-]+;
 
-// Fixed PATH pattern - handles Windows/Unix paths properly
 PATH: ([a-zA-Z] ':')? [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+
     | ([a-zA-Z] ':')? [/\\] [a-zA-Z0-9._-]+
     | '.' [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+
@@ -48,13 +46,11 @@ CATCH: AT 'catch' ;
 
 UNDERSCORE: '_' ;
 
-// IMPORTANT: IDENTIFIER must come after TASK to avoid conflicts
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 
 NEWLINE: ('\r'? '\n');
 WS: [ \t]+ -> skip;
 
-// Add a catch-all for debugging
 UNKNOWN_DEFAULT: . -> channel(HIDDEN);
 
 // ---------------------- PIPELINE Mode ----------------------
@@ -84,10 +80,8 @@ PIPELINE_LBRACK: '[' -> type(LBRACK);
 PIPELINE_RBRACK: ']' -> type(RBRACK);
 NESTED_PIPELINE_START: '->' -> type(PIPELINE_START);
 
-// Fixed PIPELINE URL - same improvements as default mode
 PIPELINE_URL: ('http' 's'? '://' | 'localhost:' [0-9]+) [a-zA-Z0-9._~:/?#[\]@!$&'()*+,;=-]+ -> type(URL);
 
-// Fixed PIPELINE PATH - same improvements as default mode  
 PIPELINE_PATH: (([a-zA-Z] ':')? [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+
              | ([a-zA-Z] ':')? [/\\] [a-zA-Z0-9._-]+
              | '.' [/\\] ([a-zA-Z0-9._-]+[/\\])*[a-zA-Z0-9._-]+
@@ -131,7 +125,6 @@ STASH_WS: [ \t]+ -> skip;
 // ---------------------- EXPRESSION Mode ----------------------
 mode EXPRESSION;
 
-// Add function call support in EXPRESSION mode
 EXPRESSION_FUNCTION_CALL_START: AT IDENTIFIER '(' -> pushMode(FUNCTION);
 
 EXPRESSION_ERROR: AT 'error' -> type(ERROR);

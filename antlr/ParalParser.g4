@@ -117,12 +117,10 @@ nested_function
     : NESTED_FUNCTION_START argument_list? RRBRACK
     ;
 
-// Argument list for functions
 argument_list
     : expression (NEWLINE* COMMA NEWLINE* expression)*
     ;
 
-// Expression can be a value or a nested function
 expression
     : hich_expr
     | loop_variable
